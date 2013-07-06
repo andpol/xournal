@@ -37,6 +37,7 @@ void do_hand(GdkEvent *event);
 #define DEFAULT_FONT_SIZE 12
 
 void start_text(GdkEvent *event, struct Item *item);
+void start_text_existing(struct Item *item);
 void end_text(void);
 void update_text_item_displayfont(struct Item *item);
 void rescale_text_items(void);

@@ -67,6 +67,9 @@ create_winMain (void)
   GtkWidget *editCopy;
   GtkWidget *editPaste;
   GtkWidget *editDelete;
+  GtkWidget *separator11;
+  GtkWidget *editFind;
+  GtkWidget *editFindNext;
   GtkWidget *menuView;
   GtkWidget *menuView_menu;
   GSList *viewContinuous_group = NULL;
@@ -272,6 +275,9 @@ create_winMain (void)
   GtkWidget *vseparator2;
   GtkWidget *buttonUndo;
   GtkWidget *buttonRedo;
+  GtkWidget *toolitem23;
+  GtkWidget *vseparator11;
+  GtkWidget *buttonFind;
   GtkWidget *toolitem13;
   GtkWidget *vseparator3;
   GtkWidget *buttonFirstPage;
@@ -517,6 +523,21 @@ create_winMain (void)
   gtk_widget_add_accelerator (editDelete, "activate", accel_group,
                               GDK_Delete, (GdkModifierType) 0,
                               GTK_ACCEL_VISIBLE);
+
+  separator11 = gtk_separator_menu_item_new ();
+  gtk_widget_show (separator11);
+  gtk_container_add (GTK_CONTAINER (menuEdit_menu), separator11);
+  gtk_widget_set_sensitive (separator11, FALSE);
+
+  editFind = gtk_image_menu_item_new_from_stock ("gtk-find", accel_group);
+  gtk_widget_show (editFind);
+  gtk_container_add (GTK_CONTAINER (menuEdit_menu), editFind);
+
+  editFindNext = gtk_menu_item_new_with_mnemonic (_("_Find Next"));
+  gtk_widget_show (editFindNext);
+  gtk_container_add (GTK_CONTAINER (menuEdit_menu), editFindNext);
+  gtk_widget_add_accelerator (editFindNext, "activate", accel_group,
+                                GDK_F3, 0, GTK_ACCEL_VISIBLE);
 
   menuView = gtk_menu_item_new_with_mnemonic (_("_View"));
   gtk_widget_show (menuView);
@@ -1497,6 +1518,19 @@ create_winMain (void)
   gtk_container_add (GTK_CONTAINER (toolbarMain), buttonRedo);
   gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (buttonRedo), tooltips, _("Redo"), NULL);
 
+  toolitem23 = (GtkWidget*) gtk_tool_item_new ();
+  gtk_widget_show (toolitem23);
+  gtk_container_add (GTK_CONTAINER (toolbarMain), toolitem23);
+
+  vseparator11 = gtk_vseparator_new ();
+  gtk_widget_show (vseparator11);
+  gtk_container_add (GTK_CONTAINER (toolitem23), vseparator11);
+
+  buttonFind = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-find");
+  gtk_widget_show (buttonFind);
+  gtk_container_add (GTK_CONTAINER (toolbarMain), buttonFind);
+  gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (buttonFind), tooltips, _("Find"), NULL);
+
   toolitem13 = (GtkWidget*) gtk_tool_item_new ();
   gtk_widget_show (toolitem13);
   gtk_container_add (GTK_CONTAINER (toolbarMain), toolitem13);
@@ -2062,6 +2096,12 @@ create_winMain (void)
   g_signal_connect ((gpointer) editDelete, "activate",
                     G_CALLBACK (on_editDelete_activate),
                     NULL);
+  g_signal_connect ((gpointer) editFind, "activate",
+                    G_CALLBACK (on_editFind_activate),
+                    NULL);
+  g_signal_connect ((gpointer) editFindNext, "activate",
+                    G_CALLBACK (on_editFindNext_activate),
+                    NULL);
   g_signal_connect ((gpointer) viewContinuous, "toggled",
                     G_CALLBACK (on_viewContinuous_activate),
                     NULL);
@@ -2437,6 +2477,9 @@ create_winMain (void)
   g_signal_connect ((gpointer) buttonRedo, "clicked",
                     G_CALLBACK (on_editRedo_activate),
                     NULL);
+  g_signal_connect ((gpointer) buttonFind, "clicked",
+                    G_CALLBACK (on_editFind_activate),
+                    NULL);
   g_signal_connect ((gpointer) buttonFirstPage, "clicked",
                     G_CALLBACK (on_viewFirstPage_activate),
                     NULL);
@@ -2600,6 +2643,8 @@ create_winMain (void)
   GLADE_HOOKUP_OBJECT (winMain, editCopy, "editCopy");
   GLADE_HOOKUP_OBJECT (winMain, editPaste, "editPaste");
   GLADE_HOOKUP_OBJECT (winMain, editDelete, "editDelete");
+  GLADE_HOOKUP_OBJECT (winMain, editFind, "editFind");
+  GLADE_HOOKUP_OBJECT (winMain, editFindNext, "editFindNext");
   GLADE_HOOKUP_OBJECT (winMain, menuView, "menuView");
   GLADE_HOOKUP_OBJECT (winMain, menuView_menu, "menuView_menu");
   GLADE_HOOKUP_OBJECT (winMain, viewContinuous, "viewContinuous");

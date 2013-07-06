@@ -683,4 +683,3 @@ void rethicken_selection(int val)
     }
   }
 }
-

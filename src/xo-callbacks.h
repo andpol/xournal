@@ -77,6 +77,14 @@ on_editDelete_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
+on_editFind_activate                   (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+void
+on_editFindNext_activate               (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+void
 on_viewContinuous_activate             (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 

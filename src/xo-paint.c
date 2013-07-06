@@ -545,16 +545,10 @@ void resize_textview(gpointer *toplevel, gpointer *data)
 void start_text(GdkEvent *event, struct Item *item)
 {
   double pt[2];
-  GtkTextBuffer *buffer;
-  GnomeCanvasItem *canvas_item;
-  PangoFontDescription *font_desc;
-  GdkColor color;
-
-  get_pointer_coords(event, pt);
-
-  ui.cur_item_type = ITEM_TEXT;
 
   if (item==NULL) {
+	get_pointer_coords(event, pt);
+
     item = g_new(struct Item, 1);
     item->text = NULL;
     item->canvas_item = NULL;
@@ -568,12 +562,23 @@ void start_text(GdkEvent *event, struct Item *item)
     ui.cur_layer->items = g_list_append(ui.cur_layer->items, item);
     ui.cur_layer->nitems++;
   }
-  
+
+  start_text_existing(item);
+}
+
+void start_text_existing(struct Item *item)
+{
+  GtkTextBuffer *buffer;
+  GnomeCanvasItem *canvas_item;
+  PangoFontDescription *font_desc;
+  GdkColor color;
+
+  ui.cur_item_type = ITEM_TEXT;
   item->type = ITEM_TEMP_TEXT;
   ui.cur_item = item;
-  
+
   font_desc = pango_font_description_from_string(item->font_name);
-  pango_font_description_set_absolute_size(font_desc, 
+  pango_font_description_set_absolute_size(font_desc,
       item->font_size*ui.zoom*PANGO_SCALE);
   item->widget = gtk_text_view_new();
   buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(item->widget));
@@ -586,8 +591,8 @@ void start_text(GdkEvent *event, struct Item *item)
 
   canvas_item = gnome_canvas_item_new(ui.cur_layer->group,
     gnome_canvas_widget_get_type(),
-    "x", item->bbox.left, "y", item->bbox.top, 
-    "width", item->bbox.right-item->bbox.left, 
+    "x", item->bbox.left, "y", item->bbox.top,
+    "width", item->bbox.right-item->bbox.left,
     "height", item->bbox.bottom-item->bbox.top,
     "widget", item->widget, NULL);
   // TODO: width/height?
@@ -598,13 +603,13 @@ void start_text(GdkEvent *event, struct Item *item)
   item->canvas_item = canvas_item;
 
   gtk_widget_show(item->widget);
-  ui.resize_signal_handler = 
+  ui.resize_signal_handler =
     g_signal_connect((gpointer) winMain, "check_resize",
        G_CALLBACK(resize_textview), NULL);
   update_font_button();
   gtk_widget_set_sensitive(GET_COMPONENT("editPaste"), FALSE);
   gtk_widget_set_sensitive(GET_COMPONENT("buttonPaste"), FALSE);
-  gtk_widget_grab_focus(item->widget); 
+  gtk_widget_grab_focus(item->widget);
 }
 
 void end_text(void)
@@ -669,6 +674,53 @@ void end_text(void)
   update_item_bbox(ui.cur_item);
   lower_canvas_item_to(ui.cur_layer->group, ui.cur_item->canvas_item, tmpitem);
   gtk_object_destroy(GTK_OBJECT(tmpitem));
+}
+
+/* Get the currently selected text (from inside a textbox), if any */
+gchar * get_selected_text() {
+	GtkTextBuffer *text_buffer;
+    GtkTextIter start, end;
+    gchar *text;
+
+	if (ui.cur_item_type != ITEM_TEXT) {
+		printf("not using text (%d)\n", ui.cur_item_type);
+		return NULL;
+	}
+
+	text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget));
+	if (!gtk_text_buffer_get_has_selection(text_buffer)) {
+		printf("no selection\n");
+		return NULL;
+	}
+
+	gtk_text_buffer_get_selection_bounds(text_buffer, &start, &end);
+	text = gtk_text_buffer_get_text(text_buffer, &start, &end, TRUE);
+	return text;
+}
+
+gboolean match_inside(GtkTextIter *start, GtkTextIter *end) {
+	GtkTextBuffer *text_buffer;
+    GtkTextIter dummy, cursor, limit;
+    GtkTextMark *insert;
+
+	if (ui.cur_item_type != ITEM_TEXT) {
+		printf("not using text (%d)\n", ui.cur_item_type);
+		return FALSE;
+	}
+
+	text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget) );
+
+	// If has selection, search from end of selection; else from cursor
+	if (gtk_text_buffer_get_has_selection(text_buffer)) {
+		gtk_text_buffer_get_selection_bounds(text_buffer, &dummy, &cursor);
+	} else {
+		insert = gtk_text_buffer_get_insert(text_buffer);
+		gtk_text_buffer_get_iter_at_mark(text_buffer, &cursor, insert);
+	}
+
+	gtk_text_buffer_get_end_iter(text_buffer, &limit);
+
+	return gtk_text_iter_forward_search(&cursor, search_string, GTK_TEXT_SEARCH_TEXT_ONLY, start, end, &limit);
 }
 
 /* update the items in the canvas so they're of the right font size */

@@ -409,6 +409,7 @@ extern struct Journal journal;
 extern struct UIData ui;
 extern struct BgPdf bgpdf;
 extern struct UndoItem *undo, *redo;
+extern gchar *search_string;
 
 extern double DEFAULT_ZOOM;
 
