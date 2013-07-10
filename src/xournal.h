@@ -383,6 +383,7 @@ typedef struct BgPdf {
   PopplerDocument *document; // the poppler document
 } BgPdf;
 
+
 #define STATUS_NOT_INIT 0
 #define STATUS_READY    1  // things are initialized and can work
 // there used to be more possible values, things got streamlined...
@@ -390,7 +391,7 @@ typedef struct BgPdf {
 // UTILITY MACROS
 
 // getting a component of the interface by name
-#define GET_COMPONENT(a)  GTK_WIDGET (g_object_get_data(G_OBJECT (winMain), a))
+#define GET_COMPONENT(a)  GTK_WIDGET (gtk_builder_get_object(GTK_BUILDER(builder), a))
 
 // the margin between consecutive pages in continuous view
 #define VIEW_CONTINUOUS_SKIP 20.0
@@ -402,6 +403,9 @@ typedef struct BgPdf {
 
 extern GtkWidget *winMain;
 extern GnomeCanvas *canvas;
+
+// the GtkBuilder used to load the Glade XML UI
+extern GtkBuilder *builder;
 
 // the data
 

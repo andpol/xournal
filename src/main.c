@@ -23,7 +23,7 @@
 #include <libgnomecanvas/libgnomecanvas.h>
 
 #include "xournal.h"
-#include "xo-interface.h"
+//#include "xo-interface.h"
 #include "xo-support.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
@@ -33,6 +33,7 @@
 
 GtkWidget *winMain;
 GnomeCanvas *canvas;
+GtkBuilder *builder;
 
 struct Journal journal; // the journal
 struct BgPdf bgpdf;  // the PDF loader stuff
@@ -343,9 +344,18 @@ main (int argc, char *argv[])
    * (except popup menus), just so that you see something after building
    * the project. Delete any components that you don't want shown initially.
    */
-  winMain = create_winMain ();
-  
+  //winMain = create_winMain ();
+
+  builder = gtk_builder_new();
+  GError *err = NULL;
+  if(!gtk_builder_add_from_file(builder, "xournal2.glade", &err)) {
+    fprintf(stderr, "ERROR: %s", err->message);
+    return 1;
+  }
+  winMain = (GtkWidget *)gtk_builder_get_object (builder, "winMain");
+  //gtk_builder_connect_signals (builder, NULL);
   init_stuff (argc, argv);
+  //g_object_unref(G_OBJECT(builder));
   gtk_window_set_icon(GTK_WINDOW(winMain), create_pixbuf("xournal.png"));
   
   gtk_main ();
