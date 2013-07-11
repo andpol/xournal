@@ -29,13 +29,15 @@
 #include "xournal.h"
 #include "xo-callbacks.h"
 //#include "xo-interface.h"
-#include "xo-support.h"
+//#include "xo-support.h"
 #include "xo-misc.h"
 #include "xo-file.h"
 #include "xo-paint.h"
 #include "xo-selection.h"
 #include "xo-print.h"
 #include "xo-shapes.h"
+#include "intl.h"
+
 
 void
 on_fileNew_activate                    (GtkMenuItem     *menuitem,
@@ -1285,7 +1287,7 @@ on_journalPaperSize_activate           (GtkMenuItem     *menuitem,
   GList *pglist;
   
   end_text();
-  papersize_dialog = create_papersizeDialog();
+  papersize_dialog = GTK_WIDGET(GET_COMPONENT("papersizeDialog"));
   papersize_width = ui.cur_page->width;
   papersize_height = ui.cur_page->height;
   papersize_unit = ui.default_unit;
@@ -2329,7 +2331,7 @@ on_helpAbout_activate                  (GtkMenuItem     *menuitem,
   GtkLabel *labelTitle;
   
   end_text();
-  aboutDialog = create_aboutDialog ();
+  aboutDialog = GTK_WIDGET(GET_COMPONENT("aboutDialog"));
   labelTitle = GTK_LABEL(g_object_get_data(G_OBJECT(aboutDialog), "labelTitle"));
   gtk_label_set_markup(labelTitle, 
     "<span size=\"xx-large\" weight=\"bold\">Xournal " VERSION_STRING "</span>");
@@ -3431,7 +3433,8 @@ on_viewSetZoom_activate                (GtkMenuItem     *menuitem,
   GtkSpinButton *spinZoom;
   
   end_text();
-  zoom_dialog = create_zoomDialog();
+  zoom_dialog = GTK_WIDGET(GET_COMPONENT("zoomDialog"));
+
   zoom_percent = 100*ui.zoom / DEFAULT_ZOOM;
   spinZoom = GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(zoom_dialog), "spinZoom"));
   gtk_spin_button_set_increments(spinZoom, ui.zoom_step_increment, 5*ui.zoom_step_increment);

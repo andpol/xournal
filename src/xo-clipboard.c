@@ -23,7 +23,7 @@
 #include "xournal.h"
 #include "xo-callbacks.h"
 //#include "xo-interface.h"
-#include "xo-support.h"
+//#include "xo-support.h"
 #include "xo-misc.h"
 #include "xo-paint.h"
 #include "xo-image.h"

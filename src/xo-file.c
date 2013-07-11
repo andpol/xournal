@@ -37,13 +37,14 @@
 #endif
 
 #include "xournal.h"
-#include "xo-interface.h"
-#include "xo-support.h"
+//#include "xo-interface.h"
+//#include "xo-support.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
 #include "xo-paint.h"
 #include "xo-image.h"
+#include "intl.h"
 
 const char *tool_names[NUM_TOOLS] = {"pen", "eraser", "highlighter", "text", "selectregion", "selectrect", "vertspace", "hand", "image"};
 const char *color_names[COLOR_MAX] = {"black", "blue", "red", "green",

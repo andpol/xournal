@@ -102,6 +102,22 @@ and other contributors
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/blue.png</property>
   </object>
+  <object class="GtkImage" id="highlighter_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">pixmaps/highlighter.png</property>
+  </object>
+  <object class="GtkImage" id="lasso_select_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">pixmaps/lasso.png</property>
+  </object>
+  <object class="GtkListStore" id="layers">
+    <columns>
+      <!-- column-name layer -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkImage" id="default_pen_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -142,16 +158,6 @@ and other contributors
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/hand.png</property>
   </object>
-  <object class="GtkImage" id="highlighter_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">pixmaps/highlighter.png</property>
-  </object>
-  <object class="GtkImage" id="lasso_select_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">pixmaps/lasso.png</property>
-  </object>
   <object class="GtkImage" id="light_blue_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -176,6 +182,49 @@ and other contributors
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/orange.png</property>
+  </object>
+  <object class="GtkListStore" id="paper_measurment_units">
+    <columns>
+      <!-- column-name measurement_unit -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">cm</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">in</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">pixels</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">points</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="paper_sizes">
+    <columns>
+      <!-- column-name paper_size -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">A4</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">A4 (landscape)</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">US Letter</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">US Letter (landscape)</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Custom</col>
+      </row>
+    </data>
   </object>
   <object class="GtkDialog" id="papersizeDialog">
     <property name="visible">True</property>
@@ -253,6 +302,7 @@ and other contributors
               <object class="GtkComboBox" id="comboStdSizes">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="model">paper_sizes</property>
                 <signal name="changed" handler="on_comboStdSizes_changed" swapped="no"/>
               </object>
               <packing>
@@ -338,6 +388,7 @@ and other contributors
               <object class="GtkComboBox" id="comboUnit">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="model">paper_measurment_units</property>
                 <signal name="changed" handler="on_comboUnit_changed" swapped="no"/>
               </object>
               <packing>
@@ -416,6 +467,7 @@ and other contributors
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Xournal</property>
+    <property name="icon">pixmaps/xournal.png</property>
     <signal name="delete-event" handler="on_winMain_delete_event" swapped="no"/>
     <child>
       <object class="GtkVBox" id="vboxMain">
@@ -2836,6 +2888,7 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
+                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -2851,6 +2904,7 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
+                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3235,6 +3289,7 @@ and other contributors
               <object class="GtkComboBox" id="comboLayer">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="model">layers</property>
                 <signal name="changed" handler="on_comboLayer_changed" swapped="no"/>
               </object>
               <packing>
