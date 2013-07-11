@@ -919,137 +919,17 @@ on_editDelete_activate                 (GtkMenuItem     *menuitem,
   selection_delete();
 }
 
-//int compare_textitems (gconstpointer a, gconstpointer b)
-//{
-//	Item *i1 = (Item *)a;
-//	Item *i2 = (Item *)b;
-//
-//	if (i1->bbox.top < i2->bbox.top) return -1;
-//	if (i1->bbox.top > i2->bbox.top) return 1;
-//
-//	if (i1->bbox.left < i2->bbox.left) return -1;
-//	if (i1->bbox.left > i2->bbox.left) return 1;
-//
-//	return 0;
-//}
 
-/*
- * TODO: pages... current? all?
- * TODO: layers... only the one? all below?
- */
 void on_editFind_activate(GtkMenuItem *menuitem, gpointer user_data) {
-	printf("Find\n");
-
-	gchar *text;
-
-	if (ui.cur_item_type == ITEM_TEXT) {
-		text = get_selected_text();
-
-		if (text != NULL ) {
-			search_string = text;
-		}
+	if (update_search_string()) {
+		// TODO: Bring up find dialogue, but don't change selection
+	} else {
+		find_next();
 	}
-
-	on_editFindNext_activate(menuitem, user_data);
 }
 
 void on_editFindNext_activate(GtkMenuItem *menuitem, gpointer user_data) {
-	printf("Find Next\n");
-
-	struct Page *pg;
-	struct Layer *l;
-	struct Item *item;
-	GList *pagelist, *layerlist, *itemlist;
-	GtkTextBuffer *text_buffer;
-	GtkTextIter start, end, select_start, select_end;
-	int index;
-
-	if (search_string == NULL ) {
-		return;
-	}
-	printf("search string: %s\n", search_string);
-
-	if (match_inside(&start, &end)) {
-		text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget));
-		gtk_text_buffer_select_range(text_buffer, &start, &end);
-		return;
-	}
-
-	end_text();
-
-	//	for (pagelist = journal.pages; pagelist != NULL ; pagelist = pagelist->next) {
-	//		pg = (struct Page *) pagelist->data;
-	//
-	//		for (layerlist = pg->layers; layerlist != NULL ; layerlist = layerlist->next) {
-	//			l = (struct Layer *) layerlist->data;
-	//
-	//			for (itemlist = l->items; itemlist != NULL ; itemlist = itemlist->next) {
-	//				item = (struct Item *) itemlist->data;
-	//
-	//				if (item->type == ITEM_TEXT) {
-	//					if (strstr(item->text, text)) {
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-
-	// Only this page
-	pg = (struct Page *) (g_list_nth(journal.pages, ui.pageno)->data);
-	// Only this layer
-	l = (struct Layer *) (g_list_nth(pg->layers, ui.layerno)->data);
-
-	// Find starting place
-	if (ui.cur_item != NULL ) {
-		itemlist = g_list_find(l->items, ui.cur_item);
-
-		// Next item, or wrap around
-		if (itemlist->next != NULL ) {
-			itemlist = itemlist->next;
-		} else {
-			itemlist = g_list_first(l->items);
-		}
-	} else {
-		itemlist = g_list_first(l->items);
-	}
-
-	int i;
-	int list_len = g_list_length(l->items);
-
-	// Loop through all items once
-	for (i = 0; i < list_len; i++) {
-		item = (struct Item *) itemlist->data;
-
-		// Also ITEM_TEMP_TEXT?
-		// item->text != NULL?
-		if (item->type == ITEM_TEXT) {
-			printf("%s\n", item->text);
-
-			if (strstr(item->text, search_string)) {
-				printf("found!\n", item->text);
-
-				start_text_existing(item);
-
-				text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget));
-				gtk_text_buffer_get_start_iter(text_buffer, &start);
-				gtk_text_buffer_get_end_iter(text_buffer, &end);
-
-				gtk_text_iter_forward_search(&start, search_string, GTK_TEXT_SEARCH_TEXT_ONLY, &select_start, &select_end, &end);
-				gtk_text_buffer_select_range(text_buffer, &select_start, &select_end);
-
-				return;
-			}
-		}
-
-		// Next item, or wrap around
-		if (itemlist->next != NULL ) {
-			itemlist = itemlist->next;
-		} else {
-			itemlist = g_list_first(l->items);
-		}
-	}
-
-	printf("not found\n");
+	find_next(TRUE);
 }
 
 

@@ -698,6 +698,7 @@ gchar * get_selected_text() {
 	return text;
 }
 
+// Looks for the search string inside the current item
 gboolean match_inside(GtkTextIter *start, GtkTextIter *end) {
 	GtkTextBuffer *text_buffer;
     GtkTextIter dummy, cursor, limit;
@@ -721,6 +722,142 @@ gboolean match_inside(GtkTextIter *start, GtkTextIter *end) {
 	gtk_text_buffer_get_end_iter(text_buffer, &limit);
 
 	return gtk_text_iter_forward_search(&cursor, search_string, GTK_TEXT_SEARCH_TEXT_ONLY, start, end, &limit);
+}
+
+// Fetch the new search string from selected text, if any.
+// Returns TRUE if search_string updated, FALSE otherwise.
+gboolean update_search_string() {
+	gchar *text;
+
+	if (ui.cur_item_type == ITEM_TEXT) {
+		text = get_selected_text();
+		if (text != NULL ) {
+			search_string = text;
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+void select_on_match(struct Item *item) {
+	GtkTextBuffer *text_buffer;
+	GtkTextIter start, end, select_start, select_end;
+
+	// Start this text so we can make a selection
+	start_text_existing(item);
+
+	// Get TextIters for searching
+	text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget) );
+	gtk_text_buffer_get_start_iter(text_buffer, &start);
+	gtk_text_buffer_get_end_iter(text_buffer, &end);
+
+	// Find actual occurrence and set selection
+	gtk_text_iter_forward_search(&start, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
+			&select_start, &select_end, &end);
+	gtk_text_buffer_select_range(text_buffer, &select_start, &select_end);
+}
+
+// Find the next occurrence of search_string.
+// TODO: case insensitive
+// TODO: multi-layer
+void find_next() {
+	struct Page *pg;
+	struct Layer *l;
+	struct Item *item;
+	GList *pagelist, *layerlist, *itemlist;
+	GtkTextBuffer *text_buffer;
+	GtkTextIter start, end, select_start, select_end;
+	int first_page_offset = 0;
+
+	if (search_string == NULL ) {
+		return;
+	}
+	printf("finding next occurrence of: '%s'... ", search_string);
+
+	// Check for a match inside the current item, after the current selection or cursor position
+	if (match_inside(&start, &end)) {
+		printf("found! (inside)\n");
+
+		text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget) );
+		gtk_text_buffer_select_range(text_buffer, &start, &end);
+		return;
+	}
+
+	end_text();
+
+	// Start on the current page
+	pagelist = g_list_nth(journal.pages, ui.pageno);
+	pg = (struct Page *) (pagelist->data);
+	// TODO: Only the current layer
+	l = (struct Layer *) (g_list_nth(pg->layers, ui.layerno)->data);
+
+	if (ui.cur_item != NULL ) {
+		// Find starting place; item after current item, or first item if none
+		// TODO: Ensure layer is actually sorted
+		itemlist = g_list_find(l->items, ui.cur_item);
+		if (itemlist != NULL) {
+			itemlist = itemlist->next;
+		}
+	} else {
+		itemlist = NULL;
+	}
+
+	int i;
+	for (i = 0; i < l->nitems; i++) {
+		if (itemlist == NULL ) {
+			break;
+		}
+
+		item = (struct Item *) itemlist->data;
+		if (select_on_match(item)) {
+			printf("found!\n");
+			return;
+		}
+
+		itemlist = itemlist->next;
+	} // End items loop
+
+	first_page_offset = i;
+
+	// Loop through all other pages
+	int p;
+	for (p = 0; p < journal.npages; p++) {
+		// Next page, or wrap to first
+		if (pagelist->next != NULL ) {
+			pagelist = pagelist->next;
+		} else {
+			pagelist = g_list_first(journal.pages);
+		}
+
+		pg = (struct Page *) (pagelist->data);
+		// TODO: Only the current layer
+		l = (struct Layer *) (g_list_nth(pg->layers, ui.layerno)->data);
+		itemlist = g_list_first(l->items);
+
+		// Loop through all items once
+		int i;
+		int limit = (p == journal.pages - 1 ? first_page_offset : l->nitems);
+		for (i = 0; i < limit; i++) {
+			item = (struct Item *) itemlist->data;
+
+			// item->text != NULL?
+			if (item->type == ITEM_TEXT) {
+				// TODO: strstr adequate? Don't want to start every text item just to search
+				if (strstr(item->text, search_string)) {
+					// TODO: also scroll to item
+					do_switch_page((p + ui.pageno + 1) % journal.npages, TRUE, TRUE);
+					select_on_match(item);
+					printf("found!\n");
+					return;
+				}
+			}
+
+			itemlist = itemlist->next;
+		} // End items loop
+	}
+
+	printf("not found\n");
 }
 
 /* update the items in the canvas so they're of the right font size */
