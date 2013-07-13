@@ -510,6 +510,7 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <accelerator key="n" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_fileNew_activate" swapped="no"/>
                       </object>
                     </child>
@@ -530,6 +531,7 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_fileOpen_activate" swapped="no"/>
                       </object>
                     </child>
@@ -540,6 +542,7 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_fileSave_activate" swapped="no"/>
                       </object>
                     </child>
@@ -694,6 +697,7 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_fileQuit_activate" swapped="no"/>
                       </object>
                     </child>
@@ -745,6 +749,7 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <accelerator key="x" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_editCut_activate" swapped="no"/>
                       </object>
                     </child>
@@ -755,6 +760,7 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_editCopy_activate" swapped="no"/>
                       </object>
                     </child>
@@ -765,6 +771,7 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <accelerator key="v" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_editPaste_activate" swapped="no"/>
                       </object>
                     </child>
