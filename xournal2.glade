@@ -805,7 +805,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_Continuous</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <signal name="toggled" handler="on_viewContinuous_activate" swapped="no"/>
                       </object>
                     </child>
@@ -815,7 +814,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_One Page</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <property name="group">viewContinuous</property>
                         <signal name="toggled" handler="on_viewOnePage_activate" swapped="no"/>
                       </object>
@@ -1096,7 +1094,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_white paper</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="toggled" handler="on_papercolorWhite_activate" swapped="no"/>
                               </object>
                             </child>
@@ -1106,7 +1103,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_yellow paper</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">papercolorWhite</property>
                                 <signal name="toggled" handler="on_papercolorYellow_activate" swapped="no"/>
                               </object>
@@ -1117,7 +1113,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_pink paper</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">papercolorWhite</property>
                                 <signal name="toggled" handler="on_papercolorPink_activate" swapped="no"/>
                               </object>
@@ -1128,7 +1123,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_orange paper</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">papercolorWhite</property>
                                 <signal name="toggled" handler="on_papercolorOrange_activate" swapped="no"/>
                               </object>
@@ -1139,7 +1133,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_blue paper</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">papercolorWhite</property>
                                 <signal name="toggled" handler="on_papercolorBlue_activate" swapped="no"/>
                               </object>
@@ -1150,7 +1143,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_green paper</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">papercolorWhite</property>
                                 <signal name="toggled" handler="on_papercolorGreen_activate" swapped="no"/>
                               </object>
@@ -1169,7 +1161,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">papercolorWhite</property>
                               </object>
                             </child>
@@ -1192,7 +1183,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_plain</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="toggled" handler="on_paperstylePlain_activate" swapped="no"/>
                               </object>
                             </child>
@@ -1202,7 +1192,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_lined</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">paperstylePlain</property>
                                 <signal name="toggled" handler="on_paperstyleLined_activate" swapped="no"/>
                               </object>
@@ -1213,7 +1202,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_ruled</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">paperstylePlain</property>
                                 <signal name="toggled" handler="on_paperstyleRuled_activate" swapped="no"/>
                               </object>
@@ -1224,7 +1212,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_graph</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">paperstylePlain</property>
                                 <signal name="toggled" handler="on_paperstyleGraph_activate" swapped="no"/>
                               </object>
@@ -1234,7 +1221,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">paperstylePlain</property>
                               </object>
                             </child>
@@ -1319,7 +1305,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_Pen</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <accelerator key="P" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <signal name="toggled" handler="on_toolsPen_activate" swapped="no"/>
                       </object>
@@ -1330,7 +1315,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_Eraser</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <property name="group">toolsPen</property>
                         <accelerator key="E" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <signal name="toggled" handler="on_toolsEraser_activate" swapped="no"/>
@@ -1342,7 +1326,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_Highlighter</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <property name="group">toolsPen</property>
                         <accelerator key="H" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <signal name="toggled" handler="on_toolsHighlighter_activate" swapped="no"/>
@@ -1354,7 +1337,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_Text</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <property name="group">toolsPen</property>
                         <accelerator key="T" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <signal name="toggled" handler="on_toolsText_activate" swapped="no"/>
@@ -1366,7 +1348,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_Image</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <property name="group">toolsPen</property>
                         <accelerator key="I" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <signal name="toggled" handler="on_toolsImage_activate" swapped="no"/>
@@ -1410,7 +1391,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Select Re_gion</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <property name="group">toolsPen</property>
                         <accelerator key="G" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <signal name="toggled" handler="on_toolsSelectRegion_activate" swapped="no"/>
@@ -1422,7 +1402,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Select _Rectangle</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <property name="group">toolsPen</property>
                         <accelerator key="R" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <signal name="toggled" handler="on_toolsSelectRectangle_activate" swapped="no"/>
@@ -1434,7 +1413,6 @@ and other contributors
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_Vertical Space</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <property name="group">toolsPen</property>
                         <accelerator key="V" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <signal name="toggled" handler="on_toolsVerticalSpace_activate" swapped="no"/>
@@ -1473,7 +1451,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">blac_k</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="toggled" handler="on_colorBlack_activate" swapped="no"/>
                               </object>
                             </child>
@@ -1483,7 +1460,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_blue</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorBlue_activate" swapped="no"/>
                               </object>
@@ -1494,7 +1470,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_red</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorRed_activate" swapped="no"/>
                               </object>
@@ -1505,7 +1480,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_green</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorGreen_activate" swapped="no"/>
                               </object>
@@ -1516,7 +1490,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">gr_ay</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorGray_activate" swapped="no"/>
                               </object>
@@ -1533,7 +1506,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">light bl_ue</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorLightBlue_activate" swapped="no"/>
                               </object>
@@ -1544,7 +1516,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">light gr_een</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorLightGreen_activate" swapped="no"/>
                               </object>
@@ -1555,7 +1526,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_magenta</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorMagenta_activate" swapped="no"/>
                               </object>
@@ -1566,7 +1536,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_orange</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorOrange_activate" swapped="no"/>
                               </object>
@@ -1577,7 +1546,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_yellow</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorYellow_activate" swapped="no"/>
                               </object>
@@ -1588,7 +1556,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_white</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                                 <signal name="toggled" handler="on_colorWhite_activate" swapped="no"/>
                               </object>
@@ -1607,7 +1574,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">colorBlack</property>
                               </object>
                             </child>
@@ -1630,7 +1596,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_very fine</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="toggled" handler="on_penthicknessVeryFine_activate" swapped="no"/>
                               </object>
                             </child>
@@ -1640,7 +1605,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_fine</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">penthicknessVeryFine</property>
                                 <signal name="toggled" handler="on_penthicknessFine_activate" swapped="no"/>
                               </object>
@@ -1651,7 +1615,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_medium</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">penthicknessVeryFine</property>
                                 <signal name="toggled" handler="on_penthicknessMedium_activate" swapped="no"/>
                               </object>
@@ -1662,7 +1625,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_thick</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">penthicknessVeryFine</property>
                                 <signal name="toggled" handler="on_penthicknessThick_activate" swapped="no"/>
                               </object>
@@ -1673,7 +1635,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">ver_y thick</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">penthicknessVeryFine</property>
                                 <signal name="toggled" handler="on_penthicknessVeryThick_activate" swapped="no"/>
                               </object>
@@ -1697,7 +1658,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_fine</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="toggled" handler="on_eraserFine_activate" swapped="no"/>
                               </object>
                             </child>
@@ -1707,7 +1667,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_medium</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">eraserFine</property>
                                 <signal name="toggled" handler="on_eraserMedium_activate" swapped="no"/>
                               </object>
@@ -1718,7 +1677,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_thick</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">eraserFine</property>
                                 <signal name="toggled" handler="on_eraserThick_activate" swapped="no"/>
                               </object>
@@ -1735,7 +1693,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_standard</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="toggled" handler="on_eraserStandard_activate" swapped="no"/>
                               </object>
                             </child>
@@ -1745,7 +1702,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_whiteout</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">eraserStandard</property>
                                 <signal name="toggled" handler="on_eraserWhiteout_activate" swapped="no"/>
                               </object>
@@ -1756,7 +1712,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_delete strokes</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">eraserStandard</property>
                                 <signal name="toggled" handler="on_eraserDeleteStrokes_activate" swapped="no"/>
                               </object>
@@ -1780,7 +1735,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_fine</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="toggled" handler="on_highlighterFine_activate" swapped="no"/>
                               </object>
                             </child>
@@ -1790,7 +1744,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_medium</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">highlighterFine</property>
                                 <signal name="toggled" handler="on_highlighterMedium_activate" swapped="no"/>
                               </object>
@@ -1801,7 +1754,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_thick</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">highlighterFine</property>
                                 <signal name="toggled" handler="on_highlighterThick_activate" swapped="no"/>
                               </object>
@@ -1927,7 +1879,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Pen</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="activate" handler="on_button2Pen_activate" swapped="no"/>
                               </object>
                             </child>
@@ -1937,7 +1888,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Eraser</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button2Pen</property>
                                 <signal name="activate" handler="on_button2Eraser_activate" swapped="no"/>
                               </object>
@@ -1948,7 +1898,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Highlighter</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button2Pen</property>
                                 <signal name="activate" handler="on_button2Highlighter_activate" swapped="no"/>
                               </object>
@@ -1959,7 +1908,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Text</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button2Pen</property>
                                 <signal name="activate" handler="on_button2Text_activate" swapped="no"/>
                               </object>
@@ -1970,7 +1918,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Image</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button2Pen</property>
                                 <signal name="activate" handler="on_button2Image_activate" swapped="no"/>
                               </object>
@@ -1981,7 +1928,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Select Re_gion</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button2Pen</property>
                                 <signal name="activate" handler="on_button2SelectRegion_activate" swapped="no"/>
                               </object>
@@ -1992,7 +1938,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Select _Rectangle</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button2Pen</property>
                                 <signal name="activate" handler="on_button2SelectRectangle_activate" swapped="no"/>
                               </object>
@@ -2003,7 +1948,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Vertical Space</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button2Pen</property>
                                 <signal name="activate" handler="on_button2VerticalSpace_activate" swapped="no"/>
                               </object>
@@ -2030,7 +1974,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Link to Primary Brush</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="activate" handler="on_button2LinkBrush_activate" swapped="no"/>
                               </object>
                             </child>
@@ -2040,7 +1983,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Copy of Current Brush</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button2LinkBrush</property>
                                 <signal name="activate" handler="on_button2CopyBrush_activate" swapped="no"/>
                               </object>
@@ -2050,7 +1992,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button2LinkBrush</property>
                               </object>
                             </child>
@@ -2073,7 +2014,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Pen</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="activate" handler="on_button3Pen_activate" swapped="no"/>
                               </object>
                             </child>
@@ -2083,7 +2023,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Eraser</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button3Pen</property>
                                 <signal name="activate" handler="on_button3Eraser_activate" swapped="no"/>
                               </object>
@@ -2094,7 +2033,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Highlighter</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button3Pen</property>
                                 <signal name="activate" handler="on_button3Highlighter_activate" swapped="no"/>
                               </object>
@@ -2105,7 +2043,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Text</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button3Pen</property>
                                 <signal name="activate" handler="on_button3Text_activate" swapped="no"/>
                               </object>
@@ -2116,7 +2053,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Image</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button3Pen</property>
                                 <signal name="activate" handler="on_button3Image_activate" swapped="no"/>
                               </object>
@@ -2127,7 +2063,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Select Re_gion</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button3Pen</property>
                                 <signal name="activate" handler="on_button3SelectRegion_activate" swapped="no"/>
                               </object>
@@ -2138,7 +2073,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Select _Rectangle</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button3Pen</property>
                                 <signal name="activate" handler="on_button3SelectRectangle_activate" swapped="no"/>
                               </object>
@@ -2149,7 +2083,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Vertical Space</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button3Pen</property>
                                 <signal name="activate" handler="on_button3VerticalSpace_activate" swapped="no"/>
                               </object>
@@ -2176,7 +2109,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Link to Primary Brush</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <signal name="activate" handler="on_button3LinkBrush_activate" swapped="no"/>
                               </object>
                             </child>
@@ -2186,7 +2118,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">_Copy of Current Brush</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button3LinkBrush</property>
                                 <signal name="activate" handler="on_button3CopyBrush_activate" swapped="no"/>
                               </object>
@@ -2196,7 +2127,6 @@ and other contributors
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
-                                <property name="active">True</property>
                                 <property name="group">button3LinkBrush</property>
                               </object>
                             </child>
