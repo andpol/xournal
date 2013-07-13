@@ -318,8 +318,7 @@ void init_stuff (int argc, char *argv[])
 int
 main (int argc, char *argv[])
 {
-  gchar *path, *path1, *path2;
-  
+
 #ifdef ENABLE_NLS
   bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -336,9 +335,8 @@ main (int argc, char *argv[])
     return 1;
   }
   winMain = (GtkWidget *)gtk_builder_get_object (builder, "winMain");
-  //gtk_builder_connect_signals (builder, NULL);
+  gtk_builder_connect_signals (builder, NULL);
   init_stuff (argc, argv);
-  //g_object_unref(G_OBJECT(builder));
   
   gtk_main ();
   

@@ -23,7 +23,8 @@ xournal_SOURCES = \
 	xo-image.c xo-image.h \
 	xo-print.c xo-print.h \
 	xo-callbacks.c xo-callbacks.h \
-	xo-shapes.c xo-shapes.h
+	xo-shapes.c xo-shapes.h \
+	intl.h
 
 if WIN32
   xournal_LDFLAGS = -mwindows

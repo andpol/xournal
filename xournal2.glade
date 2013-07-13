@@ -4,10 +4,11 @@
   <!-- interface-naming-policy toplevel-contextual -->
   <!-- interface-local-resource-path pixmaps -->
   <object class="GtkDialog" id="aboutDialog">
-    <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">About Xournal</property>
     <property name="resizable">False</property>
+    <property name="modal">True</property>
+    <property name="window_position">center</property>
     <property name="type_hint">dialog</property>
     <property name="has_separator">True</property>
     <child internal-child="vbox">
@@ -102,22 +103,6 @@ and other contributors
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/blue.png</property>
   </object>
-  <object class="GtkImage" id="highlighter_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">pixmaps/highlighter.png</property>
-  </object>
-  <object class="GtkImage" id="lasso_select_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">pixmaps/lasso.png</property>
-  </object>
-  <object class="GtkListStore" id="layers">
-    <columns>
-      <!-- column-name layer -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkImage" id="default_pen_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -157,6 +142,22 @@ and other contributors
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/hand.png</property>
+  </object>
+  <object class="GtkImage" id="highlighter_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">pixmaps/highlighter.png</property>
+  </object>
+  <object class="GtkImage" id="lasso_select_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">pixmaps/lasso.png</property>
+  </object>
+  <object class="GtkListStore" id="layers">
+    <columns>
+      <!-- column-name layer -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkImage" id="light_blue_icon">
     <property name="visible">True</property>
@@ -227,11 +228,11 @@ and other contributors
     </data>
   </object>
   <object class="GtkDialog" id="papersizeDialog">
-    <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Set Paper Size</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
+    <property name="window_position">mouse</property>
     <property name="type_hint">dialog</property>
     <property name="has_separator">True</property>
     <child internal-child="vbox">
@@ -304,6 +305,12 @@ and other contributors
                 <property name="can_focus">False</property>
                 <property name="model">paper_sizes</property>
                 <signal name="changed" handler="on_comboStdSizes_changed" swapped="no"/>
+                <child>
+                  <object class="GtkCellRendererText" id="comboStdSizes_cellrenderertext"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -390,6 +397,12 @@ and other contributors
                 <property name="can_focus">False</property>
                 <property name="model">paper_measurment_units</property>
                 <signal name="changed" handler="on_comboUnit_changed" swapped="no"/>
+                <child>
+                  <object class="GtkCellRendererText" id="comboUnit_cellrenderertext"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -464,7 +477,6 @@ and other contributors
     <property name="pixbuf">pixmaps/yellow.png</property>
   </object>
   <object class="GtkWindow" id="winMain">
-    <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Xournal</property>
     <property name="icon">pixmaps/xournal.png</property>
@@ -3291,6 +3303,12 @@ and other contributors
                 <property name="can_focus">False</property>
                 <property name="model">layers</property>
                 <signal name="changed" handler="on_comboLayer_changed" swapped="no"/>
+                <child>
+                  <object class="GtkCellRendererText" id="comboLayer_cellrenderertext"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -3321,11 +3339,18 @@ and other contributors
       </object>
     </child>
   </object>
+  <object class="GtkAdjustment" id="zoom_adjustment">
+    <property name="lower">10</property>
+    <property name="upper">1500</property>
+    <property name="value">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
+  </object>
   <object class="GtkDialog" id="zoomDialog">
-    <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Set Zoom</property>
     <property name="modal">True</property>
+    <property name="window_position">mouse</property>
     <property name="type_hint">dialog</property>
     <property name="has_separator">True</property>
     <child internal-child="vbox">
@@ -3425,6 +3450,7 @@ and other contributors
                     <property name="secondary_icon_activatable">False</property>
                     <property name="primary_icon_sensitive">True</property>
                     <property name="secondary_icon_sensitive">True</property>
+                    <property name="adjustment">zoom_adjustment</property>
                     <property name="climb_rate">1</property>
                     <property name="numeric">True</property>
                     <signal name="value-changed" handler="on_spinZoom_value_changed" swapped="no"/>
