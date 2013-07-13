@@ -330,9 +330,13 @@ main (int argc, char *argv[])
 
   builder = gtk_builder_new();
   GError *err = NULL;
+  // Search for the glade file in the CWD, then in the installed data directory
   if(!gtk_builder_add_from_file(builder, "xournal.glade", &err)) {
-    fprintf(stderr, "ERROR: %s", err->message);
-    return 1;
+    err = NULL;
+	if(!gtk_builder_add_from_file(builder, PACKAGE_DATA_DIR "/" PACKAGE "/xournal.glade", &err)) {
+      fprintf(stderr, "ERROR: %s\n", err->message);
+      return 1;
+	}
   }
   winMain = (GtkWidget *)gtk_builder_get_object (builder, "winMain");
   gtk_builder_connect_signals (builder, NULL);
