@@ -330,7 +330,7 @@ main (int argc, char *argv[])
 
   builder = gtk_builder_new();
   GError *err = NULL;
-  if(!gtk_builder_add_from_file(builder, "xournal2.glade", &err)) {
+  if(!gtk_builder_add_from_file(builder, "xournal.glade", &err)) {
     fprintf(stderr, "ERROR: %s", err->message);
     return 1;
   }
