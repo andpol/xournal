@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk+" version="2.24"/>
-  <!-- interface-naming-policy toplevel-contextual -->
+  <!-- interface-naming-policy project-wide -->
   <!-- interface-local-resource-path pixmaps -->
   <object class="GtkDialog" id="aboutDialog">
     <property name="can_focus">False</property>
@@ -57,7 +57,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="labelTitle">
+          <object class="GtkLabel" id="about_labelTitle">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">Xournal</property>
@@ -71,7 +71,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="labelInfo">
+          <object class="GtkLabel" id="about_labelInfo">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="xpad">20</property>
@@ -183,6 +183,11 @@ and other contributors
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/orange.png</property>
+  </object>
+  <object class="GtkAdjustment" id="page_adjustment">
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
   </object>
   <object class="GtkListStore" id="paper_measurment_units">
     <columns>
@@ -300,7 +305,7 @@ and other contributors
               </packing>
             </child>
             <child>
-              <object class="GtkComboBox" id="comboStdSizes">
+              <object class="GtkComboBox" id="papersize_comboStdSizes">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="model">paper_sizes</property>
@@ -345,7 +350,7 @@ and other contributors
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="entryWidth">
+              <object class="GtkEntry" id="papersize_entryWidth">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="width_chars">5</property>
@@ -375,7 +380,7 @@ and other contributors
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="entryHeight">
+              <object class="GtkEntry" id="papersize_entryHeight">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="width_chars">5</property>
@@ -392,7 +397,7 @@ and other contributors
               </packing>
             </child>
             <child>
-              <object class="GtkComboBox" id="comboUnit">
+              <object class="GtkComboBox" id="papersize_comboUnit">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="model">paper_measurment_units</property>
@@ -3250,6 +3255,7 @@ and other contributors
                 <property name="secondary_icon_activatable">False</property>
                 <property name="primary_icon_sensitive">True</property>
                 <property name="secondary_icon_sensitive">True</property>
+                <property name="adjustment">page_adjustment</property>
                 <property name="climb_rate">1</property>
                 <property name="snap_to_ticks">True</property>
                 <property name="numeric">True</property>

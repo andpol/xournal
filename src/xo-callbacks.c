@@ -1302,12 +1302,11 @@ on_journalPaperSize_activate           (GtkMenuItem     *menuitem,
   papersize_width_valid = papersize_height_valid = TRUE;
       
   gtk_widget_show(papersize_dialog);
-  on_comboStdSizes_changed(GTK_COMBO_BOX(g_object_get_data(
-       G_OBJECT(papersize_dialog), "comboStdSizes")), NULL);
+  on_comboStdSizes_changed(GTK_COMBO_BOX(GET_COMPONENT("papersize_comboStdSizes")), NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(papersize_dialog), GTK_RESPONSE_OK);
        
   response = gtk_dialog_run(GTK_DIALOG(papersize_dialog));
-  gtk_widget_destroy(papersize_dialog);
+  gtk_widget_hide(papersize_dialog);
   if (response != GTK_RESPONSE_OK) return;
 
   pg = ui.cur_page;
@@ -2332,11 +2331,11 @@ on_helpAbout_activate                  (GtkMenuItem     *menuitem,
   
   end_text();
   aboutDialog = GTK_WIDGET(GET_COMPONENT("aboutDialog"));
-  labelTitle = GTK_LABEL(g_object_get_data(G_OBJECT(aboutDialog), "labelTitle"));
+  labelTitle = GTK_LABEL(GET_COMPONENT("about_labelTitle"));
   gtk_label_set_markup(labelTitle, 
     "<span size=\"xx-large\" weight=\"bold\">Xournal " VERSION_STRING "</span>");
   gtk_dialog_run (GTK_DIALOG(aboutDialog));
-  gtk_widget_destroy(aboutDialog);
+  gtk_widget_hide(aboutDialog);
 }
 
 
@@ -3076,14 +3075,14 @@ on_comboStdSizes_changed               (GtkComboBox     *combobox,
     papersize_width = std_widths[val];
     papersize_height = std_heights[val];
   }
-  comboUnit = GTK_COMBO_BOX(g_object_get_data(G_OBJECT(papersize_dialog), "comboUnit"));
+  comboUnit = GTK_COMBO_BOX(GET_COMPONENT("papersize_comboUnit"));
   gtk_combo_box_set_active(comboUnit, papersize_unit);
-  entry = GTK_ENTRY(g_object_get_data(G_OBJECT(papersize_dialog), "entryWidth"));
+  entry = GTK_ENTRY(GET_COMPONENT("papersize_entryWidth"));
   g_snprintf(text, 20, "%.2f", papersize_width/unit_sizes[papersize_unit]);
   if (g_str_has_suffix(text, ".00")) 
     g_snprintf(text, 20, "%d", (int) (papersize_width/unit_sizes[papersize_unit]));
   gtk_entry_set_text(entry, text);
-  entry = GTK_ENTRY(g_object_get_data(G_OBJECT(papersize_dialog), "entryHeight"));
+  entry = GTK_ENTRY(GET_COMPONENT("papersize_entryHeight"));
   g_snprintf(text, 20, "%.2f", papersize_height/unit_sizes[papersize_unit]);
   if (g_str_has_suffix(text, ".00")) 
     g_snprintf(text, 20, "%d", (int) (papersize_height/unit_sizes[papersize_unit]));
@@ -3108,7 +3107,7 @@ on_entryWidth_changed                  (GtkEditable     *editable,
   if (fabs(val - papersize_width) < 0.1) return; // no change
   papersize_std = STD_SIZE_CUSTOM;
   papersize_width = val;
-  comboStdSizes = GTK_COMBO_BOX(g_object_get_data(G_OBJECT(papersize_dialog), "comboStdSizes"));
+  comboStdSizes = GTK_COMBO_BOX(GET_COMPONENT("papersize_comboStdSizes"));
   gtk_combo_box_set_active(comboStdSizes, papersize_std);
 }
 
@@ -3130,7 +3129,7 @@ on_entryHeight_changed                 (GtkEditable     *editable,
   if (fabs(val - papersize_height) < 0.1) return; // no change
   papersize_std = STD_SIZE_CUSTOM;
   papersize_height = val;
-  comboStdSizes = GTK_COMBO_BOX(g_object_get_data(G_OBJECT(papersize_dialog), "comboStdSizes"));
+  comboStdSizes = GTK_COMBO_BOX(GET_COMPONENT("papersize_comboStdSizes"));
   gtk_combo_box_set_active(comboStdSizes, papersize_std);
 }
 
@@ -3146,7 +3145,7 @@ on_comboUnit_changed                   (GtkComboBox     *combobox,
   val = gtk_combo_box_get_active(combobox);
   if (val == -1 || val == papersize_unit) return;
   papersize_unit = val;
-  entry = GTK_ENTRY(g_object_get_data(G_OBJECT(papersize_dialog), "entryWidth"));
+  entry = GTK_ENTRY(GET_COMPONENT("papersize_entryWidth"));
   if (papersize_width_valid) {
     g_snprintf(text, 20, "%.2f", papersize_width/unit_sizes[papersize_unit]);
     if (g_str_has_suffix(text, ".00")) 
@@ -3154,7 +3153,7 @@ on_comboUnit_changed                   (GtkComboBox     *combobox,
   } else *text = 0;
   gtk_entry_set_text(entry, text);
   if (papersize_height_valid) {
-    entry = GTK_ENTRY(g_object_get_data(G_OBJECT(papersize_dialog), "entryHeight"));
+    entry = GTK_ENTRY(GET_COMPONENT("papersize_entryHeight"));
     g_snprintf(text, 20, "%.2f", papersize_height/unit_sizes[papersize_unit]);
     if (g_str_has_suffix(text, ".00")) 
       g_snprintf(text, 20, "%d", (int) (papersize_height/unit_sizes[papersize_unit]));
@@ -3436,22 +3435,18 @@ on_viewSetZoom_activate                (GtkMenuItem     *menuitem,
   zoom_dialog = GTK_WIDGET(GET_COMPONENT("zoomDialog"));
 
   zoom_percent = 100*ui.zoom / DEFAULT_ZOOM;
-  spinZoom = GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(zoom_dialog), "spinZoom"));
+  spinZoom = GTK_SPIN_BUTTON(GET_COMPONENT("spinZoom"));
   gtk_spin_button_set_increments(spinZoom, ui.zoom_step_increment, 5*ui.zoom_step_increment);
   gtk_spin_button_set_value(spinZoom, zoom_percent);
   test_w = 100*(GTK_WIDGET(canvas))->allocation.width/ui.cur_page->width/DEFAULT_ZOOM;
   test_h = 100*(GTK_WIDGET(canvas))->allocation.height/ui.cur_page->height/DEFAULT_ZOOM;
   if (zoom_percent > 99.9 && zoom_percent < 100.1) 
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(
-           G_OBJECT(zoom_dialog), "radioZoom100")), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GET_COMPONENT("radioZoom100")), TRUE);
   else if (zoom_percent > test_w-0.1 && zoom_percent < test_w+0.1)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(
-           G_OBJECT(zoom_dialog), "radioZoomWidth")), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GET_COMPONENT("radioZoomWidth")), TRUE);
   else if (zoom_percent > test_h-0.1 && zoom_percent < test_h+0.1)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(
-           G_OBJECT(zoom_dialog), "radioZoomHeight")), TRUE);
-  else gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(
-           G_OBJECT(zoom_dialog), "radioZoom")), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GET_COMPONENT("radioZoomHeight")), TRUE);
+  else gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GET_COMPONENT("radioZoom")), TRUE);
   gtk_widget_show(zoom_dialog);
   
   do {
@@ -3465,7 +3460,7 @@ on_viewSetZoom_activate                (GtkMenuItem     *menuitem,
     }
   } while (response == GTK_RESPONSE_APPLY);
   
-  gtk_widget_destroy(zoom_dialog);
+  gtk_widget_hide(zoom_dialog);
 }
 
 
@@ -3475,14 +3470,12 @@ on_spinZoom_value_changed              (GtkSpinButton   *spinbutton,
 {
   double val;
 
-  val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(
-             G_OBJECT(zoom_dialog), "spinZoom")));
+  val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(GET_COMPONENT("spinZoom")));
   if (val<1) return;
   if (val<10) val=10.;
   if (val>1500) val=1500.;
   if (val<zoom_percent-1 || val>zoom_percent+1)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(
-           G_OBJECT(zoom_dialog), "radioZoom")), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GET_COMPONENT("radioZoom")), TRUE);
   zoom_percent = val;
 }
 
@@ -3501,8 +3494,7 @@ on_radioZoom100_toggled                (GtkToggleButton *togglebutton,
 {
   if (!gtk_toggle_button_get_active(togglebutton)) return;
   zoom_percent = 100.;
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(
-        G_OBJECT(zoom_dialog), "spinZoom")), zoom_percent);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(GET_COMPONENT("spinZoom")), zoom_percent);
 }
 
 
@@ -3512,8 +3504,7 @@ on_radioZoomWidth_toggled              (GtkToggleButton *togglebutton,
 {
   if (!gtk_toggle_button_get_active(togglebutton)) return;
   zoom_percent = 100*(GTK_WIDGET(canvas))->allocation.width/ui.cur_page->width/DEFAULT_ZOOM;
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(
-        G_OBJECT(zoom_dialog), "spinZoom")), zoom_percent);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(GET_COMPONENT("spinZoom")), zoom_percent);
 }
 
 
@@ -3523,8 +3514,7 @@ on_radioZoomHeight_toggled             (GtkToggleButton *togglebutton,
 {
   if (!gtk_toggle_button_get_active(togglebutton)) return;
   zoom_percent = 100*(GTK_WIDGET(canvas))->allocation.height/ui.cur_page->height/DEFAULT_ZOOM;
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(
-        G_OBJECT(zoom_dialog), "spinZoom")), zoom_percent);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(GET_COMPONENT("spinZoom")), zoom_percent);
 }
 
 
