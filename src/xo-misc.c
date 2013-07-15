@@ -24,8 +24,6 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "xournal.h"
-//#include "xo-interface.h"
-//#include "xo-support.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"

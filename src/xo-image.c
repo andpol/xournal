@@ -22,7 +22,6 @@
 #include <gtk/gtk.h>
 
 #include "xournal.h"
-//#include "xo-support.h"
 #include "xo-image.h"
 #include "intl.h"
 
