@@ -696,6 +696,22 @@ gchar * get_selected_text() {
 	return text;
 }
 
+// Fetch the new search string from selected text, if any.
+// Returns TRUE if search_string updated, FALSE otherwise.
+gboolean update_search_string() {
+	gchar *text;
+
+	if (ui.cur_item_type == ITEM_TEXT) {
+		text = get_selected_text();
+		if (text != NULL ) {
+			search_string = text;
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 // Looks for the search string inside the current item.
 // Searches backwards from cursor or selection start if backwards is TRUE,
 // else searches forward from cursor or selection end.
@@ -733,25 +749,16 @@ gboolean match_inside(gboolean backwards, GtkTextIter *start, GtkTextIter *end) 
 	}
 }
 
-// Fetch the new search string from selected text, if any.
-// Returns TRUE if search_string updated, FALSE otherwise.
-gboolean update_search_string() {
-	gchar *text;
-
-	if (ui.cur_item_type == ITEM_TEXT) {
-		text = get_selected_text();
-		if (text != NULL ) {
-			search_string = text;
-			return TRUE;
-		}
-	}
-
-	return FALSE;
-}
-
+// Given a text item that contains the search string, select
+// the found match.
 void select_on_match(struct Item *item, gboolean backwards) {
 	GtkTextBuffer *text_buffer;
 	GtkTextIter start, end, select_start, select_end;
+	gboolean search_result;
+
+	if (item->type != ITEM_TEXT) {
+		return;
+	}
 
 	// Start this text so we can make a selection
 	start_text_existing(item);
@@ -763,14 +770,45 @@ void select_on_match(struct Item *item, gboolean backwards) {
 
 	// Find actual occurrence and set selection
 	if (backwards) {
-		gtk_text_iter_backward_search(&end, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
+		search_result = gtk_text_iter_backward_search(&end, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
 					&select_start, &select_end, &start);
 	} else {
-		gtk_text_iter_forward_search(&start, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
+		search_result = gtk_text_iter_forward_search(&start, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
 					&select_start, &select_end, &end);
 	}
 
+	// Couldn't find string
+	if (!search_result) {
+		return;
+	}
+
 	gtk_text_buffer_select_range(text_buffer, &select_start, &select_end);
+}
+
+gboolean do_find_match(int page_offset, struct Item *item, gboolean backwards) {
+	// TODO: strstr adequate? Don't want to start every text item just to search
+	if (item->type == ITEM_TEXT && strstr(item->text, search_string)) {
+		// TODO: also scroll to item
+		int new_page_no;
+		if (backwards) {
+			new_page_no = (ui.pageno - page_offset) % journal.npages;
+			while (new_page_no < 0) {
+				new_page_no += journal.npages;
+			}
+		} else {
+			new_page_no = (page_offset + ui.pageno) % journal.npages;
+		}
+
+		if (new_page_no != ui.pageno) {
+			do_switch_page(new_page_no, TRUE, TRUE);
+			// TODO: scroll to item
+		}
+
+		select_on_match(item, backwards);
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 // Find the next occurrence of search_string.
@@ -779,13 +817,14 @@ void select_on_match(struct Item *item, gboolean backwards) {
 // TODO: Multi-layer?
 // TODO: Ensure layers are actually sorted
 void find_next(gboolean backwards) {
+	int i;
 	struct Page *pg;
 	struct Layer *l;
 	struct Item *item;
 	GList *pagelist, *itemlist;
 	GtkTextBuffer *text_buffer;
 	GtkTextIter start, end, select_start, select_end;
-	int first_page_offset = 0;
+	int first_page_offset = 0, limit;
 
 	// Nothing to search for
 	if (search_string == NULL ) {
@@ -818,28 +857,21 @@ void find_next(gboolean backwards) {
 	}
 
 	// Search the current page to the end (or start, if searching backwards)
-	int i;
-	for (i = 0; i < l->nitems; i++) {
-		if (itemlist == NULL ) {
-			break;
-		}
-
+	for (i = 0; i < l->nitems && itemlist != NULL; i++) {
 		item = (struct Item *) itemlist->data;
-		// TODO: strstr adequate? Don't want to start every text item just to search
-		if (strstr(item->text, search_string)) {
-			// TODO: also scroll to item
-			select_on_match(item, backwards);
+		if (do_find_match(0, item, backwards)) {
 			return;
 		}
 
 		itemlist = (backwards ? itemlist->prev : itemlist->next);
-	} // End items loop
+	}
 
+	// Save how far we got in the current page
 	first_page_offset = i;
 
 	// Loop through all other pages
-	int p;
-	for (p = 1; p <= journal.npages; p++) {
+	int page_offset;
+	for (page_offset = 1; page_offset <= journal.npages; page_offset++) {
 		pagelist = (backwards ? pagelist->prev : pagelist->next);
 		if (pagelist == NULL ) {
 			// Wrap last page if searching backwards, else first page
@@ -850,37 +882,21 @@ void find_next(gboolean backwards) {
 		l = (struct Layer *) (g_list_nth(pg->layers, ui.layerno)->data);
 		itemlist = (backwards ? g_list_last(l->items) : g_list_first(l->items));
 
-		// Only go partway through the page if we searched the later half earlier
-		int limit = (p == journal.npages ? first_page_offset : l->nitems);
+		limit = l->nitems;
+		if (page_offset == journal.npages) {
+			// Only go partway through the page since we searched half earlier
+			limit -= first_page_offset;
+		}
 
-		int i;
 		for (i = 0; i < limit; i++) {
 			item = (struct Item *) itemlist->data;
-
-			if (item->type == ITEM_TEXT) {
-				// TODO: strstr adequate? Don't want to start every text item just to search
-				if (strstr(item->text, search_string)) {
-					// TODO: also scroll to item
-					if (backwards) {
-						int new_page_no = (ui.pageno - p) % journal.npages;
-						while (new_page_no < 0) {
-							new_page_no += journal.npages;
-						}
-						do_switch_page(new_page_no, TRUE, TRUE);
-					} else {
-						do_switch_page((p + ui.pageno) % journal.npages, TRUE, TRUE);
-					}
-
-					select_on_match(item, backwards);
-					return;
-				}
+			if (do_find_match(page_offset, item, backwards)) {
+				return;
 			}
 
 			itemlist = (backwards ? itemlist->prev : itemlist->next);
-		} // End items loop
+		}
 	}
-
-	printf("not found\n");
 }
 
 /* update the items in the canvas so they're of the right font size */
