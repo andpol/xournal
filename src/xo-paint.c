@@ -696,30 +696,41 @@ gchar * get_selected_text() {
 	return text;
 }
 
-// Looks for the search string inside the current item
-gboolean match_inside(GtkTextIter *start, GtkTextIter *end) {
+// Looks for the search string inside the current item.
+// Searches backwards from cursor or selection start if backwards is TRUE,
+// else searches forward from cursor or selection end.
+gboolean match_inside(gboolean backwards, GtkTextIter *start, GtkTextIter *end) {
 	GtkTextBuffer *text_buffer;
     GtkTextIter dummy, cursor, limit;
     GtkTextMark *insert;
 
 	if (ui.cur_item_type != ITEM_TEXT) {
-		printf("not using text (%d)\n", ui.cur_item_type);
 		return FALSE;
 	}
 
 	text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget) );
 
-	// If has selection, search from end of selection; else from cursor
+	// If has selection, search from selection bound; else from cursor
 	if (gtk_text_buffer_get_has_selection(text_buffer)) {
-		gtk_text_buffer_get_selection_bounds(text_buffer, &dummy, &cursor);
+		if (backwards) {
+			gtk_text_buffer_get_selection_bounds(text_buffer, &cursor, &dummy);
+			gtk_text_iter_forward_cursor_position(&cursor);
+		} else {
+			gtk_text_buffer_get_selection_bounds(text_buffer, &dummy, &cursor);
+		}
 	} else {
 		insert = gtk_text_buffer_get_insert(text_buffer);
 		gtk_text_buffer_get_iter_at_mark(text_buffer, &cursor, insert);
 	}
 
-	gtk_text_buffer_get_end_iter(text_buffer, &limit);
-
-	return gtk_text_iter_forward_search(&cursor, search_string, GTK_TEXT_SEARCH_TEXT_ONLY, start, end, &limit);
+	if (backwards) {
+		gtk_text_buffer_get_start_iter(text_buffer, &limit);
+		return gtk_text_iter_backward_search(&cursor, search_string,
+				GTK_TEXT_SEARCH_TEXT_ONLY, start, end, &limit);
+	} else {
+		return gtk_text_iter_forward_search(&cursor, search_string,
+				GTK_TEXT_SEARCH_TEXT_ONLY, start, end, NULL);
+	}
 }
 
 // Fetch the new search string from selected text, if any.
@@ -738,7 +749,7 @@ gboolean update_search_string() {
 	return FALSE;
 }
 
-void select_on_match(struct Item *item) {
+void select_on_match(struct Item *item, gboolean backwards) {
 	GtkTextBuffer *text_buffer;
 	GtkTextIter start, end, select_start, select_end;
 
@@ -751,32 +762,38 @@ void select_on_match(struct Item *item) {
 	gtk_text_buffer_get_end_iter(text_buffer, &end);
 
 	// Find actual occurrence and set selection
-	gtk_text_iter_forward_search(&start, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
-			&select_start, &select_end, &end);
+	if (backwards) {
+		gtk_text_iter_backward_search(&end, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
+					&select_start, &select_end, &start);
+	} else {
+		gtk_text_iter_forward_search(&start, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
+					&select_start, &select_end, &end);
+	}
+
 	gtk_text_buffer_select_range(text_buffer, &select_start, &select_end);
 }
 
 // Find the next occurrence of search_string.
-// TODO: case insensitive
-// TODO: multi-layer
-void find_next() {
+// Searches backwards if backwards is TRUE, otherwise searches forwards.
+// TODO: Case insensitive?
+// TODO: Multi-layer?
+// TODO: Ensure layers are actually sorted
+void find_next(gboolean backwards) {
 	struct Page *pg;
 	struct Layer *l;
 	struct Item *item;
-	GList *pagelist, *layerlist, *itemlist;
+	GList *pagelist, *itemlist;
 	GtkTextBuffer *text_buffer;
 	GtkTextIter start, end, select_start, select_end;
 	int first_page_offset = 0;
 
+	// Nothing to search for
 	if (search_string == NULL ) {
 		return;
 	}
-	printf("finding next occurrence of: '%s'... ", search_string);
 
 	// Check for a match inside the current item, after the current selection or cursor position
-	if (match_inside(&start, &end)) {
-		printf("found! (inside)\n");
-
+	if (match_inside(backwards, &start, &end)) {
 		text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget) );
 		gtk_text_buffer_select_range(text_buffer, &start, &end);
 		return;
@@ -787,20 +804,20 @@ void find_next() {
 	// Start on the current page
 	pagelist = g_list_nth(journal.pages, ui.pageno);
 	pg = (struct Page *) (pagelist->data);
-	// TODO: Only the current layer
 	l = (struct Layer *) (g_list_nth(pg->layers, ui.layerno)->data);
 
+	itemlist = NULL;
 	if (ui.cur_item != NULL ) {
 		// Find starting place; item after current item, or first item if none
-		// TODO: Ensure layer is actually sorted
 		itemlist = g_list_find(l->items, ui.cur_item);
 		if (itemlist != NULL) {
-			itemlist = itemlist->next;
+			itemlist = (backwards ? itemlist->prev : itemlist->next);
 		}
 	} else {
-		itemlist = NULL;
+		itemlist = (backwards ? g_list_last(l->items) : g_list_first(l->items));
 	}
 
+	// Search the current page to the end (or start, if searching backwards)
 	int i;
 	for (i = 0; i < l->nitems; i++) {
 		if (itemlist == NULL ) {
@@ -811,50 +828,55 @@ void find_next() {
 		// TODO: strstr adequate? Don't want to start every text item just to search
 		if (strstr(item->text, search_string)) {
 			// TODO: also scroll to item
-			select_on_match(item);
-			printf("found!\n");
+			select_on_match(item, backwards);
 			return;
 		}
 
-		itemlist = itemlist->next;
+		itemlist = (backwards ? itemlist->prev : itemlist->next);
 	} // End items loop
 
 	first_page_offset = i;
 
 	// Loop through all other pages
 	int p;
-	for (p = 0; p < journal.npages; p++) {
-		// Next page, or wrap to first
-		if (pagelist->next != NULL ) {
-			pagelist = pagelist->next;
-		} else {
-			pagelist = g_list_first(journal.pages);
+	for (p = 1; p <= journal.npages; p++) {
+		pagelist = (backwards ? pagelist->prev : pagelist->next);
+		if (pagelist == NULL ) {
+			// Wrap last page if searching backwards, else first page
+			pagelist = (backwards ? g_list_last(journal.pages) : g_list_first(journal.pages));
 		}
 
 		pg = (struct Page *) (pagelist->data);
-		// TODO: Only the current layer
 		l = (struct Layer *) (g_list_nth(pg->layers, ui.layerno)->data);
-		itemlist = g_list_first(l->items);
+		itemlist = (backwards ? g_list_last(l->items) : g_list_first(l->items));
 
-		// Loop through all items once
+		// Only go partway through the page if we searched the later half earlier
+		int limit = (p == journal.npages ? first_page_offset : l->nitems);
+
 		int i;
-		int limit = (p == journal.npages - 1 ? first_page_offset : l->nitems);
 		for (i = 0; i < limit; i++) {
 			item = (struct Item *) itemlist->data;
 
-			// item->text != NULL?
 			if (item->type == ITEM_TEXT) {
 				// TODO: strstr adequate? Don't want to start every text item just to search
 				if (strstr(item->text, search_string)) {
 					// TODO: also scroll to item
-					do_switch_page((p + ui.pageno + 1) % journal.npages, TRUE, TRUE);
-					select_on_match(item);
-					printf("found!\n");
+					if (backwards) {
+						int new_page_no = (ui.pageno - p) % journal.npages;
+						while (new_page_no < 0) {
+							new_page_no += journal.npages;
+						}
+						do_switch_page(new_page_no, TRUE, TRUE);
+					} else {
+						do_switch_page((p + ui.pageno) % journal.npages, TRUE, TRUE);
+					}
+
+					select_on_match(item, backwards);
 					return;
 				}
 			}
 
-			itemlist = itemlist->next;
+			itemlist = (backwards ? itemlist->prev : itemlist->next);
 		} // End items loop
 	}
 

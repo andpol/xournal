@@ -920,7 +920,9 @@ on_editDelete_activate                 (GtkMenuItem     *menuitem,
 }
 
 
-void on_editFind_activate(GtkMenuItem *menuitem, gpointer user_data) {
+void on_editFind_activate              (GtkMenuItem     *menuitem,
+                                        gpointer user_data)
+{
 	if (update_search_string()) {
 		// TODO: Bring up find dialogue, but don't change selection
 	} else {
@@ -928,13 +930,19 @@ void on_editFind_activate(GtkMenuItem *menuitem, gpointer user_data) {
 	}
 }
 
-void on_editFindNext_activate(GtkMenuItem *menuitem, gpointer user_data) {
-	find_next();
+
+void on_editFindNext_activate          (GtkMenuItem     *menuitem,
+                                        gpointer user_data)
+{
+	find_next(FALSE);
 }
 
-void on_editFindPrevious_activate(GtkMenuItem *menuitem, gpointer user_data) {
-	// TODO
-	find_next();
+
+void
+on_editFindPrevious_activate           (GtkMenuItem     *menuitem,
+		                                gpointer user_data)
+{
+	find_next(TRUE);
 }
 
 
