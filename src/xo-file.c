@@ -849,6 +849,7 @@ gboolean open_journal(char *filename)
   g_free(tmpfn);
 
   f = gzopen(filename, "rb");
+  filename=g_locale_to_utf8(filename, -1,NULL,NULL,NULL); //Only use locale name for actually opening the file
   if (f==NULL) return FALSE;
   if (filename[0]=='/') {
     if (ui.default_path != NULL) g_free(ui.default_path);

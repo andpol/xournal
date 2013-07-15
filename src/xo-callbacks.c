@@ -164,7 +164,8 @@ on_fileOpen_activate                   (GtkMenuItem     *menuitem,
   gtk_widget_destroy(dialog);
 
   set_cursor_busy(TRUE);
-  success = open_journal(filename);
+  gchar *localename = g_locale_from_utf8(filename, -1,NULL,NULL,NULL);
+  success = open_journal(localename);
   set_cursor_busy(FALSE);
   if (success) { g_free(filename); return; }
   
@@ -190,7 +191,8 @@ on_fileSave_activate                   (GtkMenuItem     *menuitem,
     return;
   }
   set_cursor_busy(TRUE);
-  if (save_journal(ui.filename)) { // success
+  gchar * localename=g_locale_from_utf8(ui.filename, -1,NULL,NULL,NULL);
+  if (save_journal(localename)) { // success
     set_cursor_busy(FALSE);
     ui.saved = TRUE;
     return;
@@ -284,7 +286,8 @@ on_fileSaveAs_activate                 (GtkMenuItem     *menuitem,
   gtk_widget_destroy(dialog);
 
   set_cursor_busy(TRUE);
-  if (save_journal(filename)) { // success
+  gchar* localename = g_locale_from_utf8(filename, -1,NULL,NULL,NULL);
+  if (save_journal(localename)) { // success
     ui.saved = TRUE;
     set_cursor_busy(FALSE);
     update_file_name(filename);
@@ -2181,6 +2184,7 @@ on_toolsDefaultText_activate           (GtkMenuItem     *menuitem,
 {
   switch_mapping(0);
   if (ui.toolno[0]!=TOOL_TEXT) end_text();
+
   reset_selection();
   ui.toolno[0] = TOOL_TEXT;
   ui.cur_brush = &(ui.brushes[0][TOOL_PEN]);
