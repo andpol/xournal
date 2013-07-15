@@ -28,6 +28,9 @@ install-data-local:
 	    ln -s ../pixmaps $(DESTDIR)$(pkgdatadir)/html-doc/pixmaps; \
 	  fi \
 	fi; \
+	if test -f xournal.glade; then \
+	  $(INSTALL_DATA) xournal.glade $(DESTDIR)$(pkgdatadir)/xournal.glade; \
+	fi
 	echo "*** Desktop files, icons, MIME types not installed. Run 'make desktop-install'"; \
 	echo "*** (or 'make home-desktop-install' for installation in a home directory)."
 
@@ -108,5 +111,8 @@ dist-hook:
 	  if test ! -e $(distdir)/html-doc/pixmaps; then \
 	    ln -s ../pixmaps $(distdir)/html-doc/pixmaps; \
 	  fi \
+	fi; \
+	if test -f xournal.glade; then \
+	  cp -p xournal.glade $(distdir)/xournal.glade; \
 	fi
 

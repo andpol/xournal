@@ -2341,9 +2341,15 @@ on_helpAbout_activate                  (GtkMenuItem     *menuitem,
   GtkLabel *labelTitle;
 
   end_text();
+<<<<<<< HEAD
+  aboutDialog = create_aboutDialog ();
+  labelTitle = GTK_LABEL(g_object_get_data(G_OBJECT(aboutDialog), "labelTitle"));
+  gtk_label_set_markup(labelTitle,
+=======
   aboutDialog = GTK_WIDGET(GET_COMPONENT("aboutDialog"));
   labelTitle = GTK_LABEL(GET_COMPONENT("about_labelTitle"));
   gtk_label_set_markup(labelTitle, 
+>>>>>>> gtk-builder
     "<span size=\"xx-large\" weight=\"bold\">Xournal " VERSION_STRING "</span>");
   gtk_dialog_run (GTK_DIALOG(aboutDialog));
   gtk_widget_hide(aboutDialog);
@@ -3451,8 +3457,14 @@ on_viewSetZoom_activate                (GtkMenuItem     *menuitem,
   gtk_spin_button_set_value(spinZoom, zoom_percent);
   test_w = 100*(GTK_WIDGET(canvas))->allocation.width/ui.cur_page->width/DEFAULT_ZOOM;
   test_h = 100*(GTK_WIDGET(canvas))->allocation.height/ui.cur_page->height/DEFAULT_ZOOM;
+<<<<<<< HEAD
+  if (zoom_percent > 99.9 && zoom_percent < 100.1)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(
+           G_OBJECT(zoom_dialog), "radioZoom100")), TRUE);
+=======
   if (zoom_percent > 99.9 && zoom_percent < 100.1) 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GET_COMPONENT("radioZoom100")), TRUE);
+>>>>>>> gtk-builder
   else if (zoom_percent > test_w-0.1 && zoom_percent < test_w+0.1)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GET_COMPONENT("radioZoomWidth")), TRUE);
   else if (zoom_percent > test_h-0.1 && zoom_percent < test_h+0.1)
@@ -3470,8 +3482,13 @@ on_viewSetZoom_activate                (GtkMenuItem     *menuitem,
       rescale_images();
     }
   } while (response == GTK_RESPONSE_APPLY);
+<<<<<<< HEAD
+
+  gtk_widget_destroy(zoom_dialog);
+=======
   
   gtk_widget_hide(zoom_dialog);
+>>>>>>> gtk-builder
 }
 
 

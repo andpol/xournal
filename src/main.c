@@ -23,16 +23,16 @@
 #include <libgnomecanvas/libgnomecanvas.h>
 
 #include "xournal.h"
-#include "xo-interface.h"
-#include "xo-support.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
 #include "xo-paint.h"
 #include "xo-shapes.h"
+#include "intl.h"
 
 GtkWidget *winMain;
 GnomeCanvas *canvas;
+GtkBuilder *builder;
 
 struct Journal journal; // the journal
 struct BgPdf bgpdf;  // the PDF loader stuff
@@ -161,7 +161,7 @@ void init_stuff (int argc, char *argv[])
   w = GET_COMPONENT("scrolledwindowMain");
   gtk_container_add (GTK_CONTAINER (w), GTK_WIDGET (canvas));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_widget_set_events (GTK_WIDGET (canvas), GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_add_events (GTK_WIDGET (canvas), GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gnome_canvas_set_pixels_per_unit (canvas, ui.zoom);
   gnome_canvas_set_center_scroll_region (canvas, TRUE);
   gtk_layout_get_hadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
@@ -317,8 +317,7 @@ void init_stuff (int argc, char *argv[])
 int
 main (int argc, char *argv[])
 {
-  gchar *path, *path1, *path2;
-  
+
 #ifdef ENABLE_NLS
   bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -328,26 +327,19 @@ main (int argc, char *argv[])
   gtk_set_locale ();
   gtk_init (&argc, &argv);
 
-  add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");
-  path = g_path_get_dirname(argv[0]);
-  path1 = g_build_filename(path, "pixmaps", NULL);
-  path2 = g_build_filename(path, "..", "pixmaps", NULL);
-  add_pixmap_directory (path1);
-  add_pixmap_directory (path2);
-  add_pixmap_directory (path);
-  g_free(path);
-  g_free(path1);
-  g_free(path2);
-
-  /*
-   * The following code was added by Glade to create one of each component
-   * (except popup menus), just so that you see something after building
-   * the project. Delete any components that you don't want shown initially.
-   */
-  winMain = create_winMain ();
-  
+  builder = gtk_builder_new();
+  GError *err = NULL;
+  // Search for the glade file in the CWD, then in the installed data directory
+  if(!gtk_builder_add_from_file(builder, "xournal.glade", &err)) {
+    err = NULL;
+	if(!gtk_builder_add_from_file(builder, PACKAGE_DATA_DIR "/" PACKAGE "/xournal.glade", &err)) {
+      fprintf(stderr, "ERROR: %s\n", err->message);
+      return 1;
+	}
+  }
+  winMain = (GtkWidget *)gtk_builder_get_object (builder, "winMain");
+  gtk_builder_connect_signals (builder, NULL);
   init_stuff (argc, argv);
-  gtk_window_set_icon(GTK_WINDOW(winMain), create_pixbuf("xournal.png"));
   
   gtk_main ();
   

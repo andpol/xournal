@@ -24,14 +24,13 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "xournal.h"
-#include "xo-interface.h"
-#include "xo-support.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
 #include "xo-paint.h"
 #include "xo-shapes.h"
 #include "xo-image.h"
+#include "intl.h"
 
 // some global constants
 
