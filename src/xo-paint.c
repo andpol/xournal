@@ -808,7 +808,10 @@ void find_next() {
 		}
 
 		item = (struct Item *) itemlist->data;
-		if (select_on_match(item)) {
+		// TODO: strstr adequate? Don't want to start every text item just to search
+		if (strstr(item->text, search_string)) {
+			// TODO: also scroll to item
+			select_on_match(item);
 			printf("found!\n");
 			return;
 		}
@@ -835,7 +838,7 @@ void find_next() {
 
 		// Loop through all items once
 		int i;
-		int limit = (p == journal.pages - 1 ? first_page_offset : l->nitems);
+		int limit = (p == journal.npages - 1 ? first_page_offset : l->nitems);
 		for (i = 0; i < limit; i++) {
 			item = (struct Item *) itemlist->data;
 

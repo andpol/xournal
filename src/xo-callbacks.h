@@ -61,6 +61,18 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 G_MODULE_EXPORT void
+on_editFind_activate                   (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_editFindNext_activate               (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_editFindPrevious_activate           (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT void
 on_editCut_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
@@ -74,14 +86,6 @@ on_editPaste_activate                  (GtkMenuItem     *menuitem,
 
 G_MODULE_EXPORT void
 on_editDelete_activate                 (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-G_MODULE_EXPORT void
-on_editFind_activate                   (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-G_MODULE_EXPORT void
-on_editFindNext_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 G_MODULE_EXPORT void

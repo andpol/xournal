@@ -929,7 +929,12 @@ void on_editFind_activate(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 void on_editFindNext_activate(GtkMenuItem *menuitem, gpointer user_data) {
-	find_next(TRUE);
+	find_next();
+}
+
+void on_editFindPrevious_activate(GtkMenuItem *menuitem, gpointer user_data) {
+	// TODO
+	find_next();
 }
 
 
