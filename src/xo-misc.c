@@ -1968,7 +1968,7 @@ void process_mapping_activate(GtkMenuItem *menuitem, int m, int tool)
 // update the ordering of components in the main vbox
 
 const char *vbox_component_names[VBOX_MAIN_NITEMS]=
- {"scrolledwindowMain", "menubar", "toolbarMain", "toolbarPen", "hbox1"};
+ {"winMainPaned", "menubar", "toolbarMain", "toolbarPen", "hbox1"};
 
 void update_vbox_order(int *order)
 {

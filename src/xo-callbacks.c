@@ -3682,3 +3682,10 @@ on_optionsPenCursor_activate           (GtkCheckMenuItem *checkmenuitem,
   ui.pen_cursor = gtk_check_menu_item_get_active(checkmenuitem);
   update_cursor();
 }
+
+void
+on_close_sidebar_clicked			   (GtkButton *button,
+                                        gpointer         user_data)
+{
+	gtk_paned_set_position(GTK_PANED(GET_COMPONENT("winMainPaned")), 0);
+}

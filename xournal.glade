@@ -103,6 +103,33 @@ and other contributors
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/blue.png</property>
   </object>
+  <object class="GtkListStore" id="bookmarks_liststore">
+    <columns>
+      <!-- column-name bookmark -->
+      <column type="gchararray"/>
+      <!-- column-name page -->
+      <column type="gint"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">bookmark 1</col>
+        <col id="1">0</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">bookmark 2</col>
+        <col id="1">0</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">bookmark 3</col>
+        <col id="1">1</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkImage" id="close_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-close</property>
+  </object>
   <object class="GtkImage" id="default_pen_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -147,6 +174,12 @@ and other contributors
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/highlighter.png</property>
+  </object>
+  <object class="GtkTreeStore" id="index_treestore">
+    <columns>
+      <!-- column-name index -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkImage" id="lasso_select_icon">
     <property name="visible">True</property>
@@ -455,6 +488,20 @@ and other contributors
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/shapes.png</property>
+  </object>
+  <object class="GtkListStore" id="sidebar_options">
+    <columns>
+      <!-- column-name sidebar_option_name -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Index</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Bookmarks</col>
+      </row>
+    </data>
   </object>
   <object class="GtkImage" id="text_icon">
     <property name="visible">True</property>
@@ -3155,11 +3202,150 @@ and other contributors
           </packing>
         </child>
         <child>
-          <object class="GtkScrolledWindow" id="scrolledwindowMain">
+          <object class="GtkHPaned" id="winMainPaned">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="position">200</property>
+            <property name="position_set">True</property>
             <child>
-              <placeholder/>
+              <object class="GtkVBox" id="sidebar">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkHBox" id="hbox5">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkComboBox" id="sidebar_combobox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="model">sidebar_options</property>
+                        <property name="active">0</property>
+                        <property name="has_frame">False</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext1"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="close_sidebar">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="image">close_icon</property>
+                        <property name="relief">none</property>
+                        <signal name="clicked" handler="on_close_sidebar_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkVBox" id="vbox3">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkTreeView" id="index_tree">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="model">index_treestore</property>
+                        <property name="headers_visible">False</property>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="index_column">
+                            <property name="title" translatable="yes">Index</property>
+                            <property name="sort_column_id">0</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="index_column_cellrenderer"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkTreeView" id="bookmarks_tree">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="model">bookmarks_liststore</property>
+                        <property name="headers_visible">False</property>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="bookmark_column">
+                            <property name="title" translatable="yes">Name</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="bookmark_name_cellrenderer"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="bookmark_page_column">
+                            <property name="title" translatable="yes">Page</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="bookmark_page_cellrenderer"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">False</property>
+                <property name="shrink">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="scrolledwindowMain">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">True</property>
+              </packing>
             </child>
           </object>
           <packing>
