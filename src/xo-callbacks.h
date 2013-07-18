@@ -676,3 +676,7 @@ on_viewSidebar_toggled                 (GtkCheckMenuItem *menuitem,
 G_MODULE_EXPORT void
 on_sidebar_size_allocate               (GtkWidget        *widget,
                                         gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_sidebar_combobox_changed            (GtkComboBox      *combobox,
+                                        gpointer         userdata);

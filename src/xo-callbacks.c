@@ -226,14 +226,14 @@ on_fileSaveAs_activate                 (GtkMenuItem     *menuitem,
      
   if (ui.filename!=NULL) {
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER (dialog), ui.filename);
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_basename(ui.filename));
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_path_get_basename(ui.filename));
   } 
   else
   if (bgpdf.status!=STATUS_NOT_INIT && bgpdf.file_domain == DOMAIN_ABSOLUTE 
       && bgpdf.filename != NULL) {
     filename = g_strdup_printf("%s.xoj", bgpdf.filename->s);
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER (dialog), filename);
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_basename(filename));
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_path_get_basename(filename));
     g_free(filename); 
   }
   else {
@@ -388,7 +388,7 @@ on_filePrintPDF_activate               (GtkMenuItem     *menuitem,
     else
       in_fn = g_strdup_printf("%s.pdf", ui.filename);
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER (dialog), in_fn);
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_basename(in_fn));
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_path_get_basename(in_fn));
   } else {
     curtime = time(NULL);
     strftime(stime, 30, "%Y-%m-%d-Note-%H-%M.pdf", localtime(&curtime));
@@ -3697,10 +3697,10 @@ on_viewSidebar_toggled   (GtkCheckMenuItem *menuitem,
                           gpointer         userdata)
 {
   GtkPaned * paned = GTK_PANED(GET_COMPONENT("winMainPaned"));
-  GtkWidget *sidebar = GET_COMPONENT("sidebar");
+  GtkWidget *sidebar = GTK_WIDGET(GET_COMPONENT("sidebar"));
 
   // *** BLOCK SIGNAL HANDLER
-  gtk_signal_handler_block_by_func(sidebar, on_sidebar_size_allocate, NULL);
+  g_signal_handlers_block_by_func(sidebar, on_sidebar_size_allocate, NULL);
 
   if (!gtk_check_menu_item_get_active(menuitem)) {
     // Save the size of the sidebar, then close/minimize it
@@ -3714,7 +3714,7 @@ on_viewSidebar_toggled   (GtkCheckMenuItem *menuitem,
   }
 
   // *** UNBLOCK SIGNAL HANDLER
-  gtk_signal_handler_unblock_by_func(sidebar, on_sidebar_size_allocate, NULL);
+  g_signal_handlers_unblock_by_func(sidebar, on_sidebar_size_allocate, NULL);
 }
 
 void
@@ -3727,8 +3727,8 @@ on_sidebar_size_allocate       (GtkWidget *widget,
   gint new_size = gtk_paned_get_position(paned);
 
   // *** BLOCK SIGNAL HANDLERS
-  gtk_signal_handler_block_by_func(viewSidebar, on_viewSidebar_toggled, NULL);
-  gtk_signal_handler_block_by_func(widget, on_sidebar_size_allocate, NULL);
+  g_signal_handlers_block_by_func(viewSidebar, on_viewSidebar_toggled, NULL);
+  g_signal_handlers_block_by_func(widget, on_sidebar_size_allocate, NULL);
 
   if (new_size <= 0) {
     gtk_check_menu_item_set_active(viewSidebar, FALSE);
@@ -3748,6 +3748,29 @@ on_sidebar_size_allocate       (GtkWidget *widget,
   }
 
   // *** UNBLOCK SIGNAL HANDLERS
-  gtk_signal_handler_unblock_by_func(viewSidebar, on_viewSidebar_toggled, NULL);
-  gtk_signal_handler_unblock_by_func(widget, on_sidebar_size_allocate, NULL);
+  g_signal_handlers_unblock_by_func(viewSidebar, on_viewSidebar_toggled, NULL);
+  g_signal_handlers_unblock_by_func(widget, on_sidebar_size_allocate, NULL);
+}
+
+
+void
+on_sidebar_combobox_changed            (GtkComboBox      *combobox,
+                                        gpointer         userdata)
+{
+  GtkWidget *sidebar_contents[] = { GTK_WIDGET(GET_COMPONENT("index_tree")), GTK_WIDGET(GET_COMPONENT("bookmarks_tree")) };
+  int num_sidebar_contents = 2;
+  int selected_index = gtk_combo_box_get_active(combobox);
+
+  if (selected_index >= num_sidebar_contents) {
+    fprintf(stderr, "Warning: Unrecognized sidebar combo-box index: %d", selected_index);
+    return;
+  }
+
+  // Hide all the sidebar contents
+  int i;
+  for (i = 0; i < num_sidebar_contents; i++) {
+    gtk_widget_hide(sidebar_contents[i]);
+  }
+  // Show the selected one
+  gtk_widget_show(sidebar_contents[selected_index]);
 }

@@ -170,17 +170,6 @@ and other contributors
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/hand.png</property>
   </object>
-  <object class="GtkImage" id="highlighter_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">pixmaps/highlighter.png</property>
-  </object>
-  <object class="GtkTreeStore" id="index_treestore">
-    <columns>
-      <!-- column-name index -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkImage" id="lasso_select_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -189,6 +178,17 @@ and other contributors
   <object class="GtkListStore" id="layers">
     <columns>
       <!-- column-name layer -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkImage" id="highlighter_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">pixmaps/highlighter.png</property>
+  </object>
+  <object class="GtkTreeStore" id="index_treestore">
+    <columns>
+      <!-- column-name index -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -3233,6 +3233,7 @@ and other contributors
                         <property name="model">sidebar_options</property>
                         <property name="active">0</property>
                         <property name="has_frame">False</property>
+                        <signal name="changed" handler="on_sidebar_combobox_changed" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext1"/>
                           <attributes>
@@ -3299,7 +3300,6 @@ and other contributors
                     </child>
                     <child>
                       <object class="GtkTreeView" id="bookmarks_tree">
-                        <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="model">bookmarks_liststore</property>
                         <property name="headers_visible">False</property>
