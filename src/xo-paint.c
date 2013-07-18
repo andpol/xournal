@@ -696,15 +696,29 @@ gchar * get_selected_text() {
 	return text;
 }
 
+void update_search_string(gchar *text) {
+	GtkWidget *widget;
+	gboolean sensitive;
+
+	search_string = text;
+	sensitive = (search_string != NULL);
+
+	// Enable or disable the find next and previous widgets
+	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editFindNext")), sensitive);
+	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editFindPrevious")), sensitive);
+	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("findNextButton")), sensitive);
+	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("findPreviousButton")), sensitive);
+}
+
 // Fetch the new search string from selected text, if any.
 // Returns TRUE if search_string updated, FALSE otherwise.
-gboolean update_search_string() {
+gboolean get_search_string_from_selection() {
 	gchar *text;
 
 	if (ui.cur_item_type == ITEM_TEXT) {
 		text = get_selected_text();
 		if (text != NULL ) {
-			search_string = text;
+			update_search_string(text);
 			return TRUE;
 		}
 	}
@@ -730,7 +744,6 @@ gboolean match_inside(gboolean backwards, GtkTextIter *start, GtkTextIter *end) 
 	if (gtk_text_buffer_get_has_selection(text_buffer)) {
 		if (backwards) {
 			gtk_text_buffer_get_selection_bounds(text_buffer, &cursor, &dummy);
-			gtk_text_iter_forward_cursor_position(&cursor);
 		} else {
 			gtk_text_buffer_get_selection_bounds(text_buffer, &dummy, &cursor);
 		}
@@ -846,6 +859,7 @@ void find_next(gboolean backwards) {
 
 	// Check for a match inside the current item, after the current selection or cursor position
 	if (match_inside(backwards, &start, &end)) {
+		printf("match inside\n");
 		text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget) );
 		gtk_text_buffer_select_range(text_buffer, &start, &end);
 		return;

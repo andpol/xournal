@@ -920,19 +920,29 @@ on_editDelete_activate                 (GtkMenuItem     *menuitem,
 }
 
 
-void on_editFind_activate              (GtkMenuItem     *menuitem,
-                                        gpointer user_data)
+void
+on_editFind_activate                   (GtkMenuItem     *menuitem,
+                                        gpointer         user_data)
 {
-	if (update_search_string()) {
-		// TODO: Bring up find dialogue, but don't change selection
-	} else {
-		find_next();
-	}
+	GtkWidget *find_dialog;
+	GtkEntry *find_text;
+
+	get_search_string_from_selection();
+	find_next(FALSE);
+
+	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
+
+	find_text = (GtkEntry*) GTK_WIDGET(GET_COMPONENT("findText"));
+	gtk_entry_set_text(find_text, search_string == NULL ? "" : search_string);
+
+	gtk_widget_show(find_dialog);
+	gtk_dialog_set_default_response(GTK_DIALOG(find_dialog), GTK_RESPONSE_OK);
 }
 
 
-void on_editFindNext_activate          (GtkMenuItem     *menuitem,
-                                        gpointer user_data)
+void
+on_editFindNext_activate               (GtkMenuItem     *menuitem,
+                                        gpointer         user_data)
 {
 	find_next(FALSE);
 }
@@ -940,9 +950,50 @@ void on_editFindNext_activate          (GtkMenuItem     *menuitem,
 
 void
 on_editFindPrevious_activate           (GtkMenuItem     *menuitem,
-		                                gpointer user_data)
+		                                gpointer         user_data)
 {
 	find_next(TRUE);
+}
+
+
+void
+on_findNextButton_clicked              (GtkButton       *button,
+                                        gpointer         user_data)
+{
+	find_next(FALSE);
+}
+
+
+void
+on_findPreviousButton_clicked          (GtkButton       *button,
+		                                gpointer         user_data)
+{
+	find_next(TRUE);
+}
+
+
+void
+on_findCloseButton_clicked             (GtkButton       *button,
+		                                gpointer         user_data)
+{
+	GtkWidget *find_dialog;
+	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
+	gtk_widget_hide(find_dialog);
+}
+
+
+void
+on_findText_changed                    (GtkEditable     *editable,
+		                                gpointer         user_data)
+{
+	const gchar *text;
+	text = gtk_entry_get_text((GtkEntry*) editable);
+
+	if (strlen(text) == 0) {
+		update_search_string(NULL);
+	} else {
+		update_search_string(text);
+	}
 }
 
 

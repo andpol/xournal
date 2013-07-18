@@ -27,7 +27,6 @@
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -118,6 +117,126 @@ and other contributors
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/eraser.png</property>
+  </object>
+  <object class="GtkDialog" id="findDialog">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="resizable">False</property>
+    <property name="window_position">center</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <child internal-child="vbox">
+      <object class="GtkVBox" id="dialog-vbox5">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkHButtonBox" id="dialog-action_area4">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="findPreviousButton">
+                <property name="label" translatable="yes">Previous</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="on_findPreviousButton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="findNextButton">
+                <property name="label" translatable="yes">Next</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="can_default">True</property>
+                <property name="has_default">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="on_findNextButton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="findCloseButton">
+                <property name="label" translatable="yes">Close</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="on_findCloseButton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHBox" id="hbox5">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkLabel" id="findLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Find:</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="findText">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">•</property>
+                <property name="activates_default">True</property>
+                <property name="primary_icon_activatable">False</property>
+                <property name="secondary_icon_activatable">False</property>
+                <property name="primary_icon_sensitive">True</property>
+                <property name="secondary_icon_sensitive">True</property>
+                <signal name="changed" handler="on_findText_changed" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">findPreviousButton</action-widget>
+      <action-widget response="0">findNextButton</action-widget>
+      <action-widget response="0">findCloseButton</action-widget>
+    </action-widgets>
   </object>
   <object class="GtkImage" id="fine_icon">
     <property name="visible">True</property>
@@ -257,7 +376,6 @@ and other contributors
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -273,7 +391,6 @@ and other contributors
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -479,6 +596,11 @@ and other contributors
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/white.png</property>
   </object>
+  <object class="GtkImage" id="yellow_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">pixmaps/yellow.png</property>
+  </object>
   <object class="GtkWindow" id="winMain">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Xournal</property>
@@ -496,7 +618,6 @@ and other contributors
               <object class="GtkMenuItem" id="menuFile">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_File</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -507,7 +628,6 @@ and other contributors
                         <property name="label">gtk-new</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="n" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -519,7 +639,6 @@ and other contributors
                         <property name="label" translatable="yes">Annotate PD_F</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_fileNewBackground_activate" swapped="no"/>
@@ -530,7 +649,6 @@ and other contributors
                         <property name="label">gtk-open</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -542,7 +660,6 @@ and other contributors
                         <property name="label">gtk-save</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -554,7 +671,6 @@ and other contributors
                         <property name="label">gtk-save-as</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_fileSaveAs_activate" swapped="no"/>
@@ -570,7 +686,6 @@ and other contributors
                       <object class="GtkMenuItem" id="fileRecentFiles">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Recent Doc_uments</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
@@ -580,7 +695,6 @@ and other contributors
                               <object class="GtkMenuItem" id="mru0">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">0</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_mru_activate" swapped="no"/>
@@ -590,7 +704,6 @@ and other contributors
                               <object class="GtkMenuItem" id="mru1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">1</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_mru_activate" swapped="no"/>
@@ -600,7 +713,6 @@ and other contributors
                               <object class="GtkMenuItem" id="mru2">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">2</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_mru_activate" swapped="no"/>
@@ -610,7 +722,6 @@ and other contributors
                               <object class="GtkMenuItem" id="mru3">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">3</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_mru_activate" swapped="no"/>
@@ -620,7 +731,6 @@ and other contributors
                               <object class="GtkMenuItem" id="mru4">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">4</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_mru_activate" swapped="no"/>
@@ -630,7 +740,6 @@ and other contributors
                               <object class="GtkMenuItem" id="mru5">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">5</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_mru_activate" swapped="no"/>
@@ -640,7 +749,6 @@ and other contributors
                               <object class="GtkMenuItem" id="mru6">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">6</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_mru_activate" swapped="no"/>
@@ -650,7 +758,6 @@ and other contributors
                               <object class="GtkMenuItem" id="mru7">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">7</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_mru_activate" swapped="no"/>
@@ -671,7 +778,6 @@ and other contributors
                         <property name="label" translatable="yes">Print Options</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_filePrintOptions_activate" swapped="no"/>
@@ -682,7 +788,6 @@ and other contributors
                         <property name="label">gtk-print</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="P" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -693,7 +798,6 @@ and other contributors
                       <object class="GtkMenuItem" id="filePrintPDF">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Export to PDF</property>
                         <property name="use_underline">True</property>
                         <accelerator key="E" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -711,7 +815,6 @@ and other contributors
                         <property name="label">gtk-quit</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -726,7 +829,6 @@ and other contributors
               <object class="GtkMenuItem" id="menuEdit">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_Edit</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -737,7 +839,6 @@ and other contributors
                         <property name="label">gtk-undo</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="Z" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -749,7 +850,6 @@ and other contributors
                         <property name="label">gtk-redo</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="Y" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -767,7 +867,6 @@ and other contributors
                         <property name="label">gtk-find</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -778,7 +877,6 @@ and other contributors
                       <object class="GtkMenuItem" id="editFindNext">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Find Next</property>
                         <property name="use_underline">True</property>
                         <accelerator key="g" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -789,7 +887,6 @@ and other contributors
                       <object class="GtkMenuItem" id="editFindPrevious">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Find Previous</property>
                         <property name="use_underline">True</property>
                         <accelerator key="g" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
@@ -800,7 +897,6 @@ and other contributors
                       <object class="GtkSeparatorMenuItem" id="separator11">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                       </object>
                     </child>
                     <child>
@@ -808,7 +904,6 @@ and other contributors
                         <property name="label">gtk-cut</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="x" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -820,7 +915,6 @@ and other contributors
                         <property name="label">gtk-copy</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -832,7 +926,6 @@ and other contributors
                         <property name="label">gtk-paste</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="v" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -844,7 +937,6 @@ and other contributors
                         <property name="label">gtk-delete</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="Delete" signal="activate"/>
@@ -859,7 +951,6 @@ and other contributors
               <object class="GtkMenuItem" id="menuView">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_View</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -869,7 +960,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="viewContinuous">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Continuous</property>
                         <property name="use_underline">True</property>
                         <signal name="toggled" handler="on_viewContinuous_activate" swapped="no"/>
@@ -879,7 +969,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="viewOnePage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_One Page</property>
                         <property name="use_underline">True</property>
                         <property name="group">viewContinuous</property>
@@ -896,7 +985,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="viewFullscreen">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Full Screen</property>
                         <property name="use_underline">True</property>
                         <accelerator key="F11" signal="activate"/>
@@ -913,7 +1001,6 @@ and other contributors
                       <object class="GtkMenuItem" id="menuViewZoom">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Zoom</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
@@ -924,7 +1011,6 @@ and other contributors
                                 <property name="label">gtk-zoom-in</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="use_underline">True</property>
                                 <property name="use_stock">True</property>
                                 <accelerator key="plus" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -936,7 +1022,6 @@ and other contributors
                                 <property name="label">gtk-zoom-out</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="use_underline">True</property>
                                 <property name="use_stock">True</property>
                                 <accelerator key="minus" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -948,7 +1033,6 @@ and other contributors
                                 <property name="label">gtk-zoom-100</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="use_underline">True</property>
                                 <property name="use_stock">True</property>
                                 <accelerator key="0" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -960,7 +1044,6 @@ and other contributors
                                 <property name="label" translatable="yes">Page _Width</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="use_underline">True</property>
                                 <property name="use_stock">False</property>
                                 <accelerator key="equal" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -971,7 +1054,6 @@ and other contributors
                               <object class="GtkMenuItem" id="viewSetZoom">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Set Zoom</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_viewSetZoom_activate" swapped="no"/>
@@ -992,7 +1074,6 @@ and other contributors
                         <property name="label" translatable="yes">_First Page</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <accelerator key="Home" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -1004,7 +1085,6 @@ and other contributors
                         <property name="label" translatable="yes">_Previous Page</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <accelerator key="Left" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -1016,7 +1096,6 @@ and other contributors
                         <property name="label" translatable="yes">_Next Page</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <accelerator key="Right" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -1028,7 +1107,6 @@ and other contributors
                         <property name="label" translatable="yes">_Last Page</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <accelerator key="End" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -1046,7 +1124,6 @@ and other contributors
                         <property name="label" translatable="yes">_Show Layer</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_viewShowLayer_activate" swapped="no"/>
@@ -1057,7 +1134,6 @@ and other contributors
                         <property name="label" translatable="yes">_Hide Layer</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_viewHideLayer_activate" swapped="no"/>
@@ -1071,7 +1147,6 @@ and other contributors
               <object class="GtkMenuItem" id="menuJournal">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_Page</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -1081,7 +1156,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalNewPageBefore">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">New Page _Before</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalNewPageBefore_activate" swapped="no"/>
@@ -1091,7 +1165,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalNewPageAfter">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">New Page _After</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalNewPageAfter_activate" swapped="no"/>
@@ -1101,7 +1174,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalNewPageEnd">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">New Page At _End</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalNewPageEnd_activate" swapped="no"/>
@@ -1111,7 +1183,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalDeletePage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Delete Page</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalDeletePage_activate" swapped="no"/>
@@ -1127,7 +1198,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalNewLayer">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_New Layer</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalNewLayer_activate" swapped="no"/>
@@ -1137,7 +1207,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalDeleteLayer">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Delete La_yer</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalDeleteLayer_activate" swapped="no"/>
@@ -1147,7 +1216,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalFlatten">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Flatten</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalFlatten_activate" swapped="no"/>
@@ -1163,7 +1231,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalPaperSize">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Paper Si_ze</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalPaperSize_activate" swapped="no"/>
@@ -1173,7 +1240,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalPaperColor">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Paper _Color</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
@@ -1183,7 +1249,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="papercolorWhite">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_white paper</property>
                                 <property name="use_underline">True</property>
                                 <signal name="toggled" handler="on_papercolorWhite_activate" swapped="no"/>
@@ -1193,7 +1258,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="papercolorYellow">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_yellow paper</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">papercolorWhite</property>
@@ -1204,7 +1268,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="papercolorPink">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_pink paper</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">papercolorWhite</property>
@@ -1215,7 +1278,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="papercolorOrange">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_orange paper</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">papercolorWhite</property>
@@ -1226,7 +1288,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="papercolorBlue">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_blue paper</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">papercolorWhite</property>
@@ -1237,7 +1298,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="papercolorGreen">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_green paper</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">papercolorWhite</property>
@@ -1248,7 +1308,6 @@ and other contributors
                               <object class="GtkMenuItem" id="papercolorOther">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">other...</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_papercolorOther_activate" swapped="no"/>
@@ -1257,7 +1316,6 @@ and other contributors
                             <child>
                               <object class="GtkRadioMenuItem" id="papercolorNA">
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">papercolorWhite</property>
@@ -1271,7 +1329,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalPaperStyle">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Paper _Style</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
@@ -1281,7 +1338,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="paperstylePlain">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_plain</property>
                                 <property name="use_underline">True</property>
                                 <signal name="toggled" handler="on_paperstylePlain_activate" swapped="no"/>
@@ -1291,7 +1347,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="paperstyleLined">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_lined</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">paperstylePlain</property>
@@ -1302,7 +1357,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="paperstyleRuled">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_ruled</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">paperstylePlain</property>
@@ -1313,7 +1367,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="paperstyleGraph">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_graph</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">paperstylePlain</property>
@@ -1323,7 +1376,6 @@ and other contributors
                             <child>
                               <object class="GtkRadioMenuItem" id="paperstyleNA">
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">paperstylePlain</property>
@@ -1337,7 +1389,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="journalApplyAllPages">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Apply _To All Pages</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalApplyAllPages_activate" swapped="no"/>
@@ -1354,7 +1405,6 @@ and other contributors
                         <property name="label" translatable="yes">_Load Background</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_journalLoadBackground_activate" swapped="no"/>
@@ -1364,7 +1414,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalScreenshot">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Background Screens_hot</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalScreenshot_activate" swapped="no"/>
@@ -1380,7 +1429,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalDefaultBackground">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Default _Paper</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalDefaultBackground_activate" swapped="no"/>
@@ -1390,7 +1438,6 @@ and other contributors
                       <object class="GtkMenuItem" id="journalSetAsDefault">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Set As De_fault</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_journalSetAsDefault_activate" swapped="no"/>
@@ -1404,7 +1451,6 @@ and other contributors
               <object class="GtkMenuItem" id="menuTools">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_Tools</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -1414,7 +1460,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="toolsPen">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Pen</property>
                         <property name="use_underline">True</property>
                         <accelerator key="P" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
@@ -1425,7 +1470,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="toolsEraser">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Eraser</property>
                         <property name="use_underline">True</property>
                         <property name="group">toolsPen</property>
@@ -1437,7 +1481,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="toolsHighlighter">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Highlighter</property>
                         <property name="use_underline">True</property>
                         <property name="group">toolsPen</property>
@@ -1449,7 +1492,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="toolsText">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Text</property>
                         <property name="use_underline">True</property>
                         <property name="group">toolsPen</property>
@@ -1461,7 +1503,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="toolsImage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Image</property>
                         <property name="use_underline">True</property>
                         <property name="group">toolsPen</property>
@@ -1479,7 +1520,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="toolsReco">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Shape Recognizer</property>
                         <property name="use_underline">True</property>
                         <accelerator key="S" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
@@ -1490,7 +1530,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="toolsRuler">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Ru_ler</property>
                         <property name="use_underline">True</property>
                         <accelerator key="L" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
@@ -1507,7 +1546,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="toolsSelectRegion">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Select Re_gion</property>
                         <property name="use_underline">True</property>
                         <property name="group">toolsPen</property>
@@ -1519,7 +1557,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="toolsSelectRectangle">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Select _Rectangle</property>
                         <property name="use_underline">True</property>
                         <property name="group">toolsPen</property>
@@ -1531,7 +1568,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="toolsVerticalSpace">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Vertical Space</property>
                         <property name="use_underline">True</property>
                         <property name="group">toolsPen</property>
@@ -1543,7 +1579,6 @@ and other contributors
                       <object class="GtkRadioMenuItem" id="toolsHand">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">H_and Tool</property>
                         <property name="use_underline">True</property>
                         <property name="group">toolsPen</property>
@@ -1562,7 +1597,6 @@ and other contributors
                         <property name="label" translatable="yes">_Color</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <child type="submenu">
@@ -1572,7 +1606,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorBlack">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">blac_k</property>
                                 <property name="use_underline">True</property>
                                 <signal name="toggled" handler="on_colorBlack_activate" swapped="no"/>
@@ -1582,7 +1615,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorBlue">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_blue</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1593,7 +1625,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorRed">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_red</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1604,7 +1635,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorGreen">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_green</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1615,7 +1645,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorGray">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">gr_ay</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1632,7 +1661,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorLightBlue">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">light bl_ue</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1643,7 +1671,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorLightGreen">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">light gr_een</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1654,7 +1681,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorMagenta">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_magenta</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1665,7 +1691,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorOrange">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_orange</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1676,7 +1701,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorYellow">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_yellow</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1687,7 +1711,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="colorWhite">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_white</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1698,7 +1721,6 @@ and other contributors
                               <object class="GtkMenuItem" id="colorOther">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">other...</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_colorOther_activate" swapped="no"/>
@@ -1707,7 +1729,6 @@ and other contributors
                             <child>
                               <object class="GtkRadioMenuItem" id="colorNA">
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">colorBlack</property>
@@ -1721,7 +1742,6 @@ and other contributors
                       <object class="GtkMenuItem" id="toolsPenOptions">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Pen _Options</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
@@ -1731,7 +1751,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="penthicknessVeryFine">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_very fine</property>
                                 <property name="use_underline">True</property>
                                 <signal name="toggled" handler="on_penthicknessVeryFine_activate" swapped="no"/>
@@ -1741,7 +1760,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="penthicknessFine">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_fine</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">penthicknessVeryFine</property>
@@ -1752,7 +1770,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="penthicknessMedium">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_medium</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">penthicknessVeryFine</property>
@@ -1763,7 +1780,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="penthicknessThick">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_thick</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">penthicknessVeryFine</property>
@@ -1774,7 +1790,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="penthicknessVeryThick">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">ver_y thick</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">penthicknessVeryFine</property>
@@ -1789,7 +1804,6 @@ and other contributors
                       <object class="GtkMenuItem" id="toolsEraserOptions">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Eraser Optio_ns</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
@@ -1799,7 +1813,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="eraserFine">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_fine</property>
                                 <property name="use_underline">True</property>
                                 <signal name="toggled" handler="on_eraserFine_activate" swapped="no"/>
@@ -1809,7 +1822,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="eraserMedium">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_medium</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">eraserFine</property>
@@ -1820,7 +1832,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="eraserThick">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_thick</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">eraserFine</property>
@@ -1837,7 +1848,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="eraserStandard">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_standard</property>
                                 <property name="use_underline">True</property>
                                 <signal name="toggled" handler="on_eraserStandard_activate" swapped="no"/>
@@ -1847,7 +1857,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="eraserWhiteout">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_whiteout</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">eraserStandard</property>
@@ -1858,7 +1867,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="eraserDeleteStrokes">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_delete strokes</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">eraserStandard</property>
@@ -1873,7 +1881,6 @@ and other contributors
                       <object class="GtkMenuItem" id="toolsHighlighterOptions">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Highlighter Opt_ions</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
@@ -1883,7 +1890,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="highlighterFine">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_fine</property>
                                 <property name="use_underline">True</property>
                                 <signal name="toggled" handler="on_highlighterFine_activate" swapped="no"/>
@@ -1893,7 +1899,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="highlighterMedium">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_medium</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">highlighterFine</property>
@@ -1904,7 +1909,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="highlighterThick">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_thick</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">highlighterFine</property>
@@ -1920,7 +1924,6 @@ and other contributors
                         <property name="label" translatable="yes">Text _Font...</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <accelerator key="F" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
@@ -1937,7 +1940,6 @@ and other contributors
                       <object class="GtkMenuItem" id="toolsDefaultPen">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Default Pen</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_toolsDefaultPen_activate" swapped="no"/>
@@ -1947,7 +1949,6 @@ and other contributors
                       <object class="GtkMenuItem" id="toolsDefaultEraser">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Default Eraser</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_toolsDefaultEraser_activate" swapped="no"/>
@@ -1957,7 +1958,6 @@ and other contributors
                       <object class="GtkMenuItem" id="toolsDefaultHighlighter">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Default Highlighter</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_toolsDefaultHighlighter_activate" swapped="no"/>
@@ -1967,7 +1967,6 @@ and other contributors
                       <object class="GtkMenuItem" id="toolsDefaultText">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Default Te_xt</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_toolsDefaultText_activate" swapped="no"/>
@@ -1977,7 +1976,6 @@ and other contributors
                       <object class="GtkMenuItem" id="toolsSetAsDefault">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Set As Default</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_toolsSetAsDefault_activate" swapped="no"/>
@@ -1991,7 +1989,6 @@ and other contributors
               <object class="GtkMenuItem" id="menuOptions">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_Options</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -2001,7 +1998,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsUseXInput">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Use _XInput</property>
                         <property name="use_underline">True</property>
                         <signal name="toggled" handler="on_optionsUseXInput_activate" swapped="no"/>
@@ -2011,7 +2007,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsButtonMappings">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Eraser Tip</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_optionsButtonMappings_activate" swapped="no"/>
@@ -2021,7 +2016,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsPressureSensitive">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Pressure sensitivity</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_optionsPressureSensitive_activate" swapped="no"/>
@@ -2031,7 +2025,6 @@ and other contributors
                       <object class="GtkMenuItem" id="button2_mapping">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Button _2 Mapping</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
@@ -2041,7 +2034,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2Pen">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Pen</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_button2Pen_activate" swapped="no"/>
@@ -2051,7 +2043,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2Eraser">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Eraser</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2Pen</property>
@@ -2062,7 +2053,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2Highlighter">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Highlighter</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2Pen</property>
@@ -2073,7 +2063,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2Text">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Text</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2Pen</property>
@@ -2084,7 +2073,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2Image">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Image</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2Pen</property>
@@ -2095,7 +2083,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2SelectRegion">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">Select Re_gion</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2Pen</property>
@@ -2106,7 +2093,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2SelectRectangle">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">Select _Rectangle</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2Pen</property>
@@ -2117,7 +2103,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2VerticalSpace">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Vertical Space</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2Pen</property>
@@ -2128,7 +2113,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2Hand">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">H_and Tool</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2Pen</property>
@@ -2145,7 +2129,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2LinkBrush">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Link to Primary Brush</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_button2LinkBrush_activate" swapped="no"/>
@@ -2155,7 +2138,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button2CopyBrush">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Copy of Current Brush</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2LinkBrush</property>
@@ -2165,7 +2147,6 @@ and other contributors
                             <child>
                               <object class="GtkRadioMenuItem" id="button2NABrush">
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button2LinkBrush</property>
@@ -2179,7 +2160,6 @@ and other contributors
                       <object class="GtkMenuItem" id="button3_mapping">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Button _3 Mapping</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
@@ -2189,7 +2169,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3Pen">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Pen</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_button3Pen_activate" swapped="no"/>
@@ -2199,7 +2178,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3Eraser">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Eraser</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3Pen</property>
@@ -2210,7 +2188,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3Highlighter">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Highlighter</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3Pen</property>
@@ -2221,7 +2198,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3Text">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Text</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3Pen</property>
@@ -2232,7 +2208,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3Image">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Image</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3Pen</property>
@@ -2243,7 +2218,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3SelectRegion">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">Select Re_gion</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3Pen</property>
@@ -2254,7 +2228,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3SelectRectangle">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">Select _Rectangle</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3Pen</property>
@@ -2265,7 +2238,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3VerticalSpace">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Vertical Space</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3Pen</property>
@@ -2276,7 +2248,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3Hand">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">H_and Tool</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3Pen</property>
@@ -2293,7 +2264,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3LinkBrush">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Link to Primary Brush</property>
                                 <property name="use_underline">True</property>
                                 <signal name="activate" handler="on_button3LinkBrush_activate" swapped="no"/>
@@ -2303,7 +2273,6 @@ and other contributors
                               <object class="GtkRadioMenuItem" id="button3CopyBrush">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">_Copy of Current Brush</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3LinkBrush</property>
@@ -2313,7 +2282,6 @@ and other contributors
                             <child>
                               <object class="GtkRadioMenuItem" id="button3NABrush">
                                 <property name="can_focus">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">NA</property>
                                 <property name="use_underline">True</property>
                                 <property name="group">button3LinkBrush</property>
@@ -2327,7 +2295,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsButtonSwitchMapping">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Buttons Switch Mappings</property>
                         <property name="use_underline">True</property>
                         <signal name="toggled" handler="on_optionsButtonsSwitchMappings_activate" swapped="no"/>
@@ -2343,7 +2310,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsProgressiveBG">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Progressive Backgrounds</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_optionsProgressiveBG_activate" swapped="no"/>
@@ -2353,7 +2319,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsPrintRuling">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Print Paper _Ruling</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_optionsPrintRuling_activate" swapped="no"/>
@@ -2363,7 +2328,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsAutoloadPdfXoj">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Autoload pdf.xoj</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_optionsAutoloadPdfXoj_activate" swapped="no"/>
@@ -2373,7 +2337,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsLeftHanded">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Left-Handed Scrollbar</property>
                         <property name="use_underline">True</property>
                         <signal name="toggled" handler="on_optionsLeftHanded_activate" swapped="no"/>
@@ -2383,7 +2346,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsShortenMenus">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Shorten _Menus</property>
                         <property name="use_underline">True</property>
                         <signal name="toggled" handler="on_optionsShortenMenus_activate" swapped="no"/>
@@ -2393,7 +2355,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsPenCursor">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Pencil Cursor</property>
                         <property name="use_underline">True</property>
                         <signal name="toggled" handler="on_optionsPenCursor_activate" swapped="no"/>
@@ -2409,7 +2370,6 @@ and other contributors
                       <object class="GtkCheckMenuItem" id="optionsAutoSavePrefs">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">A_uto-Save Preferences</property>
                         <property name="use_underline">True</property>
                         <signal name="toggled" handler="on_optionsAutoSavePrefs_activate" swapped="no"/>
@@ -2419,7 +2379,6 @@ and other contributors
                       <object class="GtkMenuItem" id="optionsSavePreferences">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Save Preferences</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_optionsSavePreferences_activate" swapped="no"/>
@@ -2433,7 +2392,6 @@ and other contributors
               <object class="GtkMenuItem" id="menuHelp">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -2444,7 +2402,6 @@ and other contributors
                         <property name="label">gtk-index</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_helpIndex_activate" swapped="no"/>
@@ -2454,7 +2411,6 @@ and other contributors
                       <object class="GtkMenuItem" id="helpAbout">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_About</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_helpAbout_activate" swapped="no"/>
@@ -2481,7 +2437,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Save</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-save</property>
                 <signal name="clicked" handler="on_fileSave_activate" swapped="no"/>
               </object>
@@ -2495,7 +2450,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">New</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-new</property>
                 <signal name="clicked" handler="on_fileNew_activate" swapped="no"/>
               </object>
@@ -2509,7 +2463,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Open</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-open</property>
                 <signal name="clicked" handler="on_fileOpen_activate" swapped="no"/>
               </object>
@@ -2522,7 +2475,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem11">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkVSeparator" id="vseparator1">
                     <property name="visible">True</property>
@@ -2539,7 +2491,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Cut</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-cut</property>
                 <signal name="clicked" handler="on_editCut_activate" swapped="no"/>
               </object>
@@ -2553,7 +2504,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Copy</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-copy</property>
                 <signal name="clicked" handler="on_editCopy_activate" swapped="no"/>
               </object>
@@ -2567,7 +2517,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Paste</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-paste</property>
                 <signal name="clicked" handler="on_editPaste_activate" swapped="no"/>
               </object>
@@ -2580,7 +2529,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem12">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkVSeparator" id="vseparator2">
                     <property name="visible">True</property>
@@ -2597,7 +2545,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Undo</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-undo</property>
                 <signal name="clicked" handler="on_editUndo_activate" swapped="no"/>
               </object>
@@ -2611,7 +2558,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Redo</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-redo</property>
                 <signal name="clicked" handler="on_editRedo_activate" swapped="no"/>
               </object>
@@ -2624,7 +2570,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem13">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkVSeparator" id="vseparator3">
                     <property name="visible">True</property>
@@ -2641,7 +2586,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">First Page</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-goto-first</property>
                 <signal name="clicked" handler="on_viewFirstPage_activate" swapped="no"/>
               </object>
@@ -2655,7 +2599,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Previous Page</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-go-back</property>
                 <signal name="clicked" handler="on_viewPreviousPage_activate" swapped="no"/>
               </object>
@@ -2669,7 +2612,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Next Page</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-go-forward</property>
                 <signal name="clicked" handler="on_viewNextPage_activate" swapped="no"/>
               </object>
@@ -2683,7 +2625,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Last Page</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-goto-last</property>
                 <signal name="clicked" handler="on_viewLastPage_activate" swapped="no"/>
               </object>
@@ -2696,7 +2637,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem14">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkVSeparator" id="vseparator4">
                     <property name="visible">True</property>
@@ -2713,7 +2653,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Zoom Out</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-zoom-out</property>
                 <signal name="clicked" handler="on_viewZoomOut_activate" swapped="no"/>
               </object>
@@ -2727,7 +2666,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Page Width</property>
-                <property name="use_action_appearance">False</property>
                 <property name="visible_vertical">False</property>
                 <property name="stock_id">gtk-zoom-fit</property>
                 <signal name="clicked" handler="on_viewPageWidth_activate" swapped="no"/>
@@ -2742,7 +2680,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Zoom In</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-zoom-in</property>
                 <signal name="clicked" handler="on_viewZoomIn_activate" swapped="no"/>
               </object>
@@ -2756,7 +2693,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Normal Size</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-zoom-100</property>
                 <signal name="clicked" handler="on_viewNormalSize_activate" swapped="no"/>
               </object>
@@ -2770,7 +2706,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Set Zoom</property>
-                <property name="use_action_appearance">False</property>
                 <property name="stock_id">gtk-find</property>
                 <signal name="clicked" handler="on_viewSetZoom_activate" swapped="no"/>
               </object>
@@ -2784,7 +2719,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Toggle Fullscreen</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">fullscreen_icon</property>
                 <signal name="toggled" handler="on_viewFullscreen_activate" swapped="no"/>
@@ -2810,7 +2744,6 @@ and other contributors
               <object class="GtkRadioToolButton" id="buttonPen">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">toolbutton</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">pencil_icon</property>
@@ -2826,7 +2759,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Eraser</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Eraser</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">eraser_icon</property>
@@ -2843,7 +2775,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Highlighter</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Highlighter</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">highlighter_icon</property>
@@ -2860,7 +2791,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Text</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Text</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">text_icon</property>
@@ -2877,7 +2807,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Image</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Image</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-orientation-portrait</property>
@@ -2894,7 +2823,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Shape Recognizer</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Shape Recognizer</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">shapes_icon</property>
@@ -2910,7 +2838,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Ruler</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Ruler</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">ruler_icon</property>
@@ -2925,7 +2852,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem15">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkVSeparator" id="vseparator5">
                     <property name="visible">True</property>
@@ -2942,7 +2868,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Select Region</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Select Region</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">lasso_select_icon</property>
@@ -2959,7 +2884,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Select Rectangle</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Select Rectangle</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">rectangle_select_icon</property>
@@ -2976,7 +2900,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Vertical Space</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Vertical Space</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">vertical_space_icon</property>
@@ -2993,7 +2916,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Hand Tool</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Hand Tool</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">hand_icon</property>
@@ -3009,7 +2931,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem16">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkVSeparator" id="vseparator6">
                     <property name="visible">True</property>
@@ -3026,7 +2947,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Default</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Default</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">default_tool_icon</property>
@@ -3042,7 +2962,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Default Pen</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Default Pen</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">default_pen_icon</property>
@@ -3057,7 +2976,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem18">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkVSeparator" id="vseparator8">
                     <property name="visible">True</property>
@@ -3074,7 +2992,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Fine</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Fine</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">fine_icon</property>
@@ -3090,7 +3007,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Medium</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Medium</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">medium_icon</property>
@@ -3108,7 +3024,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Thick</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Thick</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">thick_icon</property>
@@ -3123,7 +3038,6 @@ and other contributors
             <child>
               <object class="GtkRadioToolButton" id="buttonThicknessOther">
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-dialog-warning</property>
                 <property name="group">buttonFine</property>
@@ -3137,7 +3051,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem17">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkVSeparator" id="vseparator7">
                     <property name="visible">True</property>
@@ -3154,7 +3067,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Black</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Black</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">black_icon</property>
@@ -3170,7 +3082,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Blue</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Blue</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">blue_icon</property>
@@ -3187,7 +3098,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Red</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Red</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">red_icon</property>
@@ -3204,7 +3114,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Green</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Green</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">green_icon</property>
@@ -3221,7 +3130,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Gray</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Gray</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">gray_icon</property>
@@ -3238,7 +3146,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Light Blue</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Light Blue</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">light_blue_icon</property>
@@ -3255,7 +3162,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Light Green</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Light Green</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">light_green_icon</property>
@@ -3272,7 +3178,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Magenta</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Magenta</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">magenta_icon</property>
@@ -3289,7 +3194,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Orange</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Orange</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">orange_icon</property>
@@ -3306,7 +3210,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Yellow</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Yellow</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">yellow_icon</property>
@@ -3323,7 +3226,6 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">White</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">White</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">white_icon</property>
@@ -3338,7 +3240,6 @@ and other contributors
             <child>
               <object class="GtkRadioToolButton" id="buttonColorOther">
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-dialog-warning</property>
                 <property name="group">buttonBlack</property>
@@ -3352,7 +3253,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem22">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkColorButton" id="buttonColorChooser">
                     <property name="width_request">34</property>
@@ -3362,7 +3262,6 @@ and other contributors
                     <property name="receives_default">False</property>
                     <property name="tooltip_text" translatable="yes">Pick a Color</property>
                     <property name="border_width">2</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="color-set" handler="on_buttonColorChooser_set" swapped="no"/>
                   </object>
                 </child>
@@ -3375,7 +3274,6 @@ and other contributors
               <object class="GtkToolItem" id="toolitem21">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkVSeparator" id="vseparator10">
                     <property name="visible">True</property>
@@ -3391,13 +3289,11 @@ and other contributors
               <object class="GtkToolItem" id="toolitem20">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkFontButton" id="fontButton">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="focus_on_click">False</property>
                     <property name="use_font">True</property>
                     <signal name="font-set" handler="on_fontButton_font_set" swapped="no"/>
@@ -3543,10 +3439,12 @@ and other contributors
       </object>
     </child>
   </object>
-  <object class="GtkImage" id="yellow_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">pixmaps/yellow.png</property>
+  <object class="GtkAdjustment" id="zoom_adjustment">
+    <property name="lower">10</property>
+    <property name="upper">1500</property>
+    <property name="value">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
   </object>
   <object class="GtkDialog" id="zoomDialog">
     <property name="can_focus">False</property>
@@ -3571,7 +3469,6 @@ and other contributors
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -3587,7 +3484,6 @@ and other contributors
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -3603,7 +3499,6 @@ and other contributors
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -3637,7 +3532,6 @@ and other contributors
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="border_width">4</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="use_underline">True</property>
                     <property name="draw_indicator">True</property>
                     <signal name="toggled" handler="on_radioZoom_toggled" swapped="no"/>
@@ -3695,7 +3589,6 @@ and other contributors
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="border_width">4</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_underline">True</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">radioZoom</property>
@@ -3714,7 +3607,6 @@ and other contributors
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="border_width">4</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_underline">True</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">radioZoom</property>
@@ -3733,7 +3625,6 @@ and other contributors
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="border_width">4</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_underline">True</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">radioZoom</property>
@@ -3759,12 +3650,5 @@ and other contributors
       <action-widget response="-10">button1</action-widget>
       <action-widget response="-5">button2</action-widget>
     </action-widgets>
-  </object>
-  <object class="GtkAdjustment" id="zoom_adjustment">
-    <property name="lower">10</property>
-    <property name="upper">1500</property>
-    <property name="value">100</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">5</property>
   </object>
 </interface>

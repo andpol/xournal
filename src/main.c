@@ -168,6 +168,7 @@ void init_stuff (int argc, char *argv[])
   gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
 
   ui.viewport_top = 0;
+  // TODO: does this work?
   ui.viewport_bottom = gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->page_size / ui.zoom;
 
   // set up the page size and canvas size
@@ -246,6 +247,7 @@ void init_stuff (int argc, char *argv[])
 
   update_undo_redo_enabled();
   update_copy_paste_enabled();
+  update_search_string(NULL);
   update_vbox_order(ui.vertical_order[ui.fullscreen?1:0]);
   gtk_widget_grab_focus(GTK_WIDGET(canvas));
 

@@ -73,6 +73,22 @@ on_editFindPrevious_activate           (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 G_MODULE_EXPORT void
+on_findNextButton_clicked              (GtkButton       *button,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_findPreviousButton_clicked          (GtkButton       *button,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_findCloseButton_clicked             (GtkButton       *button,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_findText_changed                    (GtkEditable     *editable,
+		                                gpointer         user_data);
+
+G_MODULE_EXPORT void
 on_editCut_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
