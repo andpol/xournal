@@ -786,9 +786,10 @@ void select_on_match(struct Item *item, gboolean backwards) {
 }
 
 gboolean do_find_match(int page_offset, struct Item *item, gboolean backwards) {
+	int cx, cy;
+
 	// TODO: strstr adequate? Don't want to start every text item just to search
 	if (item->type == ITEM_TEXT && strstr(item->text, search_string)) {
-		// TODO: also scroll to item
 		int new_page_no;
 		if (backwards) {
 			new_page_no = (ui.pageno - page_offset) % journal.npages;
@@ -800,8 +801,20 @@ gboolean do_find_match(int page_offset, struct Item *item, gboolean backwards) {
 		}
 
 		if (new_page_no != ui.pageno) {
-			do_switch_page(new_page_no, TRUE, TRUE);
-			// TODO: scroll to item
+			do_switch_page(new_page_no, FALSE, FALSE);
+		}
+
+		if (item->bbox.top + ui.cur_page->voffset < ui.viewport_top
+				|| item->bbox.bottom +ui.cur_page->voffset > ui.viewport_bottom) {
+			gnome_canvas_get_scroll_offsets(canvas, &cx, &cy);
+//			printf("viewport: %f %f\n", ui.viewport_top, ui.viewport_bottom);
+//			printf("offset: %d  bbox.top: %f ", cy, item->bbox.top);
+			cy = ((item->bbox.top) + ui.cur_page->voffset - (ui.viewport_bottom - ui.viewport_top) / 2) * ui.zoom;
+			if (cy < 0) {
+				cy = 0;
+			}
+//			printf(" scrollto: %d\n", cy);
+			gnome_canvas_scroll_to(canvas, cx, cy);
 		}
 
 		select_on_match(item, backwards);

@@ -167,6 +167,9 @@ void init_stuff (int argc, char *argv[])
   gtk_layout_get_hadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
   gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
 
+  ui.viewport_top = 0;
+  ui.viewport_bottom = gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->page_size / ui.zoom;
+
   // set up the page size and canvas size
   update_page_stuff();
 

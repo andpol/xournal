@@ -296,6 +296,7 @@ typedef struct UIData {
   GtkWidget *mrumenu[MRU_SIZE];
   gboolean bg_apply_all_pages;
   int window_default_width, window_default_height, scrollbar_step_increment;
+  double viewport_top, viewport_bottom;
   gboolean print_ruling; // print the paper ruling ?
   int default_unit; // the default unit for paper sizes
   int startuptool; // the default tool at startup

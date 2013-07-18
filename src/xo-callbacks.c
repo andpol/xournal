@@ -2963,23 +2963,22 @@ on_vscroll_changed                     (GtkAdjustment   *adjustment,
                                         gpointer         user_data)
 {
   gboolean need_update;
-  double viewport_top, viewport_bottom;
   struct Page *tmppage;
 
   if (!ui.view_continuous) return;
 
   if (ui.progressive_bg) rescale_bg_pixmaps();
   need_update = FALSE;
-  viewport_top = adjustment->value / ui.zoom;
-  viewport_bottom = (adjustment->value + adjustment->page_size) / ui.zoom;
+  ui.viewport_top = adjustment->value / ui.zoom;
+  ui.viewport_bottom = (adjustment->value + adjustment->page_size) / ui.zoom;
   tmppage = ui.cur_page;
-  while (viewport_top > tmppage->voffset + tmppage->height) {
+  while (ui.viewport_top > tmppage->voffset + tmppage->height) {
     if (ui.pageno == journal.npages-1) break;
     need_update = TRUE;
     ui.pageno++;
     tmppage = g_list_nth_data(journal.pages, ui.pageno);
   }
-  while (viewport_bottom < tmppage->voffset) {
+  while (ui.viewport_bottom < tmppage->voffset) {
     if (ui.pageno == 0) break;
     need_update = TRUE;
     ui.pageno--;
