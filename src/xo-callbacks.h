@@ -666,5 +666,13 @@ on_optionsPenCursor_activate           (GtkCheckMenuItem *checkmenuitem,
                                         gpointer         user_data);
 
 G_MODULE_EXPORT void
-on_close_sidebar_clicked			   (GtkButton *button,
+on_close_sidebar_clicked               (GtkButton        *button,
                                         gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_viewSidebar_toggled                 (GtkCheckMenuItem *menuitem,
+                                        gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_sidebar_size_allocate               (GtkWidget        *widget,
+                                        gpointer         userdata);

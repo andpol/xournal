@@ -322,6 +322,8 @@ typedef struct UIData {
   GtkPrintSettings *print_settings;
 #endif
   gboolean poppler_force_cairo; // force poppler to use cairo
+  gint sidebar_width; // width in pixels
+  gboolean sidebar_open;
 } UIData;
 
 #define BRUSH_LINKED 0

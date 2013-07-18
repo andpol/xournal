@@ -1503,6 +1503,8 @@ void init_config_default(void)
   ui.button_switch_mapping = FALSE;
   ui.autoload_pdf_xoj = FALSE;
   ui.poppler_force_cairo = FALSE;
+  ui.sidebar_width = 200;
+  ui.sidebar_open = FALSE;
   
   // the default UI vertical order
   // Windowed mode
@@ -1680,6 +1682,12 @@ void save_config_to_file(void)
   update_keyval("general", "poppler_force_cairo",
     _(" force PDF rendering through cairo (slower but nicer) (true/false)"),
     g_strdup(ui.poppler_force_cairo?"true":"false"));
+  update_keyval("general", "sidebar_width",
+    _(" the width of the Index/Bookmarks sidebar, in pixels"),
+    g_strdup_printf("%d", ui.sidebar_width));
+  update_keyval("general", "sidebar_open",
+    _(" whether or not the Index/Bookmarks sidebar is open"),
+     g_strdup(ui.sidebar_open ? "true" : "false"));
 
   update_keyval("paper", "width",
     _(" the default page width, in points (1/72 in)"),
@@ -2049,6 +2057,8 @@ void load_config_from_file(void)
   parse_keyval_float("general", "highlighter_opacity", &ui.hiliter_opacity, 0., 1.);
   parse_keyval_boolean("general", "autosave_prefs", &ui.auto_save_prefs);
   parse_keyval_boolean("general", "poppler_force_cairo", &ui.poppler_force_cairo);
+  parse_keyval_int("general", "sidebar_width", &ui.sidebar_width, 0, 5000);
+  parse_keyval_boolean("general", "sidebar_open", &ui.sidebar_open);
   
   parse_keyval_float("paper", "width", &ui.default_page.width, 1., 5000.);
   parse_keyval_float("paper", "height", &ui.default_page.height, 1., 5000.);

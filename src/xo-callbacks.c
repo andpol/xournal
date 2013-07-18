@@ -3684,8 +3684,70 @@ on_optionsPenCursor_activate           (GtkCheckMenuItem *checkmenuitem,
 }
 
 void
-on_close_sidebar_clicked			   (GtkButton *button,
-                                        gpointer         user_data)
+on_close_sidebar_clicked               (GtkButton *button,
+                                        gpointer  user_data)
 {
-	gtk_paned_set_position(GTK_PANED(GET_COMPONENT("winMainPaned")), 0);
+  GtkCheckMenuItem *check_item = GTK_CHECK_MENU_ITEM(GET_COMPONENT("viewSidebar"));
+  // Set the checkbox menu item state - it's callback function updates the sidebar
+  gtk_check_menu_item_set_active(check_item, FALSE);
+}
+
+void
+on_viewSidebar_toggled   (GtkCheckMenuItem *menuitem,
+                          gpointer         userdata)
+{
+  GtkPaned * paned = GTK_PANED(GET_COMPONENT("winMainPaned"));
+  GtkWidget *sidebar = GET_COMPONENT("sidebar");
+
+  // *** BLOCK SIGNAL HANDLER
+  gtk_signal_handler_block_by_func(sidebar, on_sidebar_size_allocate, NULL);
+
+  if (!gtk_check_menu_item_get_active(menuitem)) {
+    // Save the size of the sidebar, then close/minimize it
+    ui.sidebar_width = gtk_paned_get_position(paned);
+    gtk_paned_set_position(paned, 0);
+    ui.sidebar_open = FALSE;
+  } else {
+    // Display the sidebar from the saved width
+    gtk_paned_set_position(paned, ui.sidebar_width);
+    ui.sidebar_open = TRUE;
+  }
+
+  // *** UNBLOCK SIGNAL HANDLER
+  gtk_signal_handler_unblock_by_func(sidebar, on_sidebar_size_allocate, NULL);
+}
+
+void
+on_sidebar_size_allocate       (GtkWidget *widget,
+                                gpointer  userdata)
+{
+
+  GtkCheckMenuItem *viewSidebar = GTK_CHECK_MENU_ITEM(GET_COMPONENT("viewSidebar"));
+  GtkPaned *paned = GTK_PANED(GET_COMPONENT("winMainPaned"));
+  gint new_size = gtk_paned_get_position(paned);
+
+  // *** BLOCK SIGNAL HANDLERS
+  gtk_signal_handler_block_by_func(viewSidebar, on_viewSidebar_toggled, NULL);
+  gtk_signal_handler_block_by_func(widget, on_sidebar_size_allocate, NULL);
+
+  if (new_size <= 0) {
+    gtk_check_menu_item_set_active(viewSidebar, FALSE);
+    ui.sidebar_open = FALSE;
+  } else if (new_size < 100) {
+    // Keep at 100 size - prevent user from making it smaller
+    gtk_paned_set_position(paned, 100);
+    // Save the size and update the menu item status
+    ui.sidebar_width = 100;
+    gtk_check_menu_item_set_active(viewSidebar, TRUE);
+    ui.sidebar_open = TRUE;
+  } else {
+    // Save the size and update the menu item status
+    ui.sidebar_width = gtk_paned_get_position(paned);
+    gtk_check_menu_item_set_active(viewSidebar, TRUE);
+    ui.sidebar_open = TRUE;
+  }
+
+  // *** UNBLOCK SIGNAL HANDLERS
+  gtk_signal_handler_unblock_by_func(viewSidebar, on_viewSidebar_toggled, NULL);
+  gtk_signal_handler_unblock_by_func(widget, on_sidebar_size_allocate, NULL);
 }
