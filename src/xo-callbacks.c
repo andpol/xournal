@@ -1881,6 +1881,12 @@ on_toolsVerticalSpace_activate         (GtkMenuItem     *menuitem,
   update_cursor();
 }
 
+void
+on_gradient_toggle                 (GtkMenuItem     *menuitem,
+                                       gpointer         user_data)
+{
+  //process_color_activate(menuitem, COLOR_PURPLE, predef_colors_rgba[COLOR_PURPLE]);
+}
 
 void
 on_colorBlack_activate                 (GtkMenuItem     *menuitem,
