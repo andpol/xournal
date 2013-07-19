@@ -2435,7 +2435,7 @@ on_canvas_button_press_event           (GtkWidget       *widget,
       else if (event->button == 5) scroll_event.scroll.direction = GDK_SCROLL_DOWN;
       else if (event->button == 6) scroll_event.scroll.direction = GDK_SCROLL_LEFT;
       else scroll_event.scroll.direction = GDK_SCROLL_RIGHT;
-      gtk_widget_event(GET_COMPONENT("scrolledwindowMain"), &scroll_event);
+      gtk_widget_event(GTK_WIDGET(GET_COMPONENT("scrolledwindowMain")), &scroll_event);
     }
     return FALSE;
   }
@@ -3612,7 +3612,7 @@ on_optionsShortenMenus_activate        (GtkMenuItem     *menuitem,
     nextptr = strchr(item, ' ');
     if (nextptr!=NULL) *nextptr = 0;
     // hide or show the item
-    w = GET_COMPONENT(item);
+    w = GTK_WIDGET(GET_COMPONENT(item));
     if (w != NULL) {
       if (ui.shorten_menus) gtk_widget_hide(w);
       else gtk_widget_show(w);

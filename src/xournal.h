@@ -391,7 +391,7 @@ typedef struct BgPdf {
 // UTILITY MACROS
 
 // getting a component of the interface by name
-#define GET_COMPONENT(a)  GTK_WIDGET (gtk_builder_get_object(GTK_BUILDER(builder), a))
+#define GET_COMPONENT(a)  gtk_builder_get_object(GTK_BUILDER(builder), a)
 
 // the margin between consecutive pages in continuous view
 #define VIEW_CONTINUOUS_SKIP 20.0

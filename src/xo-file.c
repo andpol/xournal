@@ -1378,7 +1378,7 @@ void init_mru(void)
   
   g_strlcpy(s, "mru0", 5);
   for (s[3]='0', i=0; i<MRU_SIZE; s[3]++, i++) {
-    ui.mrumenu[i] = GET_COMPONENT(s);
+    ui.mrumenu[i] = GTK_WIDGET(GET_COMPONENT(s));
     ui.mru[i] = NULL;
   }
   f = g_io_channel_new_file(ui.mrufile, "r", NULL);
@@ -1419,7 +1419,7 @@ void update_mru_menu(void)
     }
     else gtk_widget_hide(ui.mrumenu[i]);
   }
-  gtk_widget_set_sensitive(GET_COMPONENT("fileRecentFiles"), anyone);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("fileRecentFiles")), anyone);
 }
 
 void new_mru_entry(char *name)

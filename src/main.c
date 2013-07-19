@@ -145,7 +145,7 @@ void init_stuff (int argc, char *argv[])
   // prevent interface items from stealing focus
   // glade doesn't properly handle can_focus, so manually set it
   gtk_combo_box_set_focus_on_click(GTK_COMBO_BOX(GET_COMPONENT("comboLayer")), FALSE);
-  g_signal_connect(GET_COMPONENT("spinPageNo"), "activate",
+  g_signal_connect(GTK_WIDGET(GET_COMPONENT("spinPageNo")), "activate",
           G_CALLBACK(handle_activate_signal), NULL);
   gtk_container_forall(GTK_CONTAINER(winMain), unset_flags, (gpointer)GTK_CAN_FOCUS);
   GTK_WIDGET_SET_FLAGS(GTK_WIDGET(canvas), GTK_CAN_FOCUS);
@@ -157,7 +157,7 @@ void init_stuff (int argc, char *argv[])
   // set up and initialize the canvas
 
   gtk_widget_show (GTK_WIDGET (canvas));
-  w = GET_COMPONENT("scrolledwindowMain");
+  w = GTK_WIDGET(GET_COMPONENT("scrolledwindowMain"));
   gtk_container_add (GTK_CONTAINER (w), GTK_WIDGET (canvas));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_widget_add_events (GTK_WIDGET (canvas), GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -217,7 +217,7 @@ void init_stuff (int argc, char *argv[])
     dev_list = dev_list->next;
   }
   if (!can_xinput)
-    gtk_widget_set_sensitive(GET_COMPONENT("optionsUseXInput"), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("optionsUseXInput")), FALSE);
 
   ui.use_xinput = ui.allow_xinput && can_xinput;
 
@@ -260,19 +260,19 @@ void init_stuff (int argc, char *argv[])
 
   if (!gtk_check_version(2, 16, 0)) {
     g_signal_connect (
-      GET_COMPONENT("menubar"),
+      GTK_WIDGET(GET_COMPONENT("menubar")),
       "event", G_CALLBACK (filter_extended_events),
       NULL);
     g_signal_connect (
-      GET_COMPONENT("toolbarMain"),
+      GTK_WIDGET(GET_COMPONENT("toolbarMain")),
       "event", G_CALLBACK (filter_extended_events),
       NULL);
     g_signal_connect (
-      GET_COMPONENT("toolbarPen"),
+      GTK_WIDGET(GET_COMPONENT("toolbarPen")),
       "event", G_CALLBACK (filter_extended_events),
       NULL);
     g_signal_connect (
-      GET_COMPONENT("statusbar"),
+      GTK_WIDGET(GET_COMPONENT("statusbar")),
       "event", G_CALLBACK (filter_extended_events),
       NULL);
     g_signal_connect (
