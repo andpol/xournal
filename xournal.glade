@@ -3003,7 +3003,7 @@ and other contributors
                 <property name="label" translatable="yes">Gradient</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gnome-stock-blank</property>
-                <signal name="toggled" handler="on_gradient_activate" swapped="no"/>
+                <signal name="toggled" handler="on_gradient_toggle" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>

@@ -1886,7 +1886,6 @@ on_gradient_toggle                     (GtkMenuItem     *menuitem,
                                        gpointer         user_data)
 {
   int i;
-  end_text();
   ui.color_gradient = gtk_toggle_tool_button_get_active(
     GTK_TOGGLE_TOOL_BUTTON (menuitem));
   for (i=0; i<=NUM_BUTTONS; i++)
