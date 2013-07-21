@@ -926,14 +926,19 @@ on_editFind_activate                   (GtkMenuItem     *menuitem,
 {
 	GtkWidget *find_dialog;
 	GtkEntry *find_text;
+	GtkCheckButton *case_insensitive;
 
 	get_search_string_from_selection();
-	find_next(FALSE);
 
 	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
 
+	// Put the search string into the text box
 	find_text = (GtkEntry*) GTK_WIDGET(GET_COMPONENT("findText"));
 	gtk_entry_set_text(find_text, search_string == NULL ? "" : search_string);
+
+	// Set the case insensitive checkbox
+	case_insensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
+	gtk_toggle_button_set_active(&(case_insensitive->toggle_button), search_case_insensitive);
 
 	gtk_widget_show(find_dialog);
 	gtk_dialog_set_default_response(GTK_DIALOG(find_dialog), GTK_RESPONSE_OK);
@@ -981,6 +986,16 @@ on_findCloseButton_clicked             (GtkButton       *button,
 	gtk_widget_hide(find_dialog);
 }
 
+void
+on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
+                                        gpointer         user_data)
+{
+	if (button->toggle_button.active) {
+		search_case_insensitive = TRUE;
+	} else {
+		search_case_insensitive = FALSE;
+	}
+}
 
 void
 on_findText_changed                    (GtkEditable     *editable,

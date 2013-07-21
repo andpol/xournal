@@ -415,6 +415,7 @@ extern struct UIData ui;
 extern struct BgPdf bgpdf;
 extern struct UndoItem *undo, *redo;
 extern gchar *search_string;
+extern gboolean search_case_insensitive;
 
 extern double DEFAULT_ZOOM;
 

@@ -674,6 +674,85 @@ void end_text(void)
   gtk_object_destroy(GTK_OBJECT(tmpitem));
 }
 
+int rstrstr_index(const char *haystack, const char *needle, int limit) {
+	int index = -1, tmp_index = 0;
+	char *match = NULL;
+	const char *new_haystack;
+	int needle_len = strlen(needle);
+
+	new_haystack = haystack;
+
+	for (;;) {
+		match = strstr(new_haystack, needle);
+		tmp_index = match - haystack;
+
+		if (match == NULL || tmp_index + needle_len > limit) {
+			break;
+		}
+
+		new_haystack = match + 1;
+		index = tmp_index;
+	}
+
+	return index;
+}
+
+// A case-insensitive version of strstr_index
+int strstr_index(const char *haystack, const char *needle, int from, gboolean backwards, gboolean case_insensitive) {
+	int i;
+	char *match;
+	const char *new_haystack, *new_needle;
+	char *lower_haystack, *lower_needle;
+	int retval;
+
+	if (case_insensitive) {
+		lower_haystack = (char *) malloc(sizeof(char) * strlen(haystack) + 1);
+		lower_needle = (char *) malloc(sizeof(char) * strlen(needle) + 1);
+
+		for (i = 0; i < strlen(haystack); i++) {
+			lower_haystack[i] = tolower(haystack[i]);
+		}
+		lower_haystack[i] = '\0';
+
+		for (i = 0; i < strlen(needle); i++) {
+			lower_needle[i] = tolower(needle[i]);
+		}
+		lower_needle[i] = '\0';
+
+		new_haystack = lower_haystack;
+		new_needle = lower_needle;
+	} else {
+		new_haystack = haystack;
+		new_needle = needle;
+	}
+
+	if (from == -1) {
+		if (backwards) {
+			from = strlen(new_haystack) + 1;
+		} else {
+			from = 0;
+		}
+	}
+
+	if (backwards) {
+		retval = rstrstr_index(new_haystack, new_needle, from);
+	} else {
+		match = strstr(new_haystack + from, new_needle);
+		if (match == NULL) {
+			retval = -1;
+		} else {
+			retval = match - new_haystack;
+		}
+	}
+
+	if (case_insensitive) {
+		free(lower_haystack);
+		free(lower_needle);
+	}
+
+	return retval;
+}
+
 /* Get the currently selected text (from inside a textbox), if any */
 gchar * get_selected_text() {
 	GtkTextBuffer *text_buffer;
@@ -681,13 +760,11 @@ gchar * get_selected_text() {
     gchar *text;
 
 	if (ui.cur_item_type != ITEM_TEXT) {
-		printf("not using text (%d)\n", ui.cur_item_type);
 		return NULL;
 	}
 
 	text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget));
 	if (!gtk_text_buffer_get_has_selection(text_buffer)) {
-		printf("no selection\n");
 		return NULL;
 	}
 
@@ -726,16 +803,13 @@ gboolean get_search_string_from_selection() {
 	return FALSE;
 }
 
-// Looks for the search string inside the current item.
-// Searches backwards from cursor or selection start if backwards is TRUE,
-// else searches forward from cursor or selection end.
-gboolean match_inside(gboolean backwards, GtkTextIter *start, GtkTextIter *end) {
+int get_cursor_offset(gboolean backwards) {
 	GtkTextBuffer *text_buffer;
     GtkTextIter dummy, cursor, limit;
     GtkTextMark *insert;
 
 	if (ui.cur_item_type != ITEM_TEXT) {
-		return FALSE;
+		return -1;
 	}
 
 	text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget) );
@@ -752,22 +826,13 @@ gboolean match_inside(gboolean backwards, GtkTextIter *start, GtkTextIter *end) 
 		gtk_text_buffer_get_iter_at_mark(text_buffer, &cursor, insert);
 	}
 
-	if (backwards) {
-		gtk_text_buffer_get_start_iter(text_buffer, &limit);
-		return gtk_text_iter_backward_search(&cursor, search_string,
-				GTK_TEXT_SEARCH_TEXT_ONLY, start, end, &limit);
-	} else {
-		return gtk_text_iter_forward_search(&cursor, search_string,
-				GTK_TEXT_SEARCH_TEXT_ONLY, start, end, NULL);
-	}
+	return gtk_text_iter_get_offset(&cursor);
 }
 
-// Given a text item that contains the search string, select
-// the found match.
-void select_on_match(struct Item *item, gboolean backwards) {
+// Select a range of a text item.
+void select_text_range(struct Item *item, int start_index, int end_index) {
 	GtkTextBuffer *text_buffer;
-	GtkTextIter start, end, select_start, select_end;
-	gboolean search_result;
+	GtkTextIter start_iter, end_iter;
 
 	if (item->type != ITEM_TEXT) {
 		return;
@@ -776,33 +841,21 @@ void select_on_match(struct Item *item, gboolean backwards) {
 	// Start this text so we can make a selection
 	start_text_existing(item);
 
-	// Get TextIters for searching
-	text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget) );
-	gtk_text_buffer_get_start_iter(text_buffer, &start);
-	gtk_text_buffer_get_end_iter(text_buffer, &end);
+	text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget));
 
-	// Find actual occurrence and set selection
-	if (backwards) {
-		search_result = gtk_text_iter_backward_search(&end, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
-					&select_start, &select_end, &start);
-	} else {
-		search_result = gtk_text_iter_forward_search(&start, search_string, GTK_TEXT_SEARCH_TEXT_ONLY,
-					&select_start, &select_end, &end);
-	}
-
-	// Couldn't find string
-	if (!search_result) {
-		return;
-	}
-
-	gtk_text_buffer_select_range(text_buffer, &select_start, &select_end);
+	// Get iters and make selection
+	gtk_text_buffer_get_iter_at_offset(text_buffer, &start_iter, start_index);
+	gtk_text_buffer_get_iter_at_offset(text_buffer, &end_iter, end_index);
+	gtk_text_buffer_select_range(text_buffer, &start_iter, &end_iter);
 }
 
-gboolean do_find_match(int page_offset, struct Item *item, gboolean backwards) {
+gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboolean backwards) {
 	int cx, cy;
+	int index;
 
-	// TODO: strstr adequate? Don't want to start every text item just to search
-	if (item->type == ITEM_TEXT && strstr(item->text, search_string)) {
+	index = strstr_index(item->text, search_string, item_offset, backwards, search_case_insensitive);
+
+	if (item->type == ITEM_TEXT && index >= 0) {
 		int new_page_no;
 		if (backwards) {
 			new_page_no = (ui.pageno - page_offset) % journal.npages;
@@ -818,7 +871,7 @@ gboolean do_find_match(int page_offset, struct Item *item, gboolean backwards) {
 		}
 
 		if (item->bbox.top + ui.cur_page->voffset < ui.viewport_top
-				|| item->bbox.bottom +ui.cur_page->voffset > ui.viewport_bottom) {
+				|| item->bbox.bottom + ui.cur_page->voffset > ui.viewport_bottom) {
 			gnome_canvas_get_scroll_offsets(canvas, &cx, &cy);
 //			printf("viewport: %f %f\n", ui.viewport_top, ui.viewport_bottom);
 //			printf("offset: %d  bbox.top: %f ", cy, item->bbox.top);
@@ -830,7 +883,7 @@ gboolean do_find_match(int page_offset, struct Item *item, gboolean backwards) {
 			gnome_canvas_scroll_to(canvas, cx, cy);
 		}
 
-		select_on_match(item, backwards);
+		select_text_range(item, index, index + strlen(search_string));
 		return TRUE;
 	}
 
@@ -850,6 +903,7 @@ void find_next(gboolean backwards) {
 	GList *pagelist, *itemlist;
 	GtkTextBuffer *text_buffer;
 	GtkTextIter start, end, select_start, select_end;
+	int cursor;
 	int first_page_offset = 0, limit;
 
 	// Nothing to search for
@@ -858,11 +912,12 @@ void find_next(gboolean backwards) {
 	}
 
 	// Check for a match inside the current item, after the current selection or cursor position
-	if (match_inside(backwards, &start, &end)) {
-		printf("match inside\n");
-		text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui.cur_item->widget) );
-		gtk_text_buffer_select_range(text_buffer, &start, &end);
-		return;
+	if (ui.cur_item_type == ITEM_TEXT) {
+		cursor = get_cursor_offset(backwards);
+		end_text();
+		if (cursor != -1 && do_find_match(0, ui.cur_item, cursor, backwards)) {
+			return;
+		}
 	}
 
 	end_text();
@@ -886,7 +941,7 @@ void find_next(gboolean backwards) {
 	// Search the current page to the end (or start, if searching backwards)
 	for (i = 0; i < l->nitems && itemlist != NULL; i++) {
 		item = (struct Item *) itemlist->data;
-		if (do_find_match(0, item, backwards)) {
+		if (do_find_match(0, item, -1, backwards)) {
 			return;
 		}
 
@@ -917,7 +972,7 @@ void find_next(gboolean backwards) {
 
 		for (i = 0; i < limit; i++) {
 			item = (struct Item *) itemlist->data;
-			if (do_find_match(page_offset, item, backwards)) {
+			if (do_find_match(page_offset, item, -1, backwards)) {
 				return;
 			}
 

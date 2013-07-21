@@ -38,7 +38,9 @@ struct Journal journal; // the journal
 struct BgPdf bgpdf;  // the PDF loader stuff
 struct UIData ui;   // the user interface data
 struct UndoItem *undo, *redo; // the undo and redo stacks
-gchar *search_string; // current search string (for 'find')
+
+gchar *search_string; // current search string
+gboolean search_case_insensitive = TRUE;
 
 double DEFAULT_ZOOM;
 
