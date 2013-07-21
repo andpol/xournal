@@ -191,6 +191,11 @@ gboolean hittest_item(ArtSVP *lassosvp, struct Item *item)
 
 void finalize_selectregion(void)
 {
+  if (!ui.selection) {
+    // Nothing to do
+    return;
+  }
+
   GList *itemlist;
   struct Item *item;
   ArtVpath *vpath;
