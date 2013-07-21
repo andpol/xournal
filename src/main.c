@@ -32,6 +32,7 @@
 
 GtkWidget *winMain;
 GnomeCanvas *canvas;
+GnomeCanvas *canvas2;
 GtkBuilder *builder;
 
 struct Journal journal; // the journal
@@ -44,6 +45,7 @@ double DEFAULT_ZOOM;
 void init_stuff (int argc, char *argv[])
 {
   GtkWidget *w;
+  GtkWidget *q;
   GList *dev_list;
   GdkDevice *device;
   GdkScreen *screen;
@@ -71,7 +73,7 @@ void init_stuff (int argc, char *argv[])
 
   // we need an empty canvas prior to creating the journal structures
   canvas = GNOME_CANVAS (gnome_canvas_new_aa ());
-
+  canvas2 = GNOME_CANVAS (gnome_canvas_new_aa ());
   // initialize data
   ui.default_page.bg->canvas_item = NULL;
   ui.layerbox_length = 0;
@@ -165,6 +167,17 @@ void init_stuff (int argc, char *argv[])
   gnome_canvas_set_center_scroll_region (canvas, TRUE);
   gtk_layout_get_hadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
   gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
+  //
+  gtk_widget_show (GTK_WIDGET (canvas2));
+  q = GET_COMPONENT("scrolledwindowSplit");
+  gtk_container_add (GTK_CONTAINER (q), GTK_WIDGET (canvas2));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (q), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_widget_add_events (GTK_WIDGET (canvas2), GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  gnome_canvas_set_pixels_per_unit (canvas2, ui.zoom);
+  gnome_canvas_set_center_scroll_region (canvas2, TRUE);
+  gtk_layout_get_hadjustment(GTK_LAYOUT (canvas2))->step_increment = ui.scrollbar_step_increment;
+  gtk_layout_get_vadjustment(GTK_LAYOUT (canvas2))->step_increment = ui.scrollbar_step_increment;
+  //
 
   // set up the page size and canvas size
   update_page_stuff();
@@ -194,6 +207,35 @@ void init_stuff (int argc, char *argv[])
                     "value-changed", G_CALLBACK (on_vscroll_changed),
                     NULL);
   g_object_set_data (G_OBJECT (winMain), "canvas", canvas);
+
+
+  //
+  g_signal_connect ((gpointer) canvas2, "button_press_event",
+                    G_CALLBACK (on_canvas_button_press_event),
+                    NULL);
+  g_signal_connect ((gpointer) canvas2, "button_release_event",
+                    G_CALLBACK (on_canvas_button_release_event),
+                    NULL);
+  g_signal_connect ((gpointer) canvas2, "enter_notify_event",
+                    G_CALLBACK (on_canvas_enter_notify_event),
+                    NULL);
+  g_signal_connect ((gpointer) canvas2, "leave_notify_event",
+                    G_CALLBACK (on_canvas_leave_notify_event),
+                    NULL);
+  g_signal_connect ((gpointer) canvas2, "expose_event",
+                    G_CALLBACK (on_canvas_expose_event),
+                    NULL);
+  g_signal_connect ((gpointer) canvas2, "key_press_event",
+                    G_CALLBACK (on_canvas_key_press_event),
+                    NULL);
+  g_signal_connect ((gpointer) canvas2, "motion_notify_event",
+                    G_CALLBACK (on_canvas_motion_notify_event),
+                    NULL);
+  g_signal_connect ((gpointer) gtk_layout_get_vadjustment(GTK_LAYOUT(canvas2)),
+                    "value-changed", G_CALLBACK (on_vscroll_changed),
+                    NULL);
+  g_object_set_data (G_OBJECT (winMain), "canvas2", canvas2);
+  //
 
   screen = gtk_widget_get_screen(winMain);
   ui.screen_width = gdk_screen_get_width(screen);
@@ -283,6 +325,16 @@ void init_stuff (int argc, char *argv[])
       (gpointer)(gtk_scrolled_window_get_hscrollbar(GTK_SCROLLED_WINDOW(w))),
       "event", G_CALLBACK (filter_extended_events),
       NULL);
+    //
+    g_signal_connect (
+      (gpointer)(gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(q))),
+      "event", G_CALLBACK (filter_extended_events),
+      NULL);
+    g_signal_connect (
+      (gpointer)(gtk_scrolled_window_get_hscrollbar(GTK_SCROLLED_WINDOW(q))),
+      "event", G_CALLBACK (filter_extended_events),
+      NULL);
+    //
   }
 
   // load the MRU

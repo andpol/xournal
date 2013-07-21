@@ -3682,3 +3682,25 @@ on_optionsPenCursor_activate           (GtkCheckMenuItem *checkmenuitem,
   ui.pen_cursor = gtk_check_menu_item_get_active(checkmenuitem);
   update_cursor();
 }
+
+
+
+void
+on_splitWindow_activate                (GtkMenuItem      *menuitem,
+                                        gpointer         user_data)
+{
+  int width, height;
+  GtkWidget *windowMain;
+
+  windowMain = GET_COMPONENT("scrolledwindowMain");
+  gtk_widget_get_size_request(winMain, &width, &height);
+
+  gtk_window_get_size(GTK_WINDOW(winMain), &width, &height);
+
+  gtk_widget_set_usize(windowMain, width/2, -1);
+
+  //gtk_window_resize(GTK_WINDOW(windowMain), 200, -1);
+
+  printf("Width: %d, Height:%d\n",width,height);
+}
+
