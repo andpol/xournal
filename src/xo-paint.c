@@ -270,11 +270,14 @@ void continue_stroke(GdkEvent *event)
   //Color varying over the stroke?
   if (ui.cur_item->brush.variable_color) {
     realloc_cur_colors(ui.cur_path.num_points);
-    current_color = (guint)random()|255;
+    guint blah = random() %64 + 1;
+    current_color = rgba_saturation(ui.cur_item->brush.color_rgba, blah);
     ui.cur_colors[ui.cur_path.num_points-1] = current_color;
   }
   else  
     current_color = ui.cur_item->brush.color_rgba;
+
+ 
   
 
   if (ui.cur_brush->ruler)
@@ -394,6 +397,10 @@ void erase_stroke_portions(struct Item *item, double x, double y, double radius,
           if (newhead->brush.variable_width)
             newhead->widths = (gdouble *)g_memdup(item->widths, (i-1)*sizeof(gdouble));
           else newhead->widths = NULL;
+          if (newhead->brush.variable_color)
+            newhead->colors = (guint *)g_memdup(item->colors, (i-1)*sizeof(guint));
+          else newhead->colors = NULL;
+
         }
         while (++i < item->path->num_points) {
           pt+=2;
@@ -410,6 +417,10 @@ void erase_stroke_portions(struct Item *item, double x, double y, double radius,
             newtail->widths = (gdouble *)g_memdup(item->widths+i, 
               (item->path->num_points-i-1)*sizeof(gdouble));
           else newtail->widths = NULL;
+          if (newtail->brush.variable_color)
+            newtail->colors = (gdouble *)g_memdup(item->colors+i, 
+              (item->path->num_points-i-1)*sizeof(guint));
+          else newtail->colors = NULL;
           newtail->canvas_item = NULL;
         }
       }

@@ -826,6 +826,26 @@ guint32 gdkcolor_to_rgba(GdkColor gdkcolor, guint16 alpha)
   return rgba;
 }
 
+guint32 rgba_saturation(guint32 colorin, guint value) 
+{
+  guint32 red = ((colorin & 0xff000000) >> 24);
+  guint32 green = ((colorin & 0x00ff0000) >> 16);
+  guint32 blue = ((colorin & 0x0000ff00) >> 8);
+
+  red+=(value-1);
+  blue+=(value-1);
+  green+=(value-1);
+  if(red > 255)
+    red = 255;  
+  if(green > 255)
+    green = 255;
+  if(blue > 255)
+    blue = 255;
+
+  guint output = (red << 24) +(green <<16) + (blue << 8) + 0xff;
+  return output;
+}
+
 // some interface functions
 
 void update_thickness_buttons(void)
