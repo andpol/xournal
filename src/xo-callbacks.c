@@ -3774,3 +3774,28 @@ on_sidebar_combobox_changed            (GtkComboBox      *combobox,
   // Show the selected one
   gtk_widget_show(sidebar_contents[selected_index]);
 }
+
+void
+on_index_tree_cursor_changed           (GtkTreeView     *tree,
+                                        gpointer        userdata)
+{
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(tree);
+  GtkTreeModel *tree_model;
+  GtkTreeIter tree_iter;
+
+  if (!gtk_tree_selection_get_selected(selection, &tree_model, &tree_iter)) {
+    // No selection
+    return;
+  }
+
+  gint page;
+  gint page_pos;
+  gtk_tree_model_get(tree_model, &tree_iter, 1, &page, 2, &page_pos, -1);
+  fprintf(stderr, "Going to page: %d, page_pos %d\n", page, page_pos);
+  // Page switching is zero-indexed, but pages are stored in user-friendly 1-indexed.
+  do_switch_page(page - 1, TRUE, TRUE);
+
+  //gint cx, cy;
+  //gnome_canvas_get_scroll_offsets(canvas, &cx, &cy);
+  //gnome_canvas_scroll_to(canvas, cx, cy);
+}

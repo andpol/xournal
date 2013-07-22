@@ -1344,9 +1344,101 @@ gboolean init_bgpdf(char *pdfname, gboolean create_pages, int file_domain)
   }
   update_page_stuff();
   rescale_bg_pixmaps(); // this actually requests the pages !!
+  bgpdf_load_index();
+
   return TRUE;
 }
 
+void bgpdf_load_index()
+{
+  if (bgpdf.status == STATUS_NOT_INIT) {
+    g_warning("Could not load PDF index, background PDF not initialized");
+    return;
+  }
+
+  GtkTreeStore *treeStore = GTK_TREE_STORE(GET_COMPONENT("index_treestore"));
+  gtk_tree_store_clear(treeStore);
+
+  PopplerIndexIter * indexIter = poppler_index_iter_new(bgpdf.document);
+  if(!indexIter) {
+    // Document does not have index entries, nothing to do
+    return;
+  }
+  // Populate the GtkTreeStore based on the document's index
+  bgpdf_build_index_tree(treeStore, indexIter, NULL);
+  poppler_index_iter_free(indexIter);
+}
+
+void bgpdf_build_index_tree(GtkTreeStore * tree_store, PopplerIndexIter * iter, GtkTreeIter * parent)
+{
+  // TODO
+  do {
+    GtkTreeIter tree_iter;
+    gtk_tree_store_append(tree_store, &tree_iter, parent);
+    PopplerAction * action = poppler_index_iter_get_action(iter);
+
+    if(!action) {
+      continue;
+    }
+
+	PopplerDest * dest;
+
+	switch (action->any.type) {
+		case POPPLER_ACTION_GOTO_DEST:
+			dest = action->goto_dest.dest;
+			break;
+		// TODO: NAMED_DEST option?
+		default:
+			g_warning("Unsupported PopplerActionType: %d for index: '%s'", action->any.type, action->any.title);
+			continue;
+			break;
+	}
+
+	// TODO: go to a specific point on the page?
+    gtk_tree_store_set(tree_store, &tree_iter, 0, action->any.title, 1, bgpdf_get_index_page(dest), 2, 0, -1);
+
+    poppler_action_free(action);
+
+    // Recursivly build any children indexes
+    PopplerIndexIter * child_iter = poppler_index_iter_get_child(iter);
+    if(child_iter) {
+      bgpdf_build_index_tree(tree_store, child_iter, &tree_iter);
+      poppler_index_iter_free(child_iter);
+    }
+
+  } while (poppler_index_iter_next(iter));
+}
+
+gint bgpdf_get_index_page(PopplerDest * dest) {
+	switch (dest->type) {
+		case POPPLER_DEST_UNKNOWN:
+			g_warning("Unsupported PopplerDest type: 'POPPLER_DEST_UNKNOWN'");
+			break;
+		case POPPLER_DEST_XYZ:	// Drop down all the way to FITBV
+		case POPPLER_DEST_FIT:
+		case POPPLER_DEST_FITH:
+		case POPPLER_DEST_FITV:
+		case POPPLER_DEST_FITB:
+		case POPPLER_DEST_FITBH:
+		case POPPLER_DEST_FITBV:
+			return dest->page_num;
+			break;
+		case POPPLER_DEST_NAMED:
+			fprintf(stderr, "named dest\n");
+			PopplerDest * actual_dest = poppler_document_find_dest(bgpdf.document, dest->named_dest);
+			if (!actual_dest) {
+				g_warning("POPPLER_DEST_NAMED destination '%s', not found in document", dest->named_dest);
+				return 0;
+			}
+			gint page = actual_dest->page_num;
+			poppler_dest_free(actual_dest);
+			return page;
+			break;
+		default:
+			g_warning("Unknown PopplerDest type: %d", dest->type);
+			return 0;
+	}
+}
 
 // look for all journal pages with given pdf bg, and update their bg pixmaps
 void bgpdf_update_bg(int pageno, struct BgPdfPage *bgpg)

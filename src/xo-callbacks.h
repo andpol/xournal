@@ -680,3 +680,7 @@ on_sidebar_size_allocate               (GtkWidget        *widget,
 G_MODULE_EXPORT void
 on_sidebar_combobox_changed            (GtkComboBox      *combobox,
                                         gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_index_tree_cursor_changed           (GtkTreeView     *tree,
+                                        gpointer        userdata);
