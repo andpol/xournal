@@ -931,6 +931,7 @@ on_editFind_activate                   (GtkMenuItem     *menuitem,
 	GtkWidget *find_dialog;
 	GtkEntry *find_text;
 	GtkCheckButton *case_sensitive;
+	GtkRadioButton *current_layer, *background_pdf;
 
 	get_search_string_from_selection();
 	reset_selection();
@@ -945,11 +946,20 @@ on_editFind_activate                   (GtkMenuItem     *menuitem,
 	case_sensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
 	gtk_toggle_button_set_active(&(case_sensitive->toggle_button), search_case_sensitive);
 
+	// Set the layer search options radio buttons
+	current_layer = (GtkRadioButton*)GTK_WIDGET(GET_COMPONENT("findCurrentLayerRadio"));
+	background_pdf = (GtkRadioButton*)GTK_WIDGET(GET_COMPONENT("findPdfBgRadio"));
+
+	if (search_type == SEARCH_CURRENT_LAYER) {
+		gtk_toggle_button_set_active(&current_layer->check_button.toggle_button, TRUE);
+	} else if (search_type == SEARCH_BACKGROUND_PDF) {
+		gtk_toggle_button_set_active(&background_pdf->check_button.toggle_button, TRUE);
+	}
+
 	// Restore focus to the find next button since we're just reusing the same dialog instance
 	gtk_widget_grab_focus(GTK_WIDGET(GET_COMPONENT("findNextButton")));
 
 	gtk_widget_show(find_dialog);
-	gtk_dialog_set_default_response(GTK_DIALOG(find_dialog), GTK_RESPONSE_OK);
 }
 
 
@@ -1006,6 +1016,25 @@ on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
 }
 
 void
+on_findCurrentLayerRadio_toggled       (GtkRadioButton  *button,
+                                        gpointer         user_data)
+{
+	if (button->check_button.toggle_button.active) {
+		search_type = SEARCH_CURRENT_LAYER;
+		clear_pdf_matches();
+	}
+}
+
+void
+on_findPdfBgRadio_toggled              (GtkRadioButton  *button,
+                                        gpointer         user_data)
+{
+	if (button->check_button.toggle_button.active) {
+		search_type = SEARCH_BACKGROUND_PDF;
+	}
+}
+
+void
 on_findText_changed                    (GtkEditable     *editable,
 		                                gpointer         user_data)
 {
@@ -1017,6 +1046,9 @@ on_findText_changed                    (GtkEditable     *editable,
 	} else {
 		update_search_string(text);
 	}
+
+	clear_pdf_matches();
+	current_match = num_matches = -1;
 }
 
 

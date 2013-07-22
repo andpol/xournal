@@ -56,12 +56,13 @@ struct Page *new_page(struct Page *template)
 {
   struct Page *pg = (struct Page *) g_memdup(template, sizeof(struct Page));
   struct Layer *l = g_new(struct Layer, 1);
-  
+
   l->items = NULL;
   l->nitems = 0;
   pg->layers = g_list_append(NULL, l);
   pg->nlayers = 1;
   pg->layerno = 0;
+  pg->search_layer = NULL;
   pg->bg = (struct Background *)g_memdup(template->bg, sizeof(struct Background));
   pg->bg->canvas_item = NULL;
   if (pg->bg->type == BG_PIXMAP || pg->bg->type == BG_PDF) {
@@ -92,6 +93,7 @@ struct Page *new_page_with_bg(struct Background *bg, double width, double height
   pg->layers = g_list_append(NULL, l);
   pg->nlayers = 1;
   pg->layerno = 0;
+  pg->search_layer = NULL;
   pg->bg = bg;
   pg->bg->canvas_item = NULL;
   pg->height = height;

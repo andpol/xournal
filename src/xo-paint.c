@@ -849,8 +849,26 @@ void select_text_range(struct Item *item, int start_index, int end_index) {
 	gtk_text_buffer_select_range(text_buffer, &start_iter, &end_iter);
 }
 
-gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboolean backwards) {
+// Assumes you're already on the right page
+void scroll_to_item(struct Item *item) {
 	int cx, cy;
+
+	if (item->bbox.top + ui.cur_page->voffset < ui.viewport_top
+			|| item->bbox.bottom + ui.cur_page->voffset > ui.viewport_bottom) {
+		if (ui.viewport_bottom == 0) {
+			ui.viewport_bottom = gtk_layout_get_vadjustment(GTK_LAYOUT (canvas) )->page_size / ui.zoom;
+		}
+
+		gnome_canvas_get_scroll_offsets(canvas, &cx, &cy);
+		cy = ((item->bbox.top) + ui.cur_page->voffset - (ui.viewport_bottom - ui.viewport_top) / 2) * ui.zoom;
+		if (cy < 0) {
+			cy = 0;
+		}
+		gnome_canvas_scroll_to(canvas, cx, cy);
+	}
+}
+
+gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboolean backwards) {
 	int index;
 
 	if (item->type != ITEM_TEXT) {
@@ -873,19 +891,7 @@ gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboo
 			do_switch_page(new_page_no, FALSE, FALSE);
 		}
 
-		if (item->bbox.top + ui.cur_page->voffset < ui.viewport_top
-				|| item->bbox.bottom + ui.cur_page->voffset > ui.viewport_bottom) {
-			if (ui.viewport_bottom == 0) {
-				ui.viewport_bottom = gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->page_size / ui.zoom;
-			}
-
-			gnome_canvas_get_scroll_offsets(canvas, &cx, &cy);
-			cy = ((item->bbox.top) + ui.cur_page->voffset - (ui.viewport_bottom - ui.viewport_top) / 2) * ui.zoom;
-			if (cy < 0) {
-				cy = 0;
-			}
-			gnome_canvas_scroll_to(canvas, cx, cy);
-		}
+		scroll_to_item(item);
 
 		select_text_range(item, index, index + strlen(search_string));
 		return TRUE;
@@ -978,7 +984,8 @@ void find_next_text(gboolean backwards) {
 			continue;
 		}
 
-		l = (struct Layer *) (g_list_nth(pg->layers, ui.layerno)->data);
+		// Get current layer
+		l = (struct Layer *) (g_list_nth(pg->layers, pg->layerno)->data);
 		itemlist = (backwards ? g_list_last(l->items) : g_list_first(l->items));
 
 		limit = l->nitems;
@@ -1010,16 +1017,13 @@ void find_next_text(gboolean backwards) {
 	gtk_widget_show(findDialog);
 }
 
-void find_next_pdf(gboolean backwards) {
+void get_num_matches() {
 	GList *pagelist, *findlist;
 	struct Page *page;
 	PopplerPage *pdf_page;
-	int current_page;
-	double width, height;
+	int current_page, len;
 
-	if (bgpdf.status == STATUS_NOT_INIT) {
-		return;
-	}
+	num_matches = 0;
 
 	for (pagelist = journal.pages; pagelist != NULL; pagelist = pagelist->next) {
 		page = (struct Page *)pagelist->data;
@@ -1029,12 +1033,144 @@ void find_next_pdf(gboolean backwards) {
 			pdf_page = poppler_document_get_page(bgpdf.document, current_page);
 			if (pdf_page != NULL) {
 				findlist = poppler_page_find_text(pdf_page, search_string);
+				num_matches += g_list_length(findlist);
+			}
+		}
+	}
+}
+
+void clear_pdf_matches() {
+	GList *pagelist, *itemlist;
+	struct Page *page;
+
+	for (pagelist = journal.pages; pagelist != NULL; pagelist = pagelist->next) {
+		page = (struct Page *)pagelist->data;
+
+		if (page->search_layer != NULL) {
+			delete_layer(page->search_layer);
+		}
+
+		page->search_layer = g_new(struct Layer, 1);
+		page->search_layer->items = NULL;
+		page->search_layer->nitems = 0;
+		page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(page->group,
+				gnome_canvas_group_get_type(), NULL );
+		lower_canvas_item_to(page->group, GNOME_CANVAS_ITEM(page->search_layer->group), page->bg->canvas_item);
+	}
+}
+
+void find_next_pdf(gboolean backwards) {
+	int i;
+	GList *pagelist, *findlist, *itemlist;
+	struct Page *page;
+	PopplerPage *pdf_page;
+	int current_page, position, len, pageno;
+	double width, height, tmp;
+	PopplerRectangle *rect = NULL;
+	GtkWidget *dialog, *findDialog;
+
+	if (bgpdf.status == STATUS_NOT_INIT) {
+		return;
+	}
+
+	if (num_matches == -1) {
+		get_num_matches();
+	}
+
+	if (num_matches == 0) {
+		// Not found, show a message
+		dialog = gtk_message_dialog_new(GTK_WINDOW (winMain), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO,
+				GTK_BUTTONS_OK, "Search text not found.");
+		findDialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
+
+		// TODO: Hiding the find dialog; haven't found a way to put the
+		// message dialog on top of it yet.
+		gtk_widget_hide(findDialog);
+		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+		gtk_widget_show(findDialog);
+
+		return;
+	}
+
+	if (backwards) {
+		current_match--;
+		current_match += num_matches;
+	} else {
+		current_match++;
+	}
+	current_match %= num_matches;
+
+	clear_pdf_matches();
+
+	position = 0;
+	pageno = 0;
+
+	for (pagelist = journal.pages; pagelist != NULL ; pagelist = pagelist->next, pageno++) {
+		page = (struct Page *) pagelist->data;
+
+		if (page->bg->type == BG_PDF) {
+			current_page = page->bg->file_page_seq - 1;
+			pdf_page = poppler_document_get_page(bgpdf.document, current_page);
+			if (pdf_page != NULL) {
+				findlist = poppler_page_find_text(pdf_page, search_string);
 				if (findlist != NULL) {
 					poppler_page_get_size(pdf_page, &width, &height);
+					len = g_list_length(findlist);
+
+					if (rect == NULL && position + len > current_match) {
+						rect = (PopplerRectangle *)g_list_nth_data(findlist, current_match - position);
+						do_switch_page(pageno, FALSE, FALSE);
+						break;
+					}
+
+					position += len;
 				}
 			}
 		}
 	}
+
+	if (rect == NULL) {
+		fprintf(stderr, "error: rectangle is still null!\n");
+	}
+
+	tmp = rect->y1;
+	rect->y1 = height - rect->y2;
+	rect->y2 = height - tmp;
+
+	struct Item *searchItem = (struct Item *) g_malloc(sizeof(struct Item));
+	searchItem->type = ITEM_SELECTRECT;
+	searchItem->path = NULL;
+	searchItem->bbox.top = rect->y1;
+	searchItem->bbox.bottom = rect->y2;
+
+	ui.cur_page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(ui.cur_page->group,
+			gnome_canvas_group_get_type(), NULL );
+	lower_canvas_item_to(ui.cur_page->group, GNOME_CANVAS_ITEM(ui.cur_page->search_layer->group),
+			ui.cur_page->bg->canvas_item);
+
+	searchItem->canvas_item = gnome_canvas_item_new(ui.cur_page->search_layer->group, gnome_canvas_rect_get_type(), "width-pixels",
+			2, "fill-color-rgba", 0xffff0080, "x1", rect->x1, "x2", rect->x2, "y1", rect->y1, "y2", rect->y2, NULL );
+	ui.cur_page->search_layer->items = g_list_append(ui.cur_page->search_layer->items, searchItem);
+	ui.cur_page->search_layer->nitems++;
+
+	scroll_to_item(searchItem);
+
+	gnome_canvas_set_pixels_per_unit(canvas, ui.zoom);
+}
+
+void reset_search() {
+	GtkWidget *find_dialog;
+
+	search_string = NULL;
+	search_case_sensitive = FALSE;
+	search_type = SEARCH_CURRENT_LAYER;
+	current_match = num_matches = -1;
+
+	clear_pdf_matches();
+
+	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
+	gtk_widget_hide(find_dialog);
 }
 
 /* update the items in the canvas so they're of the right font size */

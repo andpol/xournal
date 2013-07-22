@@ -89,6 +89,14 @@ on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
                                         gpointer         user_data);
 
 G_MODULE_EXPORT void
+on_findCurrentLayerRadio_toggled       (GtkRadioButton  *button,
+		                                gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_findPdfBgRadio_toggled              (GtkRadioButton  *button,
+		                                gpointer         user_data);
+
+G_MODULE_EXPORT void
 on_findText_changed                    (GtkEditable     *editable,
 		                                gpointer         user_data);
 

@@ -289,6 +289,7 @@ gboolean close_journal(void)
   reset_recognizer();
   clear_redo_stack();
   clear_undo_stack();
+  reset_search();
 
   shutdown_bgpdf();
   delete_journal(&journal);
@@ -946,10 +947,10 @@ gboolean open_journal(char *filename)
     g_free(tmpfn);
   }
   
-  // Set all current layer number for pages
   for (pagelist = journal.pages; pagelist != NULL; pagelist = pagelist->next) {
 	  page = (struct Page *)pagelist->data;
 	  page->layerno = page->nlayers - 1;
+	  page->search_layer = NULL;
   }
 
   ui.pageno = 0;

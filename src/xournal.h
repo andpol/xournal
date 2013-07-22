@@ -217,6 +217,7 @@ typedef struct Layer {
 
 typedef struct Page {
   GList *layers; // the layers on the page
+  struct Layer *search_layer;
   int nlayers;
   int layerno;
   double height, width;
@@ -424,6 +425,7 @@ typedef enum {
 extern gchar *search_string;
 extern gboolean search_case_sensitive;
 extern SearchType search_type;
+extern int current_match, num_matches;
 
 extern double DEFAULT_ZOOM;
 

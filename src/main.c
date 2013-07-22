@@ -42,6 +42,7 @@ struct UndoItem *undo, *redo; // the undo and redo stacks
 gchar *search_string; // current search string
 gboolean search_case_sensitive = FALSE; // TODO: user preference?
 SearchType search_type = SEARCH_CURRENT_LAYER;
+int current_match = -1, num_matches = 0;
 
 double DEFAULT_ZOOM;
 

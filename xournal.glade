@@ -204,6 +204,7 @@ and other contributors
                     <property name="receives_default">False</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
+                    <signal name="toggled" handler="on_findCurrentLayerRadio_toggled" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -220,6 +221,7 @@ and other contributors
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <property name="group">findCurrentLayerRadio</property>
+                    <signal name="toggled" handler="on_findPdfBgRadio_toggled" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
