@@ -930,7 +930,7 @@ on_editFind_activate                   (GtkMenuItem     *menuitem,
 {
 	GtkWidget *find_dialog;
 	GtkEntry *find_text;
-	GtkCheckButton *case_insensitive;
+	GtkCheckButton *case_sensitive;
 
 	get_search_string_from_selection();
 	reset_selection();
@@ -941,9 +941,12 @@ on_editFind_activate                   (GtkMenuItem     *menuitem,
 	find_text = (GtkEntry*) GTK_WIDGET(GET_COMPONENT("findText"));
 	gtk_entry_set_text(find_text, search_string == NULL ? "" : search_string);
 
-	// Set the case insensitive checkbox
-	case_insensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
-	gtk_toggle_button_set_active(&(case_insensitive->toggle_button), search_case_insensitive);
+	// Set the case sensitive checkbox
+	case_sensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
+	gtk_toggle_button_set_active(&(case_sensitive->toggle_button), search_case_sensitive);
+
+	// Restore focus to the find next button since we're just reusing the same dialog instance
+	gtk_widget_grab_focus(GTK_WIDGET(GET_COMPONENT("findNextButton")));
 
 	gtk_widget_show(find_dialog);
 	gtk_dialog_set_default_response(GTK_DIALOG(find_dialog), GTK_RESPONSE_OK);
@@ -996,9 +999,9 @@ on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
                                         gpointer         user_data)
 {
 	if (button->toggle_button.active) {
-		search_case_insensitive = TRUE;
+		search_case_sensitive = TRUE;
 	} else {
-		search_case_insensitive = FALSE;
+		search_case_sensitive = FALSE;
 	}
 }
 
@@ -1156,6 +1159,8 @@ on_viewShowLayer_activate              (GtkMenuItem     *menuitem,
   if (ui.layerno == ui.cur_page->nlayers-1) return;
   reset_selection();
   ui.layerno++;
+  ui.cur_page->layerno++;
+  printf("%d %d\n", ui.layerno, ui.cur_page->layerno);
   ui.cur_layer = g_list_nth_data(ui.cur_page->layers, ui.layerno);
   gnome_canvas_item_show(GNOME_CANVAS_ITEM(ui.cur_layer->group));
   update_page_stuff();
@@ -1171,6 +1176,7 @@ on_viewHideLayer_activate              (GtkMenuItem     *menuitem,
   reset_selection();
   gnome_canvas_item_hide(GNOME_CANVAS_ITEM(ui.cur_layer->group));
   ui.layerno--;
+  ui.cur_page->layerno--;
   if (ui.layerno<0) ui.cur_layer = NULL;
   else ui.cur_layer = g_list_nth_data(ui.cur_page->layers, ui.layerno);
   update_page_stuff();
@@ -1291,6 +1297,7 @@ on_journalNewLayer_activate            (GtkMenuItem     *menuitem,
   ui.cur_page->layers = g_list_insert(ui.cur_page->layers, l, ui.layerno+1);
   ui.cur_layer = l;
   ui.layerno++;
+  ui.cur_page->layerno++;
   ui.cur_page->nlayers++;
   update_page_stuff();
 
@@ -1329,6 +1336,7 @@ on_journalDeleteLayer_activate         (GtkMenuItem     *menuitem,
   if (ui.cur_page->nlayers>=2) {
     ui.cur_page->nlayers--;
     ui.layerno--;
+    ui.cur_page->layerno++;
     if (ui.layerno<0) ui.cur_layer = NULL;
     else ui.cur_layer = (struct Layer *)g_list_nth_data(ui.cur_page->layers, ui.layerno);
   }
@@ -2950,12 +2958,14 @@ on_comboLayer_changed                  (GtkComboBox     *combobox,
   reset_selection();
   while (val>ui.layerno) {
     ui.layerno++;
+    ui.cur_page->layerno++;
     ui.cur_layer = g_list_nth_data(ui.cur_page->layers, ui.layerno);
     gnome_canvas_item_show(GNOME_CANVAS_ITEM(ui.cur_layer->group));
   }
   while (val<ui.layerno) {
     gnome_canvas_item_hide(GNOME_CANVAS_ITEM(ui.cur_layer->group));
     ui.layerno--;
+    ui.cur_page->layerno--;
     if (ui.layerno<0) ui.cur_layer = NULL;
     else ui.cur_layer = g_list_nth_data(ui.cur_page->layers, ui.layerno);
   }

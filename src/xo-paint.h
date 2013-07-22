@@ -46,7 +46,6 @@ struct Item *click_is_in_text_or_image(struct Layer *layer, double x, double y);
 void refont_text_item(struct Item *item, gchar *font_name, double font_size);
 void process_font_sel(gchar *str);
 
-typedef enum {
-  SEARCH_BACKWARDS 			= 1 << 0,
-  SEARCH_CASE_INSENSITIVE   = 1 << 1
-} SearchOptions;
+void find_next(gboolean backwards);
+void find_next_text(gboolean backwards);
+void find_next_pdf(gboolean backwards);

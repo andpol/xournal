@@ -218,6 +218,7 @@ typedef struct Layer {
 typedef struct Page {
   GList *layers; // the layers on the page
   int nlayers;
+  int layerno;
   double height, width;
   double hoffset, voffset; // offsets of canvas group rel. to canvas root
   struct Background *bg;
@@ -414,8 +415,15 @@ extern struct Journal journal;
 extern struct UIData ui;
 extern struct BgPdf bgpdf;
 extern struct UndoItem *undo, *redo;
+
+typedef enum {
+	SEARCH_CURRENT_LAYER,
+	SEARCH_BACKGROUND_PDF
+} SearchType;
+
 extern gchar *search_string;
-extern gboolean search_case_insensitive;
+extern gboolean search_case_sensitive;
+extern SearchType search_type;
 
 extern double DEFAULT_ZOOM;
 

@@ -837,6 +837,8 @@ gboolean open_journal(char *filename)
   int len;
   gchar *tmpfn, *tmpfn2, *p, *q;
   gboolean maybe_pdf;
+  GList *pagelist;
+  struct Page *page;
   
   tmpfn = g_strdup_printf("%s.xoj", filename);
   if (ui.autoload_pdf_xoj && g_file_test(tmpfn, G_FILE_TEST_EXISTS) &&
@@ -944,10 +946,16 @@ gboolean open_journal(char *filename)
     g_free(tmpfn);
   }
   
+  // Set all current layer number for pages
+  for (pagelist = journal.pages; pagelist != NULL; pagelist = pagelist->next) {
+	  page = (struct Page *)pagelist->data;
+	  page->layerno = page->nlayers - 1;
+  }
+
   ui.pageno = 0;
   ui.cur_page = (struct Page *)journal.pages->data;
-  ui.layerno = ui.cur_page->nlayers-1;
-  ui.cur_layer = (struct Layer *)(g_list_last(ui.cur_page->layers)->data);
+  ui.layerno = ui.cur_page->layerno;
+  ui.cur_layer = (struct Layer *)(g_list_nth_data(ui.cur_page->layers, ui.layerno));
   ui.saved = TRUE;
   ui.zoom = ui.startup_zoom;
   update_file_name(g_strdup(filename));

@@ -61,6 +61,7 @@ struct Page *new_page(struct Page *template)
   l->nitems = 0;
   pg->layers = g_list_append(NULL, l);
   pg->nlayers = 1;
+  pg->layerno = 0;
   pg->bg = (struct Background *)g_memdup(template->bg, sizeof(struct Background));
   pg->bg->canvas_item = NULL;
   if (pg->bg->type == BG_PIXMAP || pg->bg->type == BG_PDF) {
@@ -90,6 +91,7 @@ struct Page *new_page_with_bg(struct Background *bg, double width, double height
   l->nitems = 0;
   pg->layers = g_list_append(NULL, l);
   pg->nlayers = 1;
+  pg->layerno = 0;
   pg->bg = bg;
   pg->bg->canvas_item = NULL;
   pg->height = height;
@@ -1297,8 +1299,8 @@ void do_switch_page(int pg, gboolean rescroll, gboolean refresh_all)
     }
   
   ui.cur_page = g_list_nth_data(journal.pages, ui.pageno);
-  ui.layerno = ui.cur_page->nlayers-1;
-  ui.cur_layer = (struct Layer *)(g_list_last(ui.cur_page->layers)->data);
+  ui.layerno = ui.cur_page->layerno;
+  ui.cur_layer = (struct Layer *)(g_list_nth_data(ui.cur_page->layers, ui.layerno));
   update_page_stuff();
   if (ui.progressive_bg) rescale_bg_pixmaps();
  

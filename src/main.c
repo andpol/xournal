@@ -40,7 +40,8 @@ struct UIData ui;   // the user interface data
 struct UndoItem *undo, *redo; // the undo and redo stacks
 
 gchar *search_string; // current search string
-gboolean search_case_insensitive = TRUE;
+gboolean search_case_sensitive = FALSE; // TODO: user preference?
+SearchType search_type = SEARCH_CURRENT_LAYER;
 
 double DEFAULT_ZOOM;
 
