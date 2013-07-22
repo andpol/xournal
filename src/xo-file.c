@@ -1272,7 +1272,7 @@ gboolean init_bgpdf(char *pdfname, gboolean create_pages, int file_domain)
   PopplerPage *pdfpage;
   gdouble width, height;
   gchar *uri;
-  
+
   if (bgpdf.status != STATUS_NOT_INIT) return FALSE;
   
   // make a copy of the file in memory and check it's a PDF
@@ -1307,6 +1307,9 @@ gboolean init_bgpdf(char *pdfname, gboolean create_pages, int file_domain)
     if (ui.default_path!=NULL) g_free(ui.default_path);
     ui.default_path = g_path_get_dirname(pdfname);
   }
+
+  // Load the PDF's index (aka table of contents)
+  bgpdf_load_index();
 
   if (!create_pages) return TRUE; // we're done
   
@@ -1344,7 +1347,6 @@ gboolean init_bgpdf(char *pdfname, gboolean create_pages, int file_domain)
   }
   update_page_stuff();
   rescale_bg_pixmaps(); // this actually requests the pages !!
-  bgpdf_load_index();
 
   return TRUE;
 }
