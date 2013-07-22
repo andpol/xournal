@@ -670,6 +670,7 @@ void end_text(void)
   tmpitem = ui.cur_item->canvas_item;
   make_canvas_item_one(ui.cur_layer->group, ui.cur_item);
   update_item_bbox(ui.cur_item);
+  ui.cur_layer->items = g_list_sort(ui.cur_layer->items, compare_items);
   lower_canvas_item_to(ui.cur_layer->group, ui.cur_item->canvas_item, tmpitem);
   gtk_object_destroy(GTK_OBJECT(tmpitem));
 }
@@ -853,9 +854,12 @@ gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboo
 	int cx, cy;
 	int index;
 
-	index = strstr_index(item->text, search_string, item_offset, backwards, search_case_insensitive);
+	if (item->type != ITEM_TEXT) {
+		return FALSE;
+	}
 
-	if (item->type == ITEM_TEXT && index >= 0) {
+	index = strstr_index(item->text, search_string, item_offset, backwards, search_case_insensitive);
+	if (index >= 0) {
 		int new_page_no;
 		if (backwards) {
 			new_page_no = (ui.pageno - page_offset) % journal.npages;
@@ -892,9 +896,7 @@ gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboo
 
 // Find the next occurrence of search_string.
 // Searches backwards if backwards is TRUE, otherwise searches forwards.
-// TODO: Case insensitive?
 // TODO: Multi-layer?
-// TODO: Ensure layers are actually sorted
 void find_next(gboolean backwards) {
 	int i;
 	struct Page *pg;

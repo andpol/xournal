@@ -636,6 +636,7 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
     undo->item->text = tmpstr;
     gnome_canvas_item_set(undo->item->canvas_item, "text", tmpstr, NULL);
     update_item_bbox(undo->item);
+    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
   else if (undo->type == ITEM_TEXT_ATTRIB) {
     tmpstr = undo->str;
@@ -651,6 +652,7 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
       "fill-color-rgba", undo->item->brush.color_rgba, NULL);
     update_text_item_displayfont(undo->item);
     update_item_bbox(undo->item);
+    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
 
   // move item from undo to redo stack
@@ -687,7 +689,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     // re-create the canvas_item
     make_canvas_item_one(redo->layer->group, redo->item);
     // reinsert the item on its layer
-    redo->layer->items = g_list_append(redo->layer->items, redo->item);
+    redo->layer->items = g_list_insert_sorted(redo->layer->items, redo->item, compare_items);
     redo->layer->nitems++;
   }
   else if (redo->type == ITEM_ERASURE || redo->type == ITEM_RECOGNIZER) {
@@ -795,7 +797,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     for (itemlist = redo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
       it = (struct Item *)itemlist->data;
       make_canvas_item_one(redo->layer->group, it);
-      redo->layer->items = g_list_append(redo->layer->items, it);
+      redo->layer->items = g_list_insert_sorted(redo->layer->items, it, compare_items);
       redo->layer->nitems++;
     }
   }
@@ -855,6 +857,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     redo->item->text = tmpstr;
     gnome_canvas_item_set(redo->item->canvas_item, "text", tmpstr, NULL);
     update_item_bbox(redo->item);
+    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
   else if (redo->type == ITEM_TEXT_ATTRIB) {
     tmpstr = redo->str;
@@ -870,6 +873,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
       "fill-color-rgba", redo->item->brush.color_rgba, NULL);
     update_text_item_displayfont(redo->item);
     update_item_bbox(redo->item);
+    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
 
   // move item from redo to undo stack
@@ -929,6 +933,7 @@ on_editFind_activate                   (GtkMenuItem     *menuitem,
 	GtkCheckButton *case_insensitive;
 
 	get_search_string_from_selection();
+	reset_selection();
 
 	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
 

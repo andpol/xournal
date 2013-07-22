@@ -1322,10 +1322,19 @@ void update_page_stuff(void)
   gchar tmp[10];
   GtkComboBox *layerbox;
   int i;
-  GList *pglist;
+  GList *pglist, *layerlist;
   GtkSpinButton *spin;
   struct Page *pg;
+  struct Layer *layer;
   double vertpos, maxwidth;
+
+  for (pglist = journal.pages; pglist != NULL; pglist = pglist->next) {
+	  pg = (struct Page *)pglist->data;
+	  for (layerlist = pg->layers; layerlist != NULL; layerlist = layerlist->next) {
+		  layer = (struct Layer *)layerlist->data;
+		  layer->items = g_list_sort(layer->items, compare_items);
+	  }
+  }
 
   // move the page groups to their rightful locations or hide them
   if (ui.view_continuous) {
@@ -2399,4 +2408,8 @@ wrapper_poppler_page_render_to_pixbuf (PopplerPage *page,
 
   wrapper_copy_cairo_surface_to_pixbuf (surface, pixbuf);
   cairo_surface_destroy (surface);
+}
+
+int compare_items(const void * a, const void * b) {
+	return ((*(struct Item *) a).bbox.top - (*(struct Item *) b).bbox.top);
 }
