@@ -3789,13 +3789,7 @@ on_index_tree_cursor_changed           (GtkTreeView     *tree,
   }
 
   gint page;
-  gint page_pos;
-  gtk_tree_model_get(tree_model, &tree_iter, 1, &page, 2, &page_pos, -1);
-  fprintf(stderr, "Going to page: %d, page_pos %d\n", page, page_pos);
-  // Page switching is zero-indexed, but pages are stored in user-friendly 1-indexed.
+  gtk_tree_model_get(tree_model, &tree_iter, 1, &page, -1);
+  // Minus one, since page switching is zero-indexed, but page indexes are stored in user-friendly 1-index format
   do_switch_page(page - 1, TRUE, TRUE);
-
-  //gint cx, cy;
-  //gnome_canvas_get_scroll_offsets(canvas, &cx, &cy);
-  //gnome_canvas_scroll_to(canvas, cx, cy);
 }

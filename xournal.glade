@@ -181,8 +181,6 @@ and other contributors
       <column type="gchararray"/>
       <!-- column-name page -->
       <column type="gint"/>
-      <!-- column-name page_coord -->
-      <column type="gint"/>
     </columns>
   </object>
   <object class="GtkImage" id="lasso_select_icon">

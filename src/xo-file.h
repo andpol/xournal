@@ -41,8 +41,6 @@ gboolean init_bgpdf(char *pdfname, gboolean create_pages, int file_domain);
 
 void bgpdf_create_page_with_bg(int pageno, struct BgPdfPage *bgpg);
 void bgpdf_load_index();
-void bgpdf_build_index_tree(GtkTreeStore * tree_store, PopplerIndexIter * iter, GtkTreeIter * parent);
-gint bgpdf_get_index_page(PopplerDest * dest);
 void bgpdf_update_bg(int pageno, struct BgPdfPage *bgpg);
 
 void init_mru(void);
