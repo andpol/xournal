@@ -338,6 +338,10 @@ void delete_page(struct Page *pg)
   if (pg->bg->type == BG_PIXMAP || pg->bg->type == BG_PDF) {
     if (pg->bg->pixbuf != NULL) g_object_unref(pg->bg->pixbuf);
     if (pg->bg->filename != NULL) refstring_unref(pg->bg->filename);
+
+    if (pg->bg->type == BG_PDF && search_type == SEARCH_BACKGROUND_PDF) {
+    	reset_search();
+    }
   }
   g_free(pg->bg);
   g_free(pg);

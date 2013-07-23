@@ -33,6 +33,7 @@
 #include "xo-paint.h"
 #include "xo-selection.h"
 #include "xo-print.h"
+#include "xo-search.h"
 #include "xo-shapes.h"
 #include "intl.h"
 
@@ -933,7 +934,7 @@ on_editFind_activate                   (GtkMenuItem     *menuitem,
 	GtkCheckButton *case_sensitive;
 	GtkRadioButton *current_layer, *background_pdf;
 
-	get_search_string_from_selection();
+	update_search_string_from_selection();
 	reset_selection();
 
 	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));

@@ -417,6 +417,8 @@ extern struct UIData ui;
 extern struct BgPdf bgpdf;
 extern struct UndoItem *undo, *redo;
 
+// search
+
 typedef enum {
 	SEARCH_CURRENT_LAYER,
 	SEARCH_BACKGROUND_PDF

@@ -46,6 +46,4 @@ struct Item *click_is_in_text_or_image(struct Layer *layer, double x, double y);
 void refont_text_item(struct Item *item, gchar *font_name, double font_size);
 void process_font_sel(gchar *str);
 
-void find_next(gboolean backwards);
-void find_next_text(gboolean backwards);
-void find_next_pdf(gboolean backwards);
+void scroll_to_item(struct Item *item);

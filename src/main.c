@@ -27,6 +27,7 @@
 #include "xo-misc.h"
 #include "xo-file.h"
 #include "xo-paint.h"
+#include "xo-search.h"
 #include "xo-shapes.h"
 #include "intl.h"
 

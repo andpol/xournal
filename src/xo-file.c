@@ -42,6 +42,7 @@
 #include "xo-file.h"
 #include "xo-paint.h"
 #include "xo-image.h"
+#include "xo-search.h"
 #include "intl.h"
 
 const char *tool_names[NUM_TOOLS] = {"pen", "eraser", "highlighter", "text", "selectregion", "selectrect", "vertspace", "hand", "image"};
