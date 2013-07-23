@@ -17,6 +17,7 @@
 
 struct Page *new_page(struct Page *template);
 struct Page *new_page_with_bg(struct Background *bg, double width, double height);
+void set_page_border(void);
 void set_current_page(gdouble *pt);
 void realloc_cur_path(int n);
 void realloc_cur_widths(int n);
@@ -144,3 +145,5 @@ wrapper_poppler_page_render_to_pixbuf (PopplerPage *page,
 #define RULING_SPACING 24.0
 #define RULING_BOTTOMMARGIN RULING_SPACING
 #define RULING_GRAPHSPACING 14.17
+
+#define PAGE_BORDER_COLOUR 0x777777ff

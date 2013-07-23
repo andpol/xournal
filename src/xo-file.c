@@ -70,6 +70,7 @@ void new_journal(void)
   ui.saved = TRUE;
   ui.filename = NULL;
   update_file_name(NULL);
+  set_page_border();
 }
 
 // check attachment names
@@ -956,6 +957,7 @@ gboolean open_journal(char *filename)
   make_canvas_items();
   update_page_stuff();
   rescale_bg_pixmaps(); // this requests the PDF pages if need be
+  set_page_border();
   gtk_adjustment_set_value(gtk_layout_get_vadjustment(GTK_LAYOUT(canvas)), 0);
   return TRUE;
 }

@@ -260,6 +260,7 @@ typedef struct UIData {
   int which_mouse_button; // the mouse button drawing the current path
   int which_unswitch_button; // if button_switch_mapping, the mouse button that switched the mapping
   struct Page default_page;  // the model for the default page
+  GnomeCanvasItem *page_border;
   int layerbox_length;  // the number of entries registered in the layers combo-box
   struct Item *cur_item; // the item being drawn, or NULL
   int cur_item_type;
