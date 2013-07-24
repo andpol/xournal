@@ -17,6 +17,7 @@
 #  include <config.h>
 #endif
 
+#include <error.h>
 #include <signal.h>
 #include <memory.h>
 #include <string.h>
@@ -957,6 +958,66 @@ gboolean open_journal(char *filename)
   update_page_stuff();
   rescale_bg_pixmaps(); // this requests the PDF pages if need be
   gtk_adjustment_set_value(gtk_layout_get_vadjustment(GTK_LAYOUT(canvas)), 0);
+
+
+
+  gchar *tmp_pdf_file = "file:///tmp/xournal-thumbnails.pdf";
+  gchar *tmp_pdf_file_short = "/tmp/xournal-thumbnails.pdf";
+  print_to_pdf(tmp_pdf_file_short);
+  PopplerDocument *tmp_pdf = poppler_document_new_from_file(tmp_pdf_file, NULL, NULL);
+  int npages = poppler_document_get_n_pages(tmp_pdf);
+
+  cairo_t *cr;
+  double width, height;
+  PopplerPage *page;
+  cairo_surface_t *surface;
+  cairo_status_t status;
+
+  gchar image_filename[64];
+  int i;
+  for (i = 0; i < npages; i++) {
+	page = poppler_document_get_page(tmp_pdf, i);
+	poppler_page_get_size (page, &width, &height);
+
+	    /* For correct rendering of PDF, the PDF is first rendered to a
+	     * transparent image (all alpha = 0). */
+	    surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
+	                                          width / 5.0,
+	                                          height / 5.0);
+	    cr = cairo_create (surface);
+	    cairo_scale (cr, 1 / 5.0, 1 / 5.0);
+	    cairo_save (cr);
+	    poppler_page_render (page, cr);
+	    cairo_restore (cr);
+	    g_object_unref (page);
+
+	    /* Then the image is painted on top of a white "page". Instead of
+	     * creating a second image, painting it white, then painting the
+	     * PDF image over it we can use the CAIRO_OPERATOR_DEST_OVER
+	     * operator to achieve the same effect with the one image. */
+	    cairo_set_operator (cr, CAIRO_OPERATOR_DEST_OVER);
+	    cairo_set_source_rgb (cr, 1, 1, 1);
+	    cairo_paint (cr);
+
+	    status = cairo_status(cr);
+	    if (status) {
+	        printf("%s\n", cairo_status_to_string (status));
+	    }
+
+	    cairo_destroy (cr);
+	    sprintf(image_filename, "/tmp/thumbnail-%d.png", i);
+	    status = cairo_surface_write_to_png (surface, image_filename);
+	    if (status) {
+	        printf("%s\n", cairo_status_to_string (status));
+	    }
+
+	    cairo_surface_destroy (surface);
+  }
+
+  if (remove(tmp_pdf_file_short)) {
+	  perror(NULL);
+  }
+
   return TRUE;
 }
 
