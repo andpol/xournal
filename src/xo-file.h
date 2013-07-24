@@ -40,6 +40,7 @@ void shutdown_bgpdf(void);
 gboolean init_bgpdf(char *pdfname, gboolean create_pages, int file_domain);
 
 void bgpdf_create_page_with_bg(int pageno, struct BgPdfPage *bgpg);
+void bgpdf_load_index();
 void bgpdf_update_bg(int pageno, struct BgPdfPage *bgpg);
 
 void init_mru(void);
