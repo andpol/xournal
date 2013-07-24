@@ -670,7 +670,6 @@ void end_text(void)
   tmpitem = ui.cur_item->canvas_item;
   make_canvas_item_one(ui.cur_layer->group, ui.cur_item);
   update_item_bbox(ui.cur_item);
-  ui.cur_layer->items = g_list_sort(ui.cur_layer->items, compare_items);
   lower_canvas_item_to(ui.cur_layer->group, ui.cur_item->canvas_item, tmpitem);
   gtk_object_destroy(GTK_OBJECT(tmpitem));
 }

@@ -134,8 +134,6 @@ wrapper_poppler_page_render_to_pixbuf (PopplerPage *page,
 			       int rotation,
 			       GdkPixbuf *pixbuf);
 
-int compare_items(const void * a, const void * b);
-
 // defines for paper rulings
 
 #define RULING_MARGIN_COLOR 0xff0080ff

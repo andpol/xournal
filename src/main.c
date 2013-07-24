@@ -40,10 +40,7 @@ struct BgPdf bgpdf;  // the PDF loader stuff
 struct UIData ui;   // the user interface data
 struct UndoItem *undo, *redo; // the undo and redo stacks
 
-gchar *search_string; // current search string
-gboolean search_case_sensitive = FALSE; // TODO: user preference?
-SearchType search_type = SEARCH_CURRENT_LAYER;
-int current_match = -1, num_matches = 0;
+struct SearchData search_data; // for find operation
 
 double DEFAULT_ZOOM;
 
@@ -252,7 +249,7 @@ void init_stuff (int argc, char *argv[])
 
   update_undo_redo_enabled();
   update_copy_paste_enabled();
-  update_search_string(NULL);
+  init_search();
   update_vbox_order(ui.vertical_order[ui.fullscreen?1:0]);
   gtk_widget_grab_focus(GTK_WIDGET(canvas));
 

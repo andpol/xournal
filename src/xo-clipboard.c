@@ -299,8 +299,6 @@ void clipboard_paste_from_xournal(GtkSelectionData *sel_data)
     }
   }
 
-  ui.cur_layer->items = g_list_sort(ui.cur_layer->items, compare_items);
-
   prepare_new_undo();
   undo->type = ITEM_PASTE;
   undo->layer = ui.cur_layer;
@@ -351,8 +349,6 @@ void clipboard_paste_text(gchar *text)
   gnome_canvas_item_set(item->canvas_item, "x", item->bbox.left, "y", item->bbox.top, NULL);
   update_item_bbox(item);
   
-  ui.cur_layer->items = g_list_sort(ui.cur_layer->items, compare_items);
-
   ui.selection->bbox = item->bbox;
   ui.selection->canvas_item = gnome_canvas_item_new(ui.cur_layer->group,
       gnome_canvas_rect_get_type(), "width-pixels", 1,

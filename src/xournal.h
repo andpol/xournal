@@ -424,10 +424,19 @@ typedef enum {
 	SEARCH_BACKGROUND_PDF
 } SearchType;
 
-extern gchar *search_string;
-extern gboolean search_case_sensitive;
-extern SearchType search_type;
-extern int current_match, num_matches;
+typedef struct SearchData {
+	gchar *search_string;
+	gboolean search_case_sensitive;
+	SearchType search_type;
+
+	// For PDF searching only
+	int num_matches;
+	GList *pdf_matches, *current_pdf_match;
+
+	gint find_dialog_x, find_dialog_y;
+} SearchData;
+
+extern struct SearchData search_data;
 
 extern double DEFAULT_ZOOM;
 
