@@ -144,3 +144,11 @@ wrapper_poppler_page_render_to_pixbuf (PopplerPage *page,
 #define RULING_SPACING 24.0
 #define RULING_BOTTOMMARGIN RULING_SPACING
 #define RULING_GRAPHSPACING 14.17
+
+// thumbnails
+
+void clear_thumbnails();
+void update_thumbnails();
+
+#define THUMBNAIL_PADDING 0
+#define THUMBNAIL_SCALE_FACTOR 5.0

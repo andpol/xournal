@@ -503,6 +503,9 @@ and other contributors
       <row>
         <col id="0" translatable="yes">Bookmarks</col>
       </row>
+      <row>
+        <col id="0" translatable="yes">Thumbnails</col>
+      </row>
     </data>
   </object>
   <object class="GtkImage" id="text_icon">
@@ -3355,6 +3358,16 @@ and other contributors
                                 <property name="expand">True</property>
                                 <property name="fill">True</property>
                                 <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkVBox" id="thumbnails_vbox">
+                                <property name="can_focus">False</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </object>
