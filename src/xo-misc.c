@@ -558,14 +558,15 @@ void make_canvas_item_one(GnomeCanvasGroup *group, struct Item *item)
 
   if (item->type == ITEM_STROKE) {
     
-    if (!item->brush.variable_width){
+    //What type of stroke, color? width?
+    if (!item->brush.variable_width && !item->brush.variable_color){
       item->canvas_item = gnome_canvas_item_new(group,
             gnome_canvas_line_get_type(), "points", item->path,   
             "cap-style", GDK_CAP_ROUND, "join-style", GDK_JOIN_ROUND,
             "fill-color-rgba", item->brush.color_rgba,  
             "width-units", item->brush.thickness, NULL);
       }
-    else {
+    else if (item->brush.variable_width && item->brush.variable_color){
       item->canvas_item = gnome_canvas_item_new(group,
             gnome_canvas_group_get_type(), NULL);
       points.num_points = 2;
@@ -576,6 +577,34 @@ void make_canvas_item_one(GnomeCanvasGroup *group, struct Item *item)
               gnome_canvas_line_get_type(), "points", &points, 
               "cap-style", GDK_CAP_ROUND, "join-style", GDK_JOIN_ROUND, 
               "fill-color-rgba", item->colors[j],
+              "width-units", item->widths[j], NULL);
+      }
+     }
+     else if (!item->brush.variable_width && item->brush.variable_color){
+      item->canvas_item = gnome_canvas_item_new(group,
+            gnome_canvas_group_get_type(), NULL);
+      points.num_points = 2;
+      points.ref_count = 1;
+      for (j = 0; j < item->path->num_points-1; j++) {
+        points.coords = item->path->coords+2*j;
+        gnome_canvas_item_new((GnomeCanvasGroup *) item->canvas_item,
+              gnome_canvas_line_get_type(), "points", &points, 
+              "cap-style", GDK_CAP_ROUND, "join-style", GDK_JOIN_ROUND, 
+              "fill-color-rgba", item->colors[j],
+              "width-units", item->brush.thickness, NULL);
+      }
+    }
+      else if (item->brush.variable_width && !item->brush.variable_color){
+      item->canvas_item = gnome_canvas_item_new(group,
+            gnome_canvas_group_get_type(), NULL);
+      points.num_points = 2;
+      points.ref_count = 1;
+      for (j = 0; j < item->path->num_points-1; j++) {
+        points.coords = item->path->coords+2*j;
+        gnome_canvas_item_new((GnomeCanvasGroup *) item->canvas_item,
+              gnome_canvas_line_get_type(), "points", &points, 
+              "cap-style", GDK_CAP_ROUND, "join-style", GDK_JOIN_ROUND, 
+              "fill-color-rgba", item->brush.color_rgba,
               "width-units", item->widths[j], NULL);
       }
     }
@@ -831,7 +860,9 @@ guint32 rgba_saturation(guint32 colorin, guint value)
   guint32 red = ((colorin & 0xff000000) >> 24);
   guint32 green = ((colorin & 0x00ff0000) >> 16);
   guint32 blue = ((colorin & 0x0000ff00) >> 8);
+  guint32 alpha = (colorin & 0x000000ff);
 
+  
   red+=(value-1);
   blue+=(value-1);
   green+=(value-1);
@@ -842,7 +873,7 @@ guint32 rgba_saturation(guint32 colorin, guint value)
   if(blue > 255)
     blue = 255;
 
-  guint output = (red << 24) +(green <<16) + (blue << 8) + 0xff;
+  guint output = (red << 24) +(green <<16) + (blue << 8) + alpha;
   return output;
 }
 

@@ -266,7 +266,7 @@ typedef struct UIData {
   int cur_item_type;
   GnomeCanvasPoints cur_path; // the path being drawn
   gdouble *cur_widths; // width array for the path being drawn
-  guint *cur_colors; //Array containing the colors for the current path being drawn
+  guint32 *cur_colors; //Array containing the colors for the current path being drawn
   int cur_path_storage_alloc;
   int cur_widths_storage_alloc;
   int cur_colors_storage_alloc;

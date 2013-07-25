@@ -1887,8 +1887,8 @@ on_gradient_toggle                     (GtkMenuItem     *menuitem,
 {
   int i;
   end_text();
-  ui.color_gradient = gtk_toggle_tool_button_get_active(
-    GTK_TOGGLE_TOOL_BUTTON (menuitem));
+  ui.color_gradient =  gtk_check_menu_item_get_active(
+		GTK_CHECK_MENU_ITEM (menuitem));
   for (i=0; i<=NUM_BUTTONS; i++)
     ui.brushes[i][TOOL_PEN].variable_color = ui.color_gradient;
   update_mappings_menu();

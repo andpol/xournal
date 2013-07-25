@@ -2002,6 +2002,16 @@ and other contributors
                       </object>
                     </child>
                     <child>
+                      <object class="GtkCheckMenuItem" id="optionsColorgradient">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="label" translatable="yes">colorgradient</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_gradient_toggle" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkMenuItem" id="button2_mapping">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -2973,37 +2983,6 @@ and other contributors
                 <property name="icon_widget">hand_icon</property>
                 <property name="group">buttonPen</property>
                 <signal name="toggled" handler="on_toolsHand_activate" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToolItem" id="toolitem45">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
-                <child>
-                  <object class="GtkVSeparator" id="vseparator11">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToggleToolButton" id="gradient">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
-                <property name="label" translatable="yes">Gradient</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gnome-stock-blank</property>
-                <signal name="toggled" handler="on_gradient_toggle" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>

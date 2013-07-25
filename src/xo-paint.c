@@ -238,6 +238,7 @@ void create_new_stroke(GdkEvent *event)
       "fill-color-rgba", ui.cur_item->brush.color_rgba,
       "width-units", ui.cur_item->brush.thickness, NULL);
     ui.cur_item->brush.variable_width = FALSE;
+    ui.cur_item->brush.variable_color = FALSE;
   } else
     ui.cur_item->canvas_item = gnome_canvas_item_new(
       ui.cur_layer->group, gnome_canvas_group_get_type(), NULL);
@@ -270,8 +271,14 @@ void continue_stroke(GdkEvent *event)
   //Color varying over the stroke?
   if (ui.cur_item->brush.variable_color) {
     realloc_cur_colors(ui.cur_path.num_points);
-    guint blah = random() %64 + 1;
-    current_color = rgba_saturation(ui.cur_item->brush.color_rgba, blah);
+ 
+    int n, pieces;
+    double *p;
+    for (n=0, p=ui.cur_path.coords; n<ui.cur_path.num_points-1; n++, p+=2){} //Obtain most recent segment
+    guint length = floor(2*sqrt((p[2]-p[0])*(p[2]-p[0]) + ((p[3]-p[1])*(p[3]-p[1]))));
+    if (length > 64)
+      length = 64;
+    current_color = rgba_saturation(ui.cur_item->brush.color_rgba, length);
     ui.cur_colors[ui.cur_path.num_points-1] = current_color;
   }
   else  
@@ -316,7 +323,7 @@ void finalize_stroke(void)
     ui.cur_item->brush.variable_width = FALSE;
   }
   
-  if (!ui.cur_item->brush.variable_width)
+  if (!ui.cur_item->brush.variable_width && !ui.cur_item->brush.variable_color)
     subdivide_cur_path(); // split the segment so eraser will work
 
   ui.cur_item->path = gnome_canvas_points_new(ui.cur_path.num_points);
@@ -334,17 +341,17 @@ void finalize_stroke(void)
                             (ui.cur_path.num_points-1)*sizeof(guint));
   else
     ui.cur_item->colors = NULL;
-  
+
   update_item_bbox(ui.cur_item);
   ui.cur_path.num_points = 0;
 
 
-  if (!ui.cur_item->brush.variable_width && !ui.cur_item->brush.variable_color) {
+  //if (!ui.cur_item->brush.variable_width && !ui.cur_item->brush.variable_color) {
     // destroy the entire group of temporary line segments
     gtk_object_destroy(GTK_OBJECT(ui.cur_item->canvas_item));
     // make a new line item to replace it
     make_canvas_item_one(ui.cur_layer->group, ui.cur_item);
-  }
+// }
 
   // add undo information
   prepare_new_undo();
