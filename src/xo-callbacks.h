@@ -669,3 +669,6 @@ G_MODULE_EXPORT void
 on_splitWindow_activate	               (GtkMenuItem      *menuitem,
                                         gpointer         user_data);
 
+G_MODULE_EXPORT void
+on_unsplitWindow_activate              (GtkMenuItem      *menuitem,
+                                        gpointer         user_data);

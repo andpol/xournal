@@ -3690,17 +3690,23 @@ on_splitWindow_activate                (GtkMenuItem      *menuitem,
                                         gpointer         user_data)
 {
   int width, height;
-  GtkWidget *windowMain;
 
-  windowMain = GET_COMPONENT("scrolledwindowMain");
-  gtk_widget_get_size_request(winMain, &width, &height);
+  GtkWidget *splitWindow = GTK_WIDGET(GET_COMPONENT("scrolledwindowSplit"));
+  GtkWidget *paned = GTK_PANED(GET_COMPONENT("editingWindows"));
 
   gtk_window_get_size(GTK_WINDOW(winMain), &width, &height);
 
-  gtk_widget_set_usize(windowMain, width/2, -1);
+  gtk_paned_set_position(paned, width/2);
+  gtk_widget_show(splitWindow);
+}
 
-  //gtk_window_resize(GTK_WINDOW(windowMain), 200, -1);
 
-  printf("Width: %d, Height:%d\n",width,height);
+void
+on_unsplitWindow_activate                (GtkMenuItem      *menuitem,
+                                        gpointer         user_data)
+{
+  GtkWidget *splitWindow = GTK_WIDGET(GET_COMPONENT("scrolledwindowSplit"));
+
+  gtk_widget_hide(splitWindow);
 }
 
