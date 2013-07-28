@@ -27,6 +27,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "xournal.h"
+#include "xo-bookmark.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
@@ -558,9 +559,15 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
     for (itemlist = undo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
       it = (struct Item *)itemlist->data;
       if (it->canvas_item != NULL) {
-        if (undo->layer != undo->layer2)
+        if (undo->layer != undo->layer2) {
           gnome_canvas_item_reparent(it->canvas_item, undo->layer->group);
-        gnome_canvas_item_move(it->canvas_item, -undo->val_x, -undo->val_y);
+        }
+        if (it->type == ITEM_BOOKMARK) {
+          // Bookmarks only move up/down
+          gnome_canvas_item_move(it->canvas_item, 0.0, -undo->val_y);
+        } else {
+          gnome_canvas_item_move(it->canvas_item, -undo->val_x, -undo->val_y);
+        }
       }
     }
     move_journal_items_by(undo->itemlist, -undo->val_x, -undo->val_y,
@@ -779,9 +786,15 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     for (itemlist = redo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
       it = (struct Item *)itemlist->data;
       if (it->canvas_item != NULL) {
-        if (redo->layer != redo->layer2)
+        if (redo->layer != redo->layer2) {
           gnome_canvas_item_reparent(it->canvas_item, redo->layer2->group);
-        gnome_canvas_item_move(it->canvas_item, redo->val_x, redo->val_y);
+        }
+        if (it->type == ITEM_BOOKMARK) {
+          // Bookmarks only move up/down
+          gnome_canvas_item_move(it->canvas_item, 0.0, redo->val_y);
+        } else {
+          gnome_canvas_item_move(it->canvas_item, redo->val_x, redo->val_y);
+        }
       }
     }
     move_journal_items_by(redo->itemlist, redo->val_x, redo->val_y,
@@ -3757,12 +3770,12 @@ void
 on_sidebar_combobox_changed            (GtkComboBox      *combobox,
                                         gpointer         userdata)
 {
-  GtkWidget *sidebar_contents[] = { GTK_WIDGET(GET_COMPONENT("index_tree")), GTK_WIDGET(GET_COMPONENT("bookmarks_tree")) };
+  GtkWidget *sidebar_contents[] = { GTK_WIDGET(GET_COMPONENT("index_tree")), GTK_WIDGET(GET_COMPONENT("bookmarks")) };
   int num_sidebar_contents = 2;
   int selected_index = gtk_combo_box_get_active(combobox);
 
   if (selected_index >= num_sidebar_contents) {
-    fprintf(stderr, "Warning: Unrecognized sidebar combo-box index: %d", selected_index);
+    g_warning("Unrecognized sidebar combo-box index: %d", selected_index);
     return;
   }
 
@@ -3771,8 +3784,8 @@ on_sidebar_combobox_changed            (GtkComboBox      *combobox,
   for (i = 0; i < num_sidebar_contents; i++) {
     gtk_widget_hide(sidebar_contents[i]);
   }
-  // Show the selected one
-  gtk_widget_show(sidebar_contents[selected_index]);
+  // Show the selected one (and child widgets, if any)
+  gtk_widget_show_all(sidebar_contents[selected_index]);
 }
 
 void
@@ -3792,4 +3805,63 @@ on_index_tree_cursor_changed           (GtkTreeView     *tree,
   gtk_tree_model_get(tree_model, &tree_iter, 1, &page, -1);
   // Minus one, since page switching is zero-indexed, but page indexes are stored in user-friendly 1-index format
   do_switch_page(page - 1, TRUE, TRUE);
+}
+
+void
+on_add_bookmark_button_clicked         (GtkButton       *button,
+                                        gpointer         userdata)
+{
+  GtkWidget *dialog, *label, *content_area, *entry;
+
+  // Create the dialog widget and content
+  dialog = gtk_dialog_new_with_buttons (_("New Bookmark"),
+      GTK_WINDOW(GET_COMPONENT("winMain")),
+      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      GTK_STOCK_OK,
+      GTK_RESPONSE_OK,
+      GTK_STOCK_CANCEL,
+      GTK_RESPONSE_CANCEL,
+      NULL);
+
+  content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+  gtk_box_set_spacing(GTK_BOX(content_area), 6);
+
+  label = gtk_label_new("Bookmark Title:");
+  gtk_container_add(GTK_CONTAINER(content_area), label);
+
+  entry = gtk_entry_new();
+  gtk_container_add(GTK_CONTAINER(content_area), entry);
+
+  gtk_widget_show_all(dialog);
+
+  // Get non-emtpy text input from the user
+  while(!gtk_entry_get_text_length(GTK_ENTRY(entry))) {
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_OK) {
+      // User canceled
+      gtk_widget_destroy(dialog);
+      return;
+    }
+  }
+
+  // Create the bookmark using the user-entered text for a title
+  create_bookmark(gtk_entry_get_text(GTK_ENTRY(entry)), 100);
+  gtk_widget_destroy(dialog);
+}
+
+void
+on_remove_bookmark_button_clicked         (GtkButton       *button,
+                                        gpointer         userdata)
+{
+  delete_selected_bookmark();
+}
+
+void
+on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
+                                        gpointer        userdata)
+{
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(tree);
+  GtkWidget * removeButton = GTK_WIDGET(GET_COMPONENT("remove_bookmark_button"));
+
+  // Enable/disable the "Remove" button based on selection
+  gtk_widget_set_sensitive(removeButton, gtk_tree_selection_get_selected(selection, NULL, NULL));
 }

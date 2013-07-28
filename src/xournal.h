@@ -13,6 +13,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef XOURNAL_H
+#define XOURNAL_H
+
 #include <gtk/gtk.h>
 #include <libgnomecanvas/libgnomecanvas.h>
 #include <poppler/glib/poppler.h>
@@ -178,6 +181,7 @@ typedef struct Item {
   GdkPixbuf *image;  // the image
   gchar *image_png;  // PNG of original image, for save and clipboard
   gsize image_png_len;
+  int page_num; // 0-indexed page number, if ITEM_BOOKMARK
 } Item;
 
 // item type values for Item.type, UndoItem.type, ui.cur_item_type ...
@@ -208,9 +212,10 @@ typedef struct Item {
 #define ITEM_RECOGNIZER 23
 #define ITEM_IMAGE 24
 #define ITEM_SELECTREGION 25
+#define ITEM_BOOKMARK 26
 
 typedef struct Layer {
-  GList *items; // the items on the layer, from bottom to top
+  GList *items; // the items on the layer, from bottom to top (drawing order)
   int nitems;
   GnomeCanvasGroup *group;
 } Layer;
@@ -422,3 +427,5 @@ extern double DEFAULT_ZOOM;
 #define UNIT_IN 1
 #define UNIT_PX 2
 #define UNIT_PT 3
+
+#endif /* XOURNAL_H */
