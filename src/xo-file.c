@@ -72,8 +72,8 @@ void new_journal(void)
   ui.filename = NULL;
   update_file_name(NULL);
 
-  update_thumbnails();
   set_page_border();
+  update_thumbnails();
 }
 
 // check attachment names
@@ -294,6 +294,7 @@ gboolean close_journal(void)
   reset_recognizer();
   clear_redo_stack();
   clear_undo_stack();
+
   reset_search();
 
   shutdown_bgpdf();
@@ -1614,7 +1615,7 @@ void init_config_default(void)
   ui.button_switch_mapping = FALSE;
   ui.autoload_pdf_xoj = FALSE;
   ui.poppler_force_cairo = FALSE;
-  ui.sidebar_width = 200;
+  ui.sidebar_width = 210;
   ui.sidebar_open = FALSE;
   
   // the default UI vertical order

@@ -116,7 +116,6 @@ on_fileNewBackground_activate          (GtkMenuItem     *menuitem,
   set_cursor_busy(FALSE);
   if (success) {
     g_free(filename);
-    update_thumbnails();
     return;
   }
 
@@ -177,7 +176,6 @@ on_fileOpen_activate                   (GtkMenuItem     *menuitem,
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
   g_free(filename);
-
 }
 
 
@@ -550,12 +548,14 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
     if (ui.pageno >= undo->val) ui.pageno--;
     if (ui.pageno < 0) ui.pageno = 0;
     do_switch_page(ui.pageno, TRUE, TRUE);
+    update_thumbnails();
   }
   else if (undo->type == ITEM_DELETE_PAGE) {
     journal.pages = g_list_insert(journal.pages, undo->page, undo->val);
     journal.npages++;
     make_canvas_items(); // re-create the canvas items
     do_switch_page(undo->val, TRUE, TRUE);
+    update_thumbnails();
   }
   else if (undo->type == ITEM_MOVESEL) {
     for (itemlist = undo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
@@ -765,6 +765,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     journal.pages = g_list_insert(journal.pages, redo->page, redo->val);
     journal.npages++;
     do_switch_page(redo->val, TRUE, TRUE);
+    update_thumbnails();
   }
   else if (redo->type == ITEM_DELETE_PAGE) {
     // unmap all the canvas items
@@ -783,6 +784,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     ui.cur_page = NULL;
       // so do_switch_page() won't try to remap the layers of the defunct page
     do_switch_page(ui.pageno, TRUE, TRUE);
+    update_thumbnails();
   }
   else if (redo->type == ITEM_MOVESEL) {
     for (itemlist = redo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
@@ -1698,8 +1700,8 @@ on_journalLoadBackground_activate      (GtkMenuItem     *menuitem,
     rescale_bg_pixmaps();
     rescale_images();
   }
-  do_switch_page(ui.pageno, TRUE, TRUE);
 
+  do_switch_page(ui.pageno, TRUE, TRUE);
   update_thumbnails();
 }
 
@@ -3891,7 +3893,8 @@ void
 on_sidebar_combobox_changed            (GtkComboBox      *combobox,
                                         gpointer         userdata)
 {
-  GtkWidget *sidebar_contents[] = { GTK_WIDGET(GET_COMPONENT("index_tree")), GTK_WIDGET(GET_COMPONENT("bookmarks")), GTK_WIDGET(GET_COMPONENT("thumbnails_vbox")) };
+  GtkWidget *sidebar_contents[] = { GTK_WIDGET(GET_COMPONENT("index_tree")), GTK_WIDGET(GET_COMPONENT("bookmarks")),
+  		GTK_WIDGET(GET_COMPONENT("thumbnails_vbox_container")) };
   int num_sidebar_contents = 3;
   int selected_index = gtk_combo_box_get_active(combobox);
 
@@ -4034,8 +4037,16 @@ on_thumbnail_clicked                   (GtkButton       *button,
 
 
 void
+on_thumbnails_refresh_button_clicked   (GtkToolButton   *toolbutton,
+                                        gpointer         user_data)
+{
+	update_thumbnails();
+}
+
+
+void
 on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
-                                        gpointer        userdata)
+                                           gpointer        userdata)
 {
   GtkWidget * removeButton = GTK_WIDGET(GET_COMPONENT("remove_bookmark_button"));
 

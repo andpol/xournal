@@ -50,6 +50,8 @@ double predef_thickness[NUM_STROKE_TOOLS][THICKNESS_MAX] =
     { 2.83, 2.83, 8.50, 19.84, 19.84 }, // highlighter thicknesses = 1, 3, 7 mm
   };
 
+gboolean update_thumbnails_request = FALSE;
+
 // some manipulation functions
 
 struct Page *new_page(struct Page *template)
@@ -231,7 +233,6 @@ void clear_redo_stack(void)
     else if (redo->type == ITEM_NEW_PAGE) {
       redo->page->group = NULL;
       delete_page(redo->page);
-      update_thumbnails();
     }
     else if (redo->type == ITEM_MOVESEL || redo->type == ITEM_REPAINTSEL) {
       g_list_free(redo->itemlist); g_list_free(redo->auxlist);
@@ -317,7 +318,6 @@ void clear_undo_stack(void)
     else if (undo->type == ITEM_DELETE_PAGE) {
       undo->page->group = NULL;
       delete_page(undo->page);
-      update_thumbnails();
     }
     else if (undo->type == ITEM_TEXT_EDIT || undo->type == ITEM_TEXT_ATTRIB) {
       g_free(undo->str);
@@ -339,8 +339,6 @@ void delete_journal(struct Journal *j)
     delete_page((struct Page *)j->pages->data);
     j->pages = g_list_delete_link(j->pages, j->pages);
   }
-
-  clear_thumbnails();
 }
 
 void delete_page(struct Page *pg)
@@ -2469,52 +2467,99 @@ wrapper_poppler_page_render_to_pixbuf (PopplerPage *page,
   cairo_surface_destroy (surface);
 }
 
-// Delete the thumbnails in the sidebar.
-void clear_thumbnails() {
-	GtkWidget *thumbnails_vbox;
-	GList *children, *iter;
-
-	thumbnails_vbox = GTK_WIDGET(GET_COMPONENT("thumbnails_vbox"));
+void empty_thumbnails_vbox() {
+	GList *children, *children_inner, *iter;
+	GtkWidget *button, *image;
+	GtkWidget *thumbnails_vbox = GTK_WIDGET(GET_COMPONENT("thumbnails_vbox"));
 
 	children = gtk_container_get_children(GTK_CONTAINER(thumbnails_vbox) );
 	for (iter = children; iter != NULL ; iter = g_list_next(iter)) {
-		gtk_widget_destroy(GTK_WIDGET(iter->data) );
+		button = GTK_WIDGET(iter->data);
+
+		children_inner = gtk_container_get_children(GTK_CONTAINER(button) );
+		for (; children_inner != NULL ; children_inner = g_list_next(children_inner)) {
+			gtk_widget_destroy(GTK_WIDGET(children_inner->data) );
+		}
+
+		gtk_widget_destroy(button);
 	}
 	g_list_free(children);
 }
 
+// TODO: Compare to wrapper_poppler_page_render_to_pixbuf for speed
+GdkPixmap * new_pixmap_from_page(PopplerPage *page) {
+	double width, height;
+	GdkPixmap *pixmap;
+	cairo_t *cr;
+	cairo_status_t status;
+
+	poppler_page_get_size(page, &width, &height);
+
+	// Use a scaled pixmap as the surface for cairo
+	pixmap = gdk_pixmap_new(winMain->window, width / THUMBNAIL_SCALE_FACTOR,
+			height / THUMBNAIL_SCALE_FACTOR, -1);
+	cr = gdk_cairo_create(pixmap);
+	cairo_scale(cr, 1 / THUMBNAIL_SCALE_FACTOR, 1 / THUMBNAIL_SCALE_FACTOR);
+
+	// Paint a white background, then render the PDF page on top
+	cairo_set_source_rgb(cr, 1, 1, 1);
+	cairo_paint(cr);
+	poppler_page_render(page, cr);
+
+	status = cairo_status(cr);
+	if (status) {
+		g_warning("%s\n", cairo_status_to_string(status));
+	}
+
+	cairo_destroy(cr);
+	return pixmap;
+}
+
+void new_thumbnail_from_pixmap(GdkPixmap *pixmap) {
+	GtkWidget *thumbnails_vbox, *button, *image;
+
+	thumbnails_vbox = GTK_WIDGET(GET_COMPONENT("thumbnails_vbox"));
+
+	// Extract the image and add to the sidebar
+	image = gtk_image_new_from_pixmap(pixmap, NULL );
+	button = gtk_button_new();
+	gtk_container_add(GTK_CONTAINER(button), image);
+	g_signal_connect(G_OBJECT (button), "button_press_event", G_CALLBACK (on_thumbnail_clicked),
+			image);
+
+	gtk_box_pack_start(GTK_BOX(thumbnails_vbox), button, FALSE, FALSE, 0);
+	gtk_widget_show(button);
+	gtk_widget_show(image);
+}
+
 // Update the thumbnails displayed in the sidebar.
 // Exports the journal to a PDF, then grabs scaled-down images from each page.
-void update_thumbnails() {
+gboolean update_thumbnails_task(gpointer data) {
 	const gchar *tmp_folder;
 	gchar *tmp_pdf_filename, *tmp_pdf_path, *tmp_pdf_uri;
 	PopplerDocument *tmp_pdf;
 	PopplerPage *page;
-	gboolean print_success;
 	int npages;
-	double width, height;
-	cairo_t *cr;
-	GdkPixmap *pixmap;
-	GtkWidget *thumbnails_vbox, *image, *button;
-	cairo_status_t status;
+	GtkLabel *updating_message;
+	GdkPixmap **thumbnail_pixmaps;
 
-	if (winMain->window == NULL ) {
-		return;
+	if (!update_thumbnails_request) {
+		return TRUE;
 	}
 
-	clear_thumbnails();
+	if (winMain->window == NULL ) {
+		return TRUE;
+	}
 
 	// Figure out where we're going to put the exported PDF to grab thumbnails from
 	tmp_folder = g_get_tmp_dir();
 	tmp_pdf_filename = "xournal-thumbnails-tmp.pdf";
-	tmp_pdf_path = g_build_path(G_DIR_SEPARATOR_S, tmp_folder, tmp_pdf_filename,
-			NULL );
+	tmp_pdf_path = g_build_path(G_DIR_SEPARATOR_S, tmp_folder, tmp_pdf_filename, NULL );
 
-	print_success = print_to_pdf(tmp_pdf_path);
-	if (!print_success) {
+	if (!print_to_pdf(tmp_pdf_path)) {
 		g_warning("Could not print PDF to grab thumbnails");
 		free(tmp_pdf_path);
-		return;
+		return TRUE;
 	}
 
 	// Poppler needs a URI, so prepend "file://"
@@ -2525,63 +2570,49 @@ void update_thumbnails() {
 	free(tmp_pdf_uri);
 
 	npages = poppler_document_get_n_pages(tmp_pdf);
-
-	thumbnails_vbox = GTK_WIDGET(GET_COMPONENT("thumbnails_vbox"));
+	thumbnail_pixmaps = (GdkPixmap**) g_malloc(sizeof(GdkPixmap*) * npages);
 
 	int i;
 	for (i = 0; i < npages; i++) {
 		page = poppler_document_get_page(tmp_pdf, i);
-		poppler_page_get_size(page, &width, &height);
-
-		// TODO: Compare to wrapper_poppler_page_render_to_pixbuf for speed
-
-		// Use a scaled pixmap as the surface for cairo
-		pixmap = gdk_pixmap_new(winMain->window, width / THUMBNAIL_SCALE_FACTOR,
-				height / THUMBNAIL_SCALE_FACTOR, -1);
-		cr = gdk_cairo_create(pixmap);
-		cairo_scale(cr, 1 / THUMBNAIL_SCALE_FACTOR, 1 / THUMBNAIL_SCALE_FACTOR);
-
-		// Paint a white background, then render the PDF page on top
-		cairo_set_source_rgb(cr, 1, 1, 1);
-		cairo_paint(cr);
-		poppler_page_render(page, cr);
-
-		status = cairo_status(cr);
-		if (status) {
-			g_warning("%s\n", cairo_status_to_string(status));
-		}
-
-		cairo_destroy(cr);
-
-		// Extract the image and add to the sidebar
-		image = gtk_image_new_from_pixmap(pixmap, NULL );
-		button = gtk_button_new();
-
-    gchar* css = "background-color: white; border-color: black; border-style: solid; border-width: 1px; border-radius: 0px; border-image: none; padding: 0;";
-
-		gtk_container_add(GTK_CONTAINER(button), image);
-
-		g_signal_connect (G_OBJECT (button),
-		                           "button_press_event",
-		                           G_CALLBACK (on_thumbnail_clicked),
-		                           image);
-
-
-
-		gtk_box_pack_start(GTK_BOX(thumbnails_vbox), button, FALSE, FALSE,
-				THUMBNAIL_PADDING);
-		gtk_widget_show(button);
-		gtk_widget_show(image);
+		thumbnail_pixmaps[i] = new_pixmap_from_page(page);
 	}
 
 	// Delete the temp PDF
 	remove(tmp_pdf_path);
 	free(tmp_pdf_path);
 
+	empty_thumbnails_vbox();
+	for (i = 0; i < npages; i++) {
+		new_thumbnail_from_pixmap(thumbnail_pixmaps[i]);
+//		g_free(thumbnail_pixmaps[i]);
+	}
+	free(thumbnail_pixmaps);
+
 	change_current_thumbnail(ui.pageno);
+
+	updating_message = GTK_LABEL(GET_COMPONENT("updating_thumbnails_message"));
+	gtk_label_set_text(updating_message, NULL);
+
+	update_thumbnails_request = FALSE;
+
+	return TRUE;
 }
 
-change_current_thumbnail(int page_index) {
+void update_thumbnails() {
+	GtkLabel *updating_message;
+
+	update_thumbnails_request = TRUE;
+
+	updating_message = GTK_LABEL(GET_COMPONENT("updating_thumbnails_message"));
+	gtk_label_set_text(updating_message, "Updating thumbnails...");
+}
+
+void start_thumbnails_task() {
+	g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, 1000, update_thumbnails_task, NULL, NULL);
+}
+
+void change_current_thumbnail(int pageno) {
 	GdkColor white, orange;
 	GtkVBox *thumbnails_vbox;
 	GList *children;
@@ -2597,7 +2628,7 @@ change_current_thumbnail(int page_index) {
 	for (i = 0; children != NULL ; children = g_list_next(children), i++) {
 		child = GTK_WIDGET(children->data);
 
-		if (i == page_index) {
+		if (i == pageno) {
 			gtk_widget_modify_bg(child, GTK_STATE_NORMAL, &orange);
 			gtk_widget_modify_bg(child, GTK_STATE_PRELIGHT, &orange);
 		} else {
