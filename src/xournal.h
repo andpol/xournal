@@ -222,7 +222,9 @@ typedef struct Layer {
 
 typedef struct Page {
   GList *layers; // the layers on the page
+  Layer *search_layer;
   int nlayers;
+  int layerno;
   double height, width;
   double hoffset, voffset; // offsets of canvas group rel. to canvas root
   struct Background *bg;
@@ -301,6 +303,7 @@ typedef struct UIData {
   GtkWidget *mrumenu[MRU_SIZE];
   gboolean bg_apply_all_pages;
   int window_default_width, window_default_height, scrollbar_step_increment;
+  double viewport_top, viewport_bottom;
   gboolean print_ruling; // print the paper ruling ?
   int default_unit; // the default unit for paper sizes
   int startuptool; // the default tool at startup
@@ -420,6 +423,18 @@ extern struct Journal journal;
 extern struct UIData ui;
 extern struct BgPdf bgpdf;
 extern struct UndoItem *undo, *redo;
+
+// search
+
+typedef enum {
+	SEARCH_CURRENT_LAYER,
+	SEARCH_BACKGROUND_PDF
+} SearchType;
+
+extern gchar *search_string;
+extern gboolean search_case_sensitive;
+extern SearchType search_type;
+extern int current_match, num_matches;
 
 extern double DEFAULT_ZOOM;
 

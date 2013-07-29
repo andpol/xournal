@@ -543,16 +543,10 @@ void resize_textview(gpointer *toplevel, gpointer *data)
 void start_text(GdkEvent *event, struct Item *item)
 {
   double pt[2];
-  GtkTextBuffer *buffer;
-  GnomeCanvasItem *canvas_item;
-  PangoFontDescription *font_desc;
-  GdkColor color;
-
-  get_pointer_coords(event, pt);
-
-  ui.cur_item_type = ITEM_TEXT;
 
   if (item==NULL) {
+	get_pointer_coords(event, pt);
+
     item = g_new(struct Item, 1);
     item->text = NULL;
     item->canvas_item = NULL;
@@ -566,12 +560,23 @@ void start_text(GdkEvent *event, struct Item *item)
     ui.cur_layer->items = g_list_append(ui.cur_layer->items, item);
     ui.cur_layer->nitems++;
   }
-  
+
+  start_text_existing(item);
+}
+
+void start_text_existing(struct Item *item)
+{
+  GtkTextBuffer *buffer;
+  GnomeCanvasItem *canvas_item;
+  PangoFontDescription *font_desc;
+  GdkColor color;
+
+  ui.cur_item_type = ITEM_TEXT;
   item->type = ITEM_TEMP_TEXT;
   ui.cur_item = item;
-  
+
   font_desc = pango_font_description_from_string(item->font_name);
-  pango_font_description_set_absolute_size(font_desc, 
+  pango_font_description_set_absolute_size(font_desc,
       item->font_size*ui.zoom*PANGO_SCALE);
   item->widget = gtk_text_view_new();
   buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(item->widget));
@@ -584,8 +589,8 @@ void start_text(GdkEvent *event, struct Item *item)
 
   canvas_item = gnome_canvas_item_new(ui.cur_layer->group,
     gnome_canvas_widget_get_type(),
-    "x", item->bbox.left, "y", item->bbox.top, 
-    "width", item->bbox.right-item->bbox.left, 
+    "x", item->bbox.left, "y", item->bbox.top,
+    "width", item->bbox.right-item->bbox.left,
     "height", item->bbox.bottom-item->bbox.top,
     "widget", item->widget, NULL);
   // TODO: width/height?
@@ -596,13 +601,13 @@ void start_text(GdkEvent *event, struct Item *item)
   item->canvas_item = canvas_item;
 
   gtk_widget_show(item->widget);
-  ui.resize_signal_handler = 
+  ui.resize_signal_handler =
     g_signal_connect((gpointer) winMain, "check_resize",
        G_CALLBACK(resize_textview), NULL);
   update_font_button();
   gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editPaste")), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonPaste")), FALSE);
-  gtk_widget_grab_focus(item->widget); 
+  gtk_widget_grab_focus(item->widget);
 }
 
 void end_text(void)
@@ -665,6 +670,7 @@ void end_text(void)
   tmpitem = ui.cur_item->canvas_item;
   make_canvas_item_one(ui.cur_layer->group, ui.cur_item);
   update_item_bbox(ui.cur_item);
+  ui.cur_layer->items = g_list_sort(ui.cur_layer->items, compare_items);
   lower_canvas_item_to(ui.cur_layer->group, ui.cur_item->canvas_item, tmpitem);
   gtk_object_destroy(GTK_OBJECT(tmpitem));
 }
@@ -783,4 +789,25 @@ void process_font_sel(gchar *str)
       }
     }  
   update_font_button();
+}
+
+
+// Scroll to an item if out of view, centering it in the viewport vertically.
+// Assumes you're already on the right page.
+void scroll_to_item(struct Item *item) {
+	int cx, cy;
+
+	if (item->bbox.top + ui.cur_page->voffset < ui.viewport_top
+			|| item->bbox.bottom + ui.cur_page->voffset > ui.viewport_bottom) {
+		if (ui.viewport_bottom == 0) {
+			ui.viewport_bottom = gtk_layout_get_vadjustment(GTK_LAYOUT (canvas) )->page_size / ui.zoom;
+		}
+
+		gnome_canvas_get_scroll_offsets(canvas, &cx, &cy);
+		cy = ((item->bbox.top) + ui.cur_page->voffset - (ui.viewport_bottom - ui.viewport_top) / 2) * ui.zoom;
+		if (cy < 0) {
+			cy = 0;
+		}
+		gnome_canvas_scroll_to(canvas, cx, cy);
+	}
 }

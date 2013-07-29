@@ -27,14 +27,12 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "xournal.h"
-#include "xo-bookmark.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
 #include "xo-paint.h"
 #include "xo-selection.h"
 #include "xo-print.h"
-#include "xo-search.h"
 #include "xo-shapes.h"
 #include "intl.h"
 
@@ -228,14 +226,14 @@ on_fileSaveAs_activate                 (GtkMenuItem     *menuitem,
 
   if (ui.filename!=NULL) {
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER (dialog), ui.filename);
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_path_get_basename(ui.filename));
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_basename(ui.filename));
   }
   else
   if (bgpdf.status!=STATUS_NOT_INIT && bgpdf.file_domain == DOMAIN_ABSOLUTE
       && bgpdf.filename != NULL) {
     filename = g_strdup_printf("%s.xoj", bgpdf.filename->s);
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER (dialog), filename);
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_path_get_basename(filename));
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_basename(filename));
     g_free(filename);
   }
   else {
@@ -390,7 +388,7 @@ on_filePrintPDF_activate               (GtkMenuItem     *menuitem,
     else
       in_fn = g_strdup_printf("%s.pdf", ui.filename);
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER (dialog), in_fn);
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_path_get_basename(in_fn));
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (dialog), g_basename(in_fn));
   } else {
     curtime = time(NULL);
     strftime(stime, 30, "%Y-%m-%d-Note-%H-%M.pdf", localtime(&curtime));
@@ -560,15 +558,9 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
     for (itemlist = undo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
       it = (struct Item *)itemlist->data;
       if (it->canvas_item != NULL) {
-        if (undo->layer != undo->layer2) {
+        if (undo->layer != undo->layer2)
           gnome_canvas_item_reparent(it->canvas_item, undo->layer->group);
-        }
-        if (it->type == ITEM_BOOKMARK) {
-          // Bookmarks only move up/down
-          gnome_canvas_item_move(it->canvas_item, 0.0, -undo->val_y);
-        } else {
-          gnome_canvas_item_move(it->canvas_item, -undo->val_x, -undo->val_y);
-        }
+        gnome_canvas_item_move(it->canvas_item, -undo->val_x, -undo->val_y);
       }
     }
     move_journal_items_by(undo->itemlist, -undo->val_x, -undo->val_y,
@@ -644,7 +636,6 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
     undo->item->text = tmpstr;
     gnome_canvas_item_set(undo->item->canvas_item, "text", tmpstr, NULL);
     update_item_bbox(undo->item);
-    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
   else if (undo->type == ITEM_TEXT_ATTRIB) {
     tmpstr = undo->str;
@@ -660,7 +651,6 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
       "fill-color-rgba", undo->item->brush.color_rgba, NULL);
     update_text_item_displayfont(undo->item);
     update_item_bbox(undo->item);
-    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
 
   // move item from undo to redo stack
@@ -697,7 +687,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     // re-create the canvas_item
     make_canvas_item_one(redo->layer->group, redo->item);
     // reinsert the item on its layer
-    redo->layer->items = g_list_insert_sorted(redo->layer->items, redo->item, compare_items);
+    redo->layer->items = g_list_append(redo->layer->items, redo->item);
     redo->layer->nitems++;
   }
   else if (redo->type == ITEM_ERASURE || redo->type == ITEM_RECOGNIZER) {
@@ -789,15 +779,9 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     for (itemlist = redo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
       it = (struct Item *)itemlist->data;
       if (it->canvas_item != NULL) {
-        if (redo->layer != redo->layer2) {
+        if (redo->layer != redo->layer2)
           gnome_canvas_item_reparent(it->canvas_item, redo->layer2->group);
-        }
-        if (it->type == ITEM_BOOKMARK) {
-          // Bookmarks only move up/down
-          gnome_canvas_item_move(it->canvas_item, 0.0, redo->val_y);
-        } else {
-          gnome_canvas_item_move(it->canvas_item, redo->val_x, redo->val_y);
-        }
+        gnome_canvas_item_move(it->canvas_item, redo->val_x, redo->val_y);
       }
     }
     move_journal_items_by(redo->itemlist, redo->val_x, redo->val_y,
@@ -811,7 +795,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     for (itemlist = redo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
       it = (struct Item *)itemlist->data;
       make_canvas_item_one(redo->layer->group, it);
-      redo->layer->items = g_list_insert_sorted(redo->layer->items, it, compare_items);
+      redo->layer->items = g_list_append(redo->layer->items, it);
       redo->layer->nitems++;
     }
   }
@@ -871,7 +855,6 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     redo->item->text = tmpstr;
     gnome_canvas_item_set(redo->item->canvas_item, "text", tmpstr, NULL);
     update_item_bbox(redo->item);
-    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
   else if (redo->type == ITEM_TEXT_ATTRIB) {
     tmpstr = redo->str;
@@ -887,7 +870,6 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
       "fill-color-rgba", redo->item->brush.color_rgba, NULL);
     update_text_item_displayfont(redo->item);
     update_item_bbox(redo->item);
-    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
 
   // move item from redo to undo stack
@@ -938,131 +920,16 @@ on_editDelete_activate                 (GtkMenuItem     *menuitem,
 }
 
 
-void
-on_editFind_activate                   (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-	GtkWidget *find_dialog;
-	GtkEntry *find_text;
-	GtkCheckButton *case_sensitive;
-	GtkRadioButton *current_layer, *background_pdf;
-
-	update_search_string_from_selection();
-	reset_selection();
-
-	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
-
-	// Put the search string into the text box
-	find_text = (GtkEntry*) GTK_WIDGET(GET_COMPONENT("findText"));
-	gtk_entry_set_text(find_text, search_string == NULL ? "" : search_string);
-
-	// Set the case sensitive checkbox
-	case_sensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
-	gtk_toggle_button_set_active(&(case_sensitive->toggle_button), search_case_sensitive);
-
-	// Set the layer search options radio buttons
-	current_layer = (GtkRadioButton*)GTK_WIDGET(GET_COMPONENT("findCurrentLayerRadio"));
-	background_pdf = (GtkRadioButton*)GTK_WIDGET(GET_COMPONENT("findPdfBgRadio"));
-
-	if (search_type == SEARCH_CURRENT_LAYER) {
-		gtk_toggle_button_set_active(&current_layer->check_button.toggle_button, TRUE);
-	} else if (search_type == SEARCH_BACKGROUND_PDF) {
-		gtk_toggle_button_set_active(&background_pdf->check_button.toggle_button, TRUE);
-	}
-
-	// Restore focus to the find next button since we're just reusing the same dialog instance
-	gtk_widget_grab_focus(GTK_WIDGET(GET_COMPONENT("findNextButton")));
-
-	gtk_widget_show(find_dialog);
-}
-
-
-void
-on_editFindNext_activate               (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-	find_next(FALSE);
-}
-
-
-void
-on_editFindPrevious_activate           (GtkMenuItem     *menuitem,
-		                                gpointer         user_data)
-{
-	find_next(TRUE);
-}
-
-
-void
-on_findNextButton_clicked              (GtkButton       *button,
-                                        gpointer         user_data)
-{
-	find_next(FALSE);
-}
-
-
-void
-on_findPreviousButton_clicked          (GtkButton       *button,
-		                                gpointer         user_data)
-{
-	find_next(TRUE);
-}
-
-
-void
-on_findCloseButton_clicked             (GtkButton       *button,
-		                                gpointer         user_data)
-{
-	GtkWidget *find_dialog;
-	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
-	gtk_widget_hide(find_dialog);
-}
-
-void
-on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
-                                        gpointer         user_data)
-{
-	if (button->toggle_button.active) {
-		search_case_sensitive = TRUE;
+void on_editFind_activate(GtkMenuItem *menuitem, gpointer user_data) {
+	if (update_search_string()) {
+		// TODO: Bring up find dialogue, but don't change selection
 	} else {
-		search_case_sensitive = FALSE;
+		find_next();
 	}
 }
 
-void
-on_findCurrentLayerRadio_toggled       (GtkRadioButton  *button,
-                                        gpointer         user_data)
-{
-	if (button->check_button.toggle_button.active) {
-		search_type = SEARCH_CURRENT_LAYER;
-		clear_pdf_matches();
-	}
-}
-
-void
-on_findPdfBgRadio_toggled              (GtkRadioButton  *button,
-                                        gpointer         user_data)
-{
-	if (button->check_button.toggle_button.active) {
-		search_type = SEARCH_BACKGROUND_PDF;
-	}
-}
-
-void
-on_findText_changed                    (GtkEditable     *editable,
-		                                gpointer         user_data)
-{
-	const gchar *text;
-	text = gtk_entry_get_text((GtkEntry*) editable);
-
-	if (strlen(text) == 0) {
-		update_search_string(NULL);
-	} else {
-		update_search_string(text);
-	}
-
-	clear_pdf_matches();
-	current_match = num_matches = -1;
+void on_editFindNext_activate(GtkMenuItem *menuitem, gpointer user_data) {
+	find_next(TRUE);
 }
 
 
@@ -1205,8 +1072,6 @@ on_viewShowLayer_activate              (GtkMenuItem     *menuitem,
   if (ui.layerno == ui.cur_page->nlayers-1) return;
   reset_selection();
   ui.layerno++;
-  ui.cur_page->layerno++;
-  printf("%d %d\n", ui.layerno, ui.cur_page->layerno);
   ui.cur_layer = g_list_nth_data(ui.cur_page->layers, ui.layerno);
   gnome_canvas_item_show(GNOME_CANVAS_ITEM(ui.cur_layer->group));
   update_page_stuff();
@@ -1222,7 +1087,6 @@ on_viewHideLayer_activate              (GtkMenuItem     *menuitem,
   reset_selection();
   gnome_canvas_item_hide(GNOME_CANVAS_ITEM(ui.cur_layer->group));
   ui.layerno--;
-  ui.cur_page->layerno--;
   if (ui.layerno<0) ui.cur_layer = NULL;
   else ui.cur_layer = g_list_nth_data(ui.cur_page->layers, ui.layerno);
   update_page_stuff();
@@ -1343,7 +1207,6 @@ on_journalNewLayer_activate            (GtkMenuItem     *menuitem,
   ui.cur_page->layers = g_list_insert(ui.cur_page->layers, l, ui.layerno+1);
   ui.cur_layer = l;
   ui.layerno++;
-  ui.cur_page->layerno++;
   ui.cur_page->nlayers++;
   update_page_stuff();
 
@@ -1382,7 +1245,6 @@ on_journalDeleteLayer_activate         (GtkMenuItem     *menuitem,
   if (ui.cur_page->nlayers>=2) {
     ui.cur_page->nlayers--;
     ui.layerno--;
-    ui.cur_page->layerno++;
     if (ui.layerno<0) ui.cur_layer = NULL;
     else ui.cur_layer = (struct Layer *)g_list_nth_data(ui.cur_page->layers, ui.layerno);
   }
@@ -2479,9 +2341,15 @@ on_helpAbout_activate                  (GtkMenuItem     *menuitem,
   GtkLabel *labelTitle;
 
   end_text();
+<<<<<<< HEAD
+  aboutDialog = create_aboutDialog ();
+  labelTitle = GTK_LABEL(g_object_get_data(G_OBJECT(aboutDialog), "labelTitle"));
+  gtk_label_set_markup(labelTitle,
+=======
   aboutDialog = GTK_WIDGET(GET_COMPONENT("aboutDialog"));
   labelTitle = GTK_LABEL(GET_COMPONENT("about_labelTitle"));
   gtk_label_set_markup(labelTitle, 
+>>>>>>> gtk-builder
     "<span size=\"xx-large\" weight=\"bold\">Xournal " VERSION_STRING "</span>");
   gtk_dialog_run (GTK_DIALOG(aboutDialog));
   gtk_widget_hide(aboutDialog);
@@ -2586,7 +2454,7 @@ on_canvas_button_press_event           (GtkWidget       *widget,
       else if (event->button == 5) scroll_event.scroll.direction = GDK_SCROLL_DOWN;
       else if (event->button == 6) scroll_event.scroll.direction = GDK_SCROLL_LEFT;
       else scroll_event.scroll.direction = GDK_SCROLL_RIGHT;
-      gtk_widget_event(GTK_WIDGET(GET_COMPONENT("scrolledwindowMain")), &scroll_event);
+      gtk_widget_event(GET_COMPONENT("scrolledwindowMain"), &scroll_event);
     }
     return FALSE;
   }
@@ -3004,14 +2872,12 @@ on_comboLayer_changed                  (GtkComboBox     *combobox,
   reset_selection();
   while (val>ui.layerno) {
     ui.layerno++;
-    ui.cur_page->layerno++;
     ui.cur_layer = g_list_nth_data(ui.cur_page->layers, ui.layerno);
     gnome_canvas_item_show(GNOME_CANVAS_ITEM(ui.cur_layer->group));
   }
   while (val<ui.layerno) {
     gnome_canvas_item_hide(GNOME_CANVAS_ITEM(ui.cur_layer->group));
     ui.layerno--;
-    ui.cur_page->layerno--;
     if (ui.layerno<0) ui.cur_layer = NULL;
     else ui.cur_layer = g_list_nth_data(ui.cur_page->layers, ui.layerno);
   }
@@ -3090,22 +2956,23 @@ on_vscroll_changed                     (GtkAdjustment   *adjustment,
                                         gpointer         user_data)
 {
   gboolean need_update;
+  double viewport_top, viewport_bottom;
   struct Page *tmppage;
 
   if (!ui.view_continuous) return;
 
   if (ui.progressive_bg) rescale_bg_pixmaps();
   need_update = FALSE;
-  ui.viewport_top = adjustment->value / ui.zoom;
-  ui.viewport_bottom = (adjustment->value + adjustment->page_size) / ui.zoom;
+  viewport_top = adjustment->value / ui.zoom;
+  viewport_bottom = (adjustment->value + adjustment->page_size) / ui.zoom;
   tmppage = ui.cur_page;
-  while (ui.viewport_top > tmppage->voffset + tmppage->height) {
+  while (viewport_top > tmppage->voffset + tmppage->height) {
     if (ui.pageno == journal.npages-1) break;
     need_update = TRUE;
     ui.pageno++;
     tmppage = g_list_nth_data(journal.pages, ui.pageno);
   }
-  while (ui.viewport_bottom < tmppage->voffset) {
+  while (viewport_bottom < tmppage->voffset) {
     if (ui.pageno == 0) break;
     need_update = TRUE;
     ui.pageno--;
@@ -3590,8 +3457,14 @@ on_viewSetZoom_activate                (GtkMenuItem     *menuitem,
   gtk_spin_button_set_value(spinZoom, zoom_percent);
   test_w = 100*(GTK_WIDGET(canvas))->allocation.width/ui.cur_page->width/DEFAULT_ZOOM;
   test_h = 100*(GTK_WIDGET(canvas))->allocation.height/ui.cur_page->height/DEFAULT_ZOOM;
+<<<<<<< HEAD
+  if (zoom_percent > 99.9 && zoom_percent < 100.1)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(
+           G_OBJECT(zoom_dialog), "radioZoom100")), TRUE);
+=======
   if (zoom_percent > 99.9 && zoom_percent < 100.1) 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GET_COMPONENT("radioZoom100")), TRUE);
+>>>>>>> gtk-builder
   else if (zoom_percent > test_w-0.1 && zoom_percent < test_w+0.1)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GET_COMPONENT("radioZoomWidth")), TRUE);
   else if (zoom_percent > test_h-0.1 && zoom_percent < test_h+0.1)
@@ -3609,8 +3482,13 @@ on_viewSetZoom_activate                (GtkMenuItem     *menuitem,
       rescale_images();
     }
   } while (response == GTK_RESPONSE_APPLY);
+<<<<<<< HEAD
+
+  gtk_widget_destroy(zoom_dialog);
+=======
   
   gtk_widget_hide(zoom_dialog);
+>>>>>>> gtk-builder
 }
 
 
@@ -3764,7 +3642,7 @@ on_optionsShortenMenus_activate        (GtkMenuItem     *menuitem,
     nextptr = strchr(item, ' ');
     if (nextptr!=NULL) *nextptr = 0;
     // hide or show the item
-    w = GTK_WIDGET(GET_COMPONENT(item));
+    w = GET_COMPONENT(item);
     if (w != NULL) {
       if (ui.shorten_menus) gtk_widget_hide(w);
       else gtk_widget_show(w);
@@ -3833,213 +3711,4 @@ on_optionsPenCursor_activate           (GtkCheckMenuItem *checkmenuitem,
 {
   ui.pen_cursor = gtk_check_menu_item_get_active(checkmenuitem);
   update_cursor();
-}
-
-void
-on_close_sidebar_clicked               (GtkButton *button,
-                                        gpointer  user_data)
-{
-  GtkCheckMenuItem *check_item = GTK_CHECK_MENU_ITEM(GET_COMPONENT("viewSidebar"));
-  // Set the checkbox menu item state - it's callback function updates the sidebar
-  gtk_check_menu_item_set_active(check_item, FALSE);
-}
-
-void
-on_viewSidebar_toggled   (GtkCheckMenuItem *menuitem,
-                          gpointer         userdata)
-{
-  GtkPaned * paned = GTK_PANED(GET_COMPONENT("winMainPaned"));
-  GtkWidget *sidebar = GTK_WIDGET(GET_COMPONENT("sidebar"));
-
-  // *** BLOCK SIGNAL HANDLER
-  g_signal_handlers_block_by_func(sidebar, on_sidebar_size_allocate, NULL);
-
-  if (!gtk_check_menu_item_get_active(menuitem)) {
-    // Save the size of the sidebar, then close/minimize it
-    ui.sidebar_width = gtk_paned_get_position(paned);
-    gtk_paned_set_position(paned, 0);
-    ui.sidebar_open = FALSE;
-  } else {
-    // Display the sidebar from the saved width
-    gtk_paned_set_position(paned, ui.sidebar_width);
-    ui.sidebar_open = TRUE;
-  }
-
-  // *** UNBLOCK SIGNAL HANDLER
-  g_signal_handlers_unblock_by_func(sidebar, on_sidebar_size_allocate, NULL);
-}
-
-void
-on_sidebar_size_allocate       (GtkWidget *widget,
-                                gpointer  userdata)
-{
-
-  GtkCheckMenuItem *viewSidebar = GTK_CHECK_MENU_ITEM(GET_COMPONENT("viewSidebar"));
-  GtkPaned *paned = GTK_PANED(GET_COMPONENT("winMainPaned"));
-  gint new_size = gtk_paned_get_position(paned);
-
-  // *** BLOCK SIGNAL HANDLERS
-  g_signal_handlers_block_by_func(viewSidebar, on_viewSidebar_toggled, NULL);
-  g_signal_handlers_block_by_func(widget, on_sidebar_size_allocate, NULL);
-
-  if (new_size <= 0) {
-    gtk_check_menu_item_set_active(viewSidebar, FALSE);
-    ui.sidebar_open = FALSE;
-  } else if (new_size < 100) {
-    // Keep at 100 size - prevent user from making it smaller
-    gtk_paned_set_position(paned, 100);
-    // Save the size and update the menu item status
-    ui.sidebar_width = 100;
-    gtk_check_menu_item_set_active(viewSidebar, TRUE);
-    ui.sidebar_open = TRUE;
-  } else {
-    // Save the size and update the menu item status
-    ui.sidebar_width = gtk_paned_get_position(paned);
-    gtk_check_menu_item_set_active(viewSidebar, TRUE);
-    ui.sidebar_open = TRUE;
-  }
-
-  // *** UNBLOCK SIGNAL HANDLERS
-  g_signal_handlers_unblock_by_func(viewSidebar, on_viewSidebar_toggled, NULL);
-  g_signal_handlers_unblock_by_func(widget, on_sidebar_size_allocate, NULL);
-}
-
-
-void
-on_sidebar_combobox_changed            (GtkComboBox      *combobox,
-                                        gpointer         userdata)
-{
-  GtkWidget *sidebar_contents[] = { GTK_WIDGET(GET_COMPONENT("index_tree")), GTK_WIDGET(GET_COMPONENT("bookmarks")) };
-  int num_sidebar_contents = 2;
-  int selected_index = gtk_combo_box_get_active(combobox);
-
-  if (selected_index >= num_sidebar_contents) {
-    g_warning("Unrecognized sidebar combo-box index: %d", selected_index);
-    return;
-  }
-
-  // Hide all the sidebar contents
-  int i;
-  for (i = 0; i < num_sidebar_contents; i++) {
-    gtk_widget_hide(sidebar_contents[i]);
-  }
-  // Show the selected one (and child widgets, if any)
-  gtk_widget_show_all(sidebar_contents[selected_index]);
-}
-
-void
-on_index_tree_cursor_changed           (GtkTreeView     *tree,
-                                        gpointer        userdata)
-{
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(tree);
-  GtkTreeModel *tree_model;
-  GtkTreeIter tree_iter;
-
-  if (!gtk_tree_selection_get_selected(selection, &tree_model, &tree_iter)) {
-    // No selection
-    return;
-  }
-
-  gint pdf_page;
-  gtk_tree_model_get(tree_model, &tree_iter, 1, &pdf_page, -1);
-  gint jump_page = 0;
-
-  // Search through the Journal Pages to find and
-  // jump the first occurance of the background PDF's page
-  GList *page;
-  for (page = journal.pages; page != NULL; page=page->next, jump_page++) {
-    Page * pg = (Page *) page->data;
-    if(pg->bg == NULL || pg->bg->type != BG_PDF) {
-      continue;
-    }
-    if (pg->bg->file_page_seq == pdf_page) {
-      do_switch_page(jump_page, TRUE, TRUE);
-      return;
-    }
-  }
-
-  // PDF Page not found (user deleted it?)
-  GtkWidget * dialog = gtk_message_dialog_new(GTK_WINDOW(GET_COMPONENT("winMain")),
-      GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-      GTK_MESSAGE_WARNING,
-      GTK_BUTTONS_OK,
-      _("Page not found."));
-  gtk_dialog_run(GTK_DIALOG(dialog));
-  gtk_widget_destroy(dialog);
-}
-
-void
-on_add_bookmark_button_clicked         (GtkButton       *button,
-                                        gpointer         userdata)
-{
-  GtkWidget *dialog, *label, *content_area, *entry;
-
-  // Create the dialog widget and content
-  dialog = gtk_dialog_new_with_buttons (_("New Bookmark"),
-      GTK_WINDOW(GET_COMPONENT("winMain")),
-      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-      GTK_STOCK_OK,
-      GTK_RESPONSE_OK,
-      GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL,
-      NULL);
-
-  content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  gtk_box_set_spacing(GTK_BOX(content_area), 6);
-
-  label = gtk_label_new("Bookmark Title:");
-  gtk_container_add(GTK_CONTAINER(content_area), label);
-
-  entry = gtk_entry_new();
-  gtk_container_add(GTK_CONTAINER(content_area), entry);
-
-  gtk_widget_show_all(dialog);
-
-  // Get non-emtpy text input from the user
-  while(!gtk_entry_get_text_length(GTK_ENTRY(entry))) {
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_OK) {
-      // User canceled
-      gtk_widget_destroy(dialog);
-      return;
-    }
-  }
-
-  // Create the bookmark using the user-entered text for a title
-  create_bookmark(gtk_entry_get_text(GTK_ENTRY(entry)), 100);
-  gtk_widget_destroy(dialog);
-}
-
-void
-on_remove_bookmark_button_clicked         (GtkButton       *button,
-                                        gpointer         userdata)
-{
-  delete_selected_bookmark();
-}
-
-void
-on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
-                                        gpointer        userdata)
-{
-  GtkWidget * removeButton = GTK_WIDGET(GET_COMPONENT("remove_bookmark_button"));
-
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(tree);
-  GtkTreeModel *tree_model;
-  GtkTreeIter tree_iter;
-
-  gboolean is_selected = gtk_tree_selection_get_selected(selection, &tree_model, &tree_iter);
-  // Enable/disable the "Remove" button based on selection
-  gtk_widget_set_sensitive(removeButton, is_selected);
-
-  if (!is_selected) {
-    // No selection - nothing to do
-    return;
-  }
-
-  gint page_num;
-  gtk_tree_model_get(tree_model, &tree_iter, 1, &page_num, -1);
-
-  // Jump to the page
-  do_switch_page(page_num - 1, TRUE, TRUE);
-  // Scroll to the location on the page
-  // TODO
 }

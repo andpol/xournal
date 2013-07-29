@@ -42,6 +42,7 @@
 #include "xo-file.h"
 #include "xo-paint.h"
 #include "xo-image.h"
+#include "xo-search.h"
 #include "intl.h"
 
 const char *tool_names[NUM_TOOLS] = {"pen", "eraser", "highlighter", "text", "selectregion", "selectrect", "vertspace", "hand", "image"};
@@ -289,6 +290,7 @@ gboolean close_journal(void)
   reset_recognizer();
   clear_redo_stack();
   clear_undo_stack();
+  reset_search();
 
   shutdown_bgpdf();
   delete_journal(&journal);
@@ -837,6 +839,8 @@ gboolean open_journal(char *filename)
   int len;
   gchar *tmpfn, *tmpfn2, *p, *q;
   gboolean maybe_pdf;
+  GList *pagelist;
+  struct Page *page;
   
   tmpfn = g_strdup_printf("%s.xoj", filename);
   if (ui.autoload_pdf_xoj && g_file_test(tmpfn, G_FILE_TEST_EXISTS) &&
@@ -944,10 +948,16 @@ gboolean open_journal(char *filename)
     g_free(tmpfn);
   }
   
+  for (pagelist = journal.pages; pagelist != NULL; pagelist = pagelist->next) {
+	  page = (struct Page *)pagelist->data;
+	  page->layerno = page->nlayers - 1;
+	  page->search_layer = NULL;
+  }
+
   ui.pageno = 0;
   ui.cur_page = (struct Page *)journal.pages->data;
-  ui.layerno = ui.cur_page->nlayers-1;
-  ui.cur_layer = (struct Layer *)(g_list_last(ui.cur_page->layers)->data);
+  ui.layerno = ui.cur_page->layerno;
+  ui.cur_layer = (struct Layer *)(g_list_nth_data(ui.cur_page->layers, ui.layerno));
   ui.saved = TRUE;
   ui.zoom = ui.startup_zoom;
   update_file_name(g_strdup(filename));

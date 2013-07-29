@@ -262,6 +262,7 @@ void clipboard_paste_from_xournal(GtkSelectionData *sel_data)
       update_item_bbox(item);
       make_canvas_item_one(ui.cur_layer->group, item);
     }
+
     if (item->type == ITEM_TEXT) {
       g_memmove(&item->brush, p, sizeof(struct Brush)); p+= sizeof(struct Brush);
       g_memmove(&item->bbox.left, p, sizeof(double)); p+= sizeof(double);
@@ -297,6 +298,8 @@ void clipboard_paste_from_xournal(GtkSelectionData *sel_data)
       make_canvas_item_one(ui.cur_layer->group, item);
     }
   }
+
+  ui.cur_layer->items = g_list_sort(ui.cur_layer->items, compare_items);
 
   prepare_new_undo();
   undo->type = ITEM_PASTE;
@@ -348,6 +351,8 @@ void clipboard_paste_text(gchar *text)
   gnome_canvas_item_set(item->canvas_item, "x", item->bbox.left, "y", item->bbox.top, NULL);
   update_item_bbox(item);
   
+  ui.cur_layer->items = g_list_sort(ui.cur_layer->items, compare_items);
+
   ui.selection->bbox = item->bbox;
   ui.selection->canvas_item = gnome_canvas_item_new(ui.cur_layer->group,
       gnome_canvas_rect_get_type(), "width-pixels", 1,

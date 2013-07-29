@@ -27,6 +27,7 @@
 #include "xo-misc.h"
 #include "xo-file.h"
 #include "xo-paint.h"
+#include "xo-search.h"
 #include "xo-shapes.h"
 #include "intl.h"
 
@@ -38,6 +39,11 @@ struct Journal journal; // the journal
 struct BgPdf bgpdf;  // the PDF loader stuff
 struct UIData ui;   // the user interface data
 struct UndoItem *undo, *redo; // the undo and redo stacks
+
+gchar *search_string; // current search string
+gboolean search_case_sensitive = FALSE; // TODO: user preference?
+SearchType search_type = SEARCH_CURRENT_LAYER;
+int current_match = -1, num_matches = 0;
 
 double DEFAULT_ZOOM;
 
@@ -166,6 +172,10 @@ void init_stuff (int argc, char *argv[])
   gtk_layout_get_hadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
   gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
 
+  ui.viewport_top = 0;
+  // TODO: does this work?
+  ui.viewport_bottom = gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->page_size / ui.zoom;
+
   // set up the page size and canvas size
   update_page_stuff();
 
@@ -246,6 +256,7 @@ void init_stuff (int argc, char *argv[])
 
   update_undo_redo_enabled();
   update_copy_paste_enabled();
+  update_search_string(NULL);
   update_vbox_order(ui.vertical_order[ui.fullscreen?1:0]);
   gtk_widget_grab_focus(GTK_WIDGET(canvas));
 

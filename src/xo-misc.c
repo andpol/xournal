@@ -56,11 +56,13 @@ struct Page *new_page(struct Page *template)
 {
   struct Page *pg = (struct Page *) g_memdup(template, sizeof(struct Page));
   struct Layer *l = g_new(struct Layer, 1);
-  
+
   l->items = NULL;
   l->nitems = 0;
   pg->layers = g_list_append(NULL, l);
   pg->nlayers = 1;
+  pg->layerno = 0;
+  pg->search_layer = NULL;
   pg->bg = (struct Background *)g_memdup(template->bg, sizeof(struct Background));
   pg->bg->canvas_item = NULL;
   if (pg->bg->type == BG_PIXMAP || pg->bg->type == BG_PDF) {
@@ -90,6 +92,8 @@ struct Page *new_page_with_bg(struct Background *bg, double width, double height
   l->nitems = 0;
   pg->layers = g_list_append(NULL, l);
   pg->nlayers = 1;
+  pg->layerno = 0;
+  pg->search_layer = NULL;
   pg->bg = bg;
   pg->bg->canvas_item = NULL;
   pg->height = height;
@@ -334,6 +338,10 @@ void delete_page(struct Page *pg)
   if (pg->bg->type == BG_PIXMAP || pg->bg->type == BG_PDF) {
     if (pg->bg->pixbuf != NULL) g_object_unref(pg->bg->pixbuf);
     if (pg->bg->filename != NULL) refstring_unref(pg->bg->filename);
+
+    if (pg->bg->type == BG_PDF && search_type == SEARCH_BACKGROUND_PDF) {
+    	reset_search();
+    }
   }
   g_free(pg->bg);
   g_free(pg);
@@ -1306,8 +1314,8 @@ void do_switch_page(int pg, gboolean rescroll, gboolean refresh_all)
     }
   
   ui.cur_page = g_list_nth_data(journal.pages, ui.pageno);
-  ui.layerno = ui.cur_page->nlayers-1;
-  ui.cur_layer = (struct Layer *)(g_list_last(ui.cur_page->layers)->data);
+  ui.layerno = ui.cur_page->layerno;
+  ui.cur_layer = (struct Layer *)(g_list_nth_data(ui.cur_page->layers, ui.layerno));
   update_page_stuff();
   if (ui.progressive_bg) rescale_bg_pixmaps();
  
@@ -1331,10 +1339,19 @@ void update_page_stuff(void)
   gchar tmp[10];
   GtkComboBox *layerbox;
   int i;
-  GList *pglist;
+  GList *pglist, *layerlist;
   GtkSpinButton *spin;
   struct Page *pg;
+  struct Layer *layer;
   double vertpos, maxwidth;
+
+  for (pglist = journal.pages; pglist != NULL; pglist = pglist->next) {
+	  pg = (struct Page *)pglist->data;
+	  for (layerlist = pg->layers; layerlist != NULL; layerlist = layerlist->next) {
+		  layer = (struct Layer *)layerlist->data;
+		  layer->items = g_list_sort(layer->items, compare_items);
+	  }
+  }
 
   // move the page groups to their rightful locations or hide them
   if (ui.view_continuous) {
@@ -2434,4 +2451,8 @@ wrapper_poppler_page_render_to_pixbuf (PopplerPage *page,
 
   wrapper_copy_cairo_surface_to_pixbuf (surface, pixbuf);
   cairo_surface_destroy (surface);
+}
+
+int compare_items(const void * a, const void * b) {
+	return ((*(struct Item *) a).bbox.top - (*(struct Item *) b).bbox.top);
 }
