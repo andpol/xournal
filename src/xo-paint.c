@@ -670,7 +670,6 @@ void end_text(void)
 }
 
 /* update the items in the canvas so they're of the right font size */
-
 void update_text_item_displayfont(struct Item *item)
 {
   PangoFontDescription *font_desc;

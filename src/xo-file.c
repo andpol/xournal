@@ -1272,7 +1272,7 @@ gboolean init_bgpdf(char *pdfname, gboolean create_pages, int file_domain)
   PopplerPage *pdfpage;
   gdouble width, height;
   gchar *uri;
-  
+
   if (bgpdf.status != STATUS_NOT_INIT) return FALSE;
   
   // make a copy of the file in memory and check it's a PDF
@@ -1307,6 +1307,9 @@ gboolean init_bgpdf(char *pdfname, gboolean create_pages, int file_domain)
     if (ui.default_path!=NULL) g_free(ui.default_path);
     ui.default_path = g_path_get_dirname(pdfname);
   }
+
+  // Load the PDF's index (aka table of contents)
+  bgpdf_load_index();
 
   if (!create_pages) return TRUE; // we're done
   
@@ -1344,9 +1347,99 @@ gboolean init_bgpdf(char *pdfname, gboolean create_pages, int file_domain)
   }
   update_page_stuff();
   rescale_bg_pixmaps(); // this actually requests the pages !!
+
   return TRUE;
 }
 
+gint bgpdf_get_index_page(PopplerDest * dest) {
+  PopplerDest * named_dest;
+
+  switch (dest->type) {
+    case POPPLER_DEST_UNKNOWN:
+      g_warning("Unsupported PopplerDest type: 'POPPLER_DEST_UNKNOWN'");
+      break;
+    case POPPLER_DEST_XYZ:	// Drop down all the way to FITBV
+    case POPPLER_DEST_FIT:
+    case POPPLER_DEST_FITH:
+    case POPPLER_DEST_FITV:
+    case POPPLER_DEST_FITB:
+    case POPPLER_DEST_FITBH:
+    case POPPLER_DEST_FITBV:
+      return dest->page_num;
+      break;
+    case POPPLER_DEST_NAMED:
+      named_dest = poppler_document_find_dest(bgpdf.document, dest->named_dest);
+      if (!named_dest) {
+        g_warning("POPPLER_DEST_NAMED destination '%s', not found in document", dest->named_dest);
+        return 0;
+      }
+      gint page = named_dest->page_num;
+      poppler_dest_free(named_dest);
+      return page;
+      break;
+    default:
+      g_warning("Unknown PopplerDest type: %d", dest->type);
+      return 0;
+  }
+}
+
+void bgpdf_build_index_tree(GtkTreeStore * tree_store, PopplerIndexIter * iter, GtkTreeIter * parent)
+{
+  do {
+    GtkTreeIter tree_iter;
+    gtk_tree_store_append(tree_store, &tree_iter, parent);
+    PopplerAction * action = poppler_index_iter_get_action(iter);
+
+    if(!action) {
+      continue;
+    }
+
+    PopplerDest * dest;
+
+    switch (action->any.type) {
+      case POPPLER_ACTION_GOTO_DEST:
+        dest = action->goto_dest.dest;
+        break;
+      default:
+        g_warning("Unsupported PopplerActionType: %d for index: '%s'", action->any.type, action->any.title);
+        poppler_action_free(action);
+        continue;
+        break;
+    }
+
+    gtk_tree_store_set(tree_store, &tree_iter, 0, action->any.title, 1, bgpdf_get_index_page(dest), -1);
+    poppler_action_free(action);
+
+    // Recursivly build any children indexes
+    PopplerIndexIter * child_iter = poppler_index_iter_get_child(iter);
+    if(child_iter) {
+      bgpdf_build_index_tree(tree_store, child_iter, &tree_iter);
+      poppler_index_iter_free(child_iter);
+    }
+
+  } while (poppler_index_iter_next(iter));
+}
+
+void bgpdf_load_index()
+{
+  GtkTreeStore *treeStore = GTK_TREE_STORE(GET_COMPONENT("index_treestore"));
+  gtk_tree_store_clear(treeStore);
+
+  if (bgpdf.status == STATUS_NOT_INIT) {
+    g_warning("Could not load PDF index, background PDF not initialized");
+    return;
+  }
+
+  PopplerIndexIter * indexIter = poppler_index_iter_new(bgpdf.document);
+  if(!indexIter) {
+    // Document does not have index entries, nothing to do
+    return;
+  }
+
+  // Populate the GtkTreeStore based on the document's index
+  bgpdf_build_index_tree(treeStore, indexIter, NULL);
+  poppler_index_iter_free(indexIter);
+}
 
 // look for all journal pages with given pdf bg, and update their bg pixmaps
 void bgpdf_update_bg(int pageno, struct BgPdfPage *bgpg)
@@ -1503,17 +1596,21 @@ void init_config_default(void)
   ui.button_switch_mapping = FALSE;
   ui.autoload_pdf_xoj = FALSE;
   ui.poppler_force_cairo = FALSE;
+  ui.sidebar_width = 200;
+  ui.sidebar_open = FALSE;
   
   // the default UI vertical order
+  // Windowed mode
   ui.vertical_order[0][0] = 1; 
   ui.vertical_order[0][1] = 2; 
   ui.vertical_order[0][2] = 3; 
   ui.vertical_order[0][3] = 0; 
   ui.vertical_order[0][4] = 4;
+  // Fullscreen mode
   ui.vertical_order[1][0] = 2;
   ui.vertical_order[1][1] = 3;
   ui.vertical_order[1][2] = 0;
-  ui.vertical_order[1][3] = ui.vertical_order[1][4] = -1;
+  ui.vertical_order[1][3] = ui.vertical_order[1][4] = -1; // Hidden
 
   ui.toolno[0] = ui.startuptool = TOOL_PEN;
   for (i=1; i<=NUM_BUTTONS; i++) {
@@ -1678,6 +1775,12 @@ void save_config_to_file(void)
   update_keyval("general", "poppler_force_cairo",
     _(" force PDF rendering through cairo (slower but nicer) (true/false)"),
     g_strdup(ui.poppler_force_cairo?"true":"false"));
+  update_keyval("general", "sidebar_width",
+    _(" the width of the Index/Bookmarks sidebar, in pixels"),
+    g_strdup_printf("%d", ui.sidebar_width));
+  update_keyval("general", "sidebar_open",
+    _(" whether or not the Index/Bookmarks sidebar is open"),
+     g_strdup(ui.sidebar_open ? "true" : "false"));
 
   update_keyval("paper", "width",
     _(" the default page width, in points (1/72 in)"),
@@ -2047,6 +2150,8 @@ void load_config_from_file(void)
   parse_keyval_float("general", "highlighter_opacity", &ui.hiliter_opacity, 0., 1.);
   parse_keyval_boolean("general", "autosave_prefs", &ui.auto_save_prefs);
   parse_keyval_boolean("general", "poppler_force_cairo", &ui.poppler_force_cairo);
+  parse_keyval_int("general", "sidebar_width", &ui.sidebar_width, 0, 5000);
+  parse_keyval_boolean("general", "sidebar_open", &ui.sidebar_open);
   
   parse_keyval_float("paper", "width", &ui.default_page.width, 1., 5000.);
   parse_keyval_float("paper", "height", &ui.default_page.height, 1., 5000.);

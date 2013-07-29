@@ -237,6 +237,10 @@ void init_stuff (int argc, char *argv[])
     GTK_CHECK_MENU_ITEM(GET_COMPONENT("optionsButtonSwitchMapping")), ui.button_switch_mapping);
   gtk_check_menu_item_set_active(
     GTK_CHECK_MENU_ITEM(GET_COMPONENT("optionsPenCursor")), ui.pen_cursor);
+
+  // Set the saved sidebar state
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(GET_COMPONENT("viewSidebar")), ui.sidebar_open);
+  gtk_paned_set_position(GTK_PANED(GET_COMPONENT("winMainPaned")), ui.sidebar_open ? ui.sidebar_width : 0);
   
   hide_unimplemented();
 

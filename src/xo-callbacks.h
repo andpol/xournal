@@ -664,3 +664,35 @@ on_button3Image_activate               (GtkMenuItem     *menuitem,
 G_MODULE_EXPORT void
 on_optionsPenCursor_activate           (GtkCheckMenuItem *checkmenuitem,
                                         gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_close_sidebar_clicked               (GtkButton        *button,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_viewSidebar_toggled                 (GtkCheckMenuItem *menuitem,
+                                        gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_sidebar_size_allocate               (GtkWidget        *widget,
+                                        gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_sidebar_combobox_changed            (GtkComboBox      *combobox,
+                                        gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_index_tree_cursor_changed           (GtkTreeView     *tree,
+                                        gpointer        userdata);
+
+G_MODULE_EXPORT void
+on_add_bookmark_button_clicked         (GtkButton       *button,
+                                        gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_remove_bookmark_button_clicked         (GtkButton       *button,
+                                        gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
+                                        gpointer        userdata);

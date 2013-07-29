@@ -456,8 +456,14 @@ void continue_movesel(GdkEvent *event)
   
   for (list = ui.selection->items; list != NULL; list = list->next) {
     item = (struct Item *)list->data;
-    if (item->canvas_item != NULL)
-      gnome_canvas_item_move(item->canvas_item, dx, dy);
+    if (item->canvas_item != NULL) {
+      if (item->type == ITEM_BOOKMARK) {
+        // Bookmarks can only move up/down
+        gnome_canvas_item_move(item->canvas_item, 0.0, dy);
+      } else {
+        gnome_canvas_item_move(item->canvas_item, dx, dy);
+      }
+    }
   }
 }
 
@@ -602,6 +608,10 @@ void selection_delete(void)
     ui.selection->layer->items = g_list_remove(ui.selection->layer->items, item);
     ui.selection->layer->nitems--;
     undo->erasurelist = g_list_prepend(undo->erasurelist, erasure);
+    if (item->type == ITEM_BOOKMARK) {
+      // TODO: remove bookmark from the liststore
+      fprintf(stderr, "DEBUG: bookmark deleted\n");
+    }
   }
   reset_selection();
 

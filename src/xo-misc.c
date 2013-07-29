@@ -549,41 +549,43 @@ void make_canvas_item_one(GnomeCanvasGroup *group, struct Item *item)
   GnomeCanvasPoints points;
   int j;
 
-  if (item->type == ITEM_STROKE) {
-    if (!item->brush.variable_width)
-      item->canvas_item = gnome_canvas_item_new(group,
+
+  switch(item->type) {
+    case ITEM_STROKE:
+      if (!item->brush.variable_width)
+        item->canvas_item = gnome_canvas_item_new(group,
             gnome_canvas_line_get_type(), "points", item->path,   
             "cap-style", GDK_CAP_ROUND, "join-style", GDK_JOIN_ROUND,
             "fill-color-rgba", item->brush.color_rgba,  
             "width-units", item->brush.thickness, NULL);
-    else {
-      item->canvas_item = gnome_canvas_item_new(group,
+      else {
+        item->canvas_item = gnome_canvas_item_new(group,
             gnome_canvas_group_get_type(), NULL);
-      points.num_points = 2;
-      points.ref_count = 1;
-      for (j = 0; j < item->path->num_points-1; j++) {
-        points.coords = item->path->coords+2*j;
-        gnome_canvas_item_new((GnomeCanvasGroup *) item->canvas_item,
+        points.num_points = 2;
+        points.ref_count = 1;
+        for (j = 0; j < item->path->num_points-1; j++) {
+          points.coords = item->path->coords+2*j;
+          gnome_canvas_item_new((GnomeCanvasGroup *) item->canvas_item,
               gnome_canvas_line_get_type(), "points", &points, 
               "cap-style", GDK_CAP_ROUND, "join-style", GDK_JOIN_ROUND, 
               "fill-color-rgba", item->brush.color_rgba,
               "width-units", item->widths[j], NULL);
+        }
       }
-    }
-  }
-  if (item->type == ITEM_TEXT) {
-    font_desc = pango_font_description_from_string(item->font_name);
-    pango_font_description_set_absolute_size(font_desc, 
-            item->font_size*ui.zoom*PANGO_SCALE);
-    item->canvas_item = gnome_canvas_item_new(group,
+      break;
+    case ITEM_TEXT:
+      font_desc = pango_font_description_from_string(item->font_name);
+      pango_font_description_set_absolute_size(font_desc, 
+          item->font_size*ui.zoom*PANGO_SCALE);
+      item->canvas_item = gnome_canvas_item_new(group,
           gnome_canvas_text_get_type(),
           "x", item->bbox.left, "y", item->bbox.top, "anchor", GTK_ANCHOR_NW,
           "font-desc", font_desc, "fill-color-rgba", item->brush.color_rgba,
           "text", item->text, NULL);
-    update_item_bbox(item);
-  }
-  if (item->type == ITEM_IMAGE) {
-    item->canvas_item = gnome_canvas_item_new(group,
+      update_item_bbox(item);
+      break;
+    case ITEM_IMAGE:
+      item->canvas_item = gnome_canvas_item_new(group,
           gnome_canvas_pixbuf_get_type(),
           "pixbuf", item->image,
           "x", item->bbox.left, "y", item->bbox.top,
@@ -591,6 +593,13 @@ void make_canvas_item_one(GnomeCanvasGroup *group, struct Item *item)
           "height", item->bbox.bottom - item->bbox.top,
           "width-set", TRUE, "height-set", TRUE,
           NULL);
+      break;
+    case ITEM_BOOKMARK:
+      item->canvas_item = create_bookmark_canvas_item(item, group);
+      break;
+    default:
+      g_warning("Unable to make canvas item, unrecognized item type: %d", item->type);
+      break;
   }
 }
 
@@ -1815,16 +1824,32 @@ void move_journal_items_by(GList *itemlist, double dx, double dy,
   
   while (itemlist!=NULL) {
     item = (struct Item *)itemlist->data;
-    if (item->type == ITEM_STROKE)
-      for (pt=item->path->coords, i=0; i<item->path->num_points; i++, pt+=2)
-        { pt[0] += dx; pt[1] += dy; }
-    if (item->type == ITEM_STROKE || item->type == ITEM_TEXT || 
-        item->type == ITEM_TEMP_TEXT || item->type == ITEM_IMAGE) {
-      item->bbox.left += dx;
-      item->bbox.right += dx;
-      item->bbox.top += dy;
-      item->bbox.bottom += dy;
+    switch(item->type) {
+      case ITEM_STROKE: // Drop down
+        for (pt=item->path->coords, i=0; i<item->path->num_points; i++, pt+=2) {
+          pt[0] += dx; pt[1] += dy;
+        }
+      case ITEM_TEXT:
+      case ITEM_TEMP_TEXT:
+      case ITEM_IMAGE:
+        item->bbox.left += dx;
+        item->bbox.right += dx;
+        item->bbox.top += dy;
+        item->bbox.bottom += dy;
+        break;
+      case ITEM_BOOKMARK:
+        // Can only move up/down
+        item->bbox.top += dy;
+        item->bbox.bottom += dy;
+        for (pt = item->path->coords, i = 0; i < item->path->num_points; i++, pt += 2) {
+          pt[1] += dy;
+        }
+        break;
+      default:
+        g_warning("Cannot move journal item, unrecognized item type: %d", item->type);
+        continue;
     }
+    
     if (l1 != l2) {
       // find out where to insert
       if (depths != NULL) {
@@ -1869,55 +1894,65 @@ void resize_journal_items_by(GList *itemlist, double scaling_x, double scaling_y
 
   for (list = itemlist; list != NULL; list = list->next) {
     item = (struct Item *)list->data;
-    if (item->type == ITEM_STROKE) {
-      item->brush.thickness = item->brush.thickness * mean_scaling;
-      for (i=0, pt=item->path->coords; i<item->path->num_points; i++, pt+=2) {
-        pt[0] = pt[0]*scaling_x + offset_x;
-        pt[1] = pt[1]*scaling_y + offset_y;
-      }
-      if (item->brush.variable_width)
-        for (i=0, wid=item->widths; i<item->path->num_points-1; i++, wid++)
-          *wid = *wid * mean_scaling;
 
-      item->bbox.left = item->bbox.left*scaling_x + offset_x;
-      item->bbox.right = item->bbox.right*scaling_x + offset_x;
-      item->bbox.top = item->bbox.top*scaling_y + offset_y;
-      item->bbox.bottom = item->bbox.bottom*scaling_y + offset_y;
-      if (item->bbox.left > item->bbox.right) {
-        temp = item->bbox.left;
-        item->bbox.left = item->bbox.right;
-        item->bbox.right = temp;
-      }
-      if (item->bbox.top > item->bbox.bottom) {
-        temp = item->bbox.top;
-        item->bbox.top = item->bbox.bottom;
-        item->bbox.bottom = temp;
-      }
+    switch (item->type) {
+      case ITEM_STROKE:
+        item->brush.thickness = item->brush.thickness * mean_scaling;
+        for (i=0, pt=item->path->coords; i<item->path->num_points; i++, pt+=2) {
+          pt[0] = pt[0]*scaling_x + offset_x;
+          pt[1] = pt[1]*scaling_y + offset_y;
+        }
+        if (item->brush.variable_width)
+          for (i=0, wid=item->widths; i<item->path->num_points-1; i++, wid++)
+            *wid = *wid * mean_scaling;
+
+        item->bbox.left = item->bbox.left*scaling_x + offset_x;
+        item->bbox.right = item->bbox.right*scaling_x + offset_x;
+        item->bbox.top = item->bbox.top*scaling_y + offset_y;
+        item->bbox.bottom = item->bbox.bottom*scaling_y + offset_y;
+        if (item->bbox.left > item->bbox.right) {
+          temp = item->bbox.left;
+          item->bbox.left = item->bbox.right;
+          item->bbox.right = temp;
+        }
+        if (item->bbox.top > item->bbox.bottom) {
+          temp = item->bbox.top;
+          item->bbox.top = item->bbox.bottom;
+          item->bbox.bottom = temp;
+        }
+        break;
+      case ITEM_TEXT:
+        /* must scale about NW corner -- all other points of the text box
+           are font- and zoom-dependent, so scaling about center of text box
+           couldn't be undone properly. FIXME? */
+        item->font_size *= mean_scaling;
+        item->bbox.left = item->bbox.left*scaling_x + offset_x;
+        item->bbox.top = item->bbox.top*scaling_y + offset_y;
+        break;
+      case ITEM_IMAGE:
+        item->bbox.left = item->bbox.left*scaling_x + offset_x;
+        item->bbox.right = item->bbox.right*scaling_x + offset_x;
+        item->bbox.top = item->bbox.top*scaling_y + offset_y;
+        item->bbox.bottom = item->bbox.bottom*scaling_y + offset_y;
+        if (item->bbox.left > item->bbox.right) {
+          temp = item->bbox.left;
+          item->bbox.left = item->bbox.right;
+          item->bbox.right = temp;
+        }
+        if (item->bbox.top > item->bbox.bottom) {
+          temp = item->bbox.top;
+          item->bbox.top = item->bbox.bottom;
+          item->bbox.bottom = temp;
+        }
+        break;
+      case ITEM_BOOKMARK:
+        // Can't resize bookmarks, next item.
+        continue;
+      default:
+        g_warning("Cannot resize journal item, unrecognized item type: %d", item->type);
+        continue;
     }
-    if (item->type == ITEM_TEXT) {
-      /* must scale about NW corner -- all other points of the text box
-         are font- and zoom-dependent, so scaling about center of text box
-         couldn't be undone properly. FIXME? */
-      item->font_size *= mean_scaling;
-      item->bbox.left = item->bbox.left*scaling_x + offset_x;
-      item->bbox.top = item->bbox.top*scaling_y + offset_y;
-    }
-    if (item->type == ITEM_IMAGE) {
-      item->bbox.left = item->bbox.left*scaling_x + offset_x;
-      item->bbox.right = item->bbox.right*scaling_x + offset_x;
-      item->bbox.top = item->bbox.top*scaling_y + offset_y;
-      item->bbox.bottom = item->bbox.bottom*scaling_y + offset_y;
-      if (item->bbox.left > item->bbox.right) {
-        temp = item->bbox.left;
-        item->bbox.left = item->bbox.right;
-        item->bbox.right = temp;
-      }
-      if (item->bbox.top > item->bbox.bottom) {
-        temp = item->bbox.top;
-        item->bbox.top = item->bbox.bottom;
-        item->bbox.bottom = temp;
-      }
-    }
+
     // redraw the item
     if (item->canvas_item!=NULL) {
       group = (GnomeCanvasGroup *) item->canvas_item->parent;
@@ -1968,7 +2003,7 @@ void process_mapping_activate(GtkMenuItem *menuitem, int m, int tool)
 // update the ordering of components in the main vbox
 
 const char *vbox_component_names[VBOX_MAIN_NITEMS]=
- {"scrolledwindowMain", "menubar", "toolbarMain", "toolbarPen", "hbox1"};
+ {"winMainPaned", "menubar", "toolbarMain", "toolbarPen", "hbox1"};
 
 void update_vbox_order(int *order)
 {
