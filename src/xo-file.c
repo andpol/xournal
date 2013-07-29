@@ -37,13 +37,12 @@
 #endif
 
 #include "xournal.h"
-#include "xo-interface.h"
-#include "xo-support.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
 #include "xo-paint.h"
 #include "xo-image.h"
+#include "intl.h"
 
 const char *tool_names[NUM_TOOLS] = {"pen", "eraser", "highlighter", "text", "selectregion", "selectrect", "vertspace", "hand", "image"};
 const char *color_names[COLOR_MAX] = {"black", "blue", "red", "green",
@@ -1379,7 +1378,7 @@ void init_mru(void)
   
   g_strlcpy(s, "mru0", 5);
   for (s[3]='0', i=0; i<MRU_SIZE; s[3]++, i++) {
-    ui.mrumenu[i] = GET_COMPONENT(s);
+    ui.mrumenu[i] = GTK_WIDGET(GET_COMPONENT(s));
     ui.mru[i] = NULL;
   }
   f = g_io_channel_new_file(ui.mrufile, "r", NULL);
@@ -1420,7 +1419,7 @@ void update_mru_menu(void)
     }
     else gtk_widget_hide(ui.mrumenu[i]);
   }
-  gtk_widget_set_sensitive(GET_COMPONENT("fileRecentFiles"), anyone);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("fileRecentFiles")), anyone);
 }
 
 void new_mru_entry(char *name)

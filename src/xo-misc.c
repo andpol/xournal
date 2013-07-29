@@ -24,14 +24,13 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "xournal.h"
-#include "xo-interface.h"
-#include "xo-support.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
 #include "xo-paint.h"
 #include "xo-shapes.h"
 #include "xo-image.h"
+#include "intl.h"
 
 // some global constants
 
@@ -1203,8 +1202,8 @@ void update_mappings_menu_linkings(void)
 
 void update_mappings_menu(void)
 {
-  gtk_widget_set_sensitive(GET_COMPONENT("optionsButtonMappings"), ui.use_xinput);
-  gtk_widget_set_sensitive(GET_COMPONENT("optionsPressureSensitive"), ui.use_xinput);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("optionsButtonMappings")), ui.use_xinput);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("optionsPressureSensitive")), ui.use_xinput);
   gtk_check_menu_item_set_active(
     GTK_CHECK_MENU_ITEM(GET_COMPONENT("optionsButtonMappings")), ui.use_erasertip);
   gtk_check_menu_item_set_active(
@@ -1455,25 +1454,25 @@ void update_page_stuff(void)
   
   // enable/disable the page/layer menu items and toolbar buttons
 
-  gtk_widget_set_sensitive(GET_COMPONENT("journalPaperColor"), 
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("journalPaperColor")),
      ui.cur_page->bg->type == BG_SOLID || ui.bg_apply_all_pages);
-  gtk_widget_set_sensitive(GET_COMPONENT("journalSetAsDefault"),
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("journalSetAsDefault")),
      ui.cur_page->bg->type == BG_SOLID);
   
-  gtk_widget_set_sensitive(GET_COMPONENT("viewFirstPage"), ui.pageno!=0);
-  gtk_widget_set_sensitive(GET_COMPONENT("viewPreviousPage"), ui.pageno!=0);
-  gtk_widget_set_sensitive(GET_COMPONENT("viewNextPage"), TRUE);
-  gtk_widget_set_sensitive(GET_COMPONENT("viewLastPage"), ui.pageno!=journal.npages-1);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonFirstPage"), ui.pageno!=0);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonPreviousPage"), ui.pageno!=0);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonNextPage"), TRUE);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonLastPage"), ui.pageno!=journal.npages-1);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("viewFirstPage")), ui.pageno!=0);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("viewPreviousPage")), ui.pageno!=0);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("viewNextPage")), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("viewLastPage")), ui.pageno!=journal.npages-1);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonFirstPage")), ui.pageno!=0);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonPreviousPage")), ui.pageno!=0);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonNextPage")), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonLastPage")), ui.pageno!=journal.npages-1);
   
-  gtk_widget_set_sensitive(GET_COMPONENT("viewShowLayer"), ui.layerno!=ui.cur_page->nlayers-1);
-  gtk_widget_set_sensitive(GET_COMPONENT("viewHideLayer"), ui.layerno>=0);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("viewShowLayer")), ui.layerno!=ui.cur_page->nlayers-1);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("viewHideLayer")), ui.layerno>=0);
 
-  gtk_widget_set_sensitive(GET_COMPONENT("editPaste"), ui.cur_layer!=NULL);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonPaste"), ui.cur_layer!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editPaste")), ui.cur_layer!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonPaste")), ui.cur_layer!=NULL);
 }
 
 void update_toolbar_and_menu(void)
@@ -1516,21 +1515,21 @@ void update_file_name(char *filename)
 
 void update_undo_redo_enabled(void)
 {
-  gtk_widget_set_sensitive(GET_COMPONENT("editUndo"), undo!=NULL);
-  gtk_widget_set_sensitive(GET_COMPONENT("editRedo"), redo!=NULL);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonUndo"), undo!=NULL);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonRedo"), redo!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editUndo")), undo!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editRedo")), redo!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonUndo")), undo!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonRedo")), redo!=NULL);
 }
 
 void update_copy_paste_enabled(void)
 {
-  gtk_widget_set_sensitive(GET_COMPONENT("editCut"), ui.selection!=NULL);
-  gtk_widget_set_sensitive(GET_COMPONENT("editCopy"), ui.selection!=NULL);
-  gtk_widget_set_sensitive(GET_COMPONENT("editPaste"), ui.cur_item_type!=ITEM_TEXT);
-  gtk_widget_set_sensitive(GET_COMPONENT("editDelete"), ui.selection!=NULL);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonCut"), ui.selection!=NULL);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonCopy"), ui.selection!=NULL);
-  gtk_widget_set_sensitive(GET_COMPONENT("buttonPaste"), ui.cur_item_type!=ITEM_TEXT);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editCut")), ui.selection!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editCopy")), ui.selection!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editPaste")), ui.cur_item_type!=ITEM_TEXT);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editDelete")), ui.selection!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonCut")), ui.selection!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonCopy")), ui.selection!=NULL);
+  gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("buttonPaste")), ui.cur_item_type!=ITEM_TEXT);
 }
 
 void update_mapping_linkings(int toolno)
@@ -1983,12 +1982,12 @@ void update_vbox_order(int *order)
   for (i=0; i<VBOX_MAIN_NITEMS; i++) {
     if (order[i]<0 || order[i]>=VBOX_MAIN_NITEMS) continue;
     present[order[i]] = TRUE;
-    child = GET_COMPONENT(vbox_component_names[order[i]]);
+    child = GTK_WIDGET(GET_COMPONENT(vbox_component_names[order[i]]));
     gtk_box_reorder_child(vboxMain, child, j++);
     gtk_widget_show(child);
   }
   for (i=1; i<VBOX_MAIN_NITEMS; i++) // hide others, but not the drawing area!
-    if (!present[i]) gtk_widget_hide(GET_COMPONENT(vbox_component_names[i]));
+    if (!present[i]) gtk_widget_hide(GTK_WIDGET(GET_COMPONENT(vbox_component_names[i])));
 }
 
 gchar *make_cur_font_name(void)
@@ -2032,69 +2031,69 @@ gboolean can_accel_except_text(GtkWidget *widget, guint id, gpointer data)
 
 void allow_all_accels(void)
 {
-  g_signal_connect((gpointer) GET_COMPONENT("fileNew"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("fileNew")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("fileOpen"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("fileOpen")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("fileSave"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("fileSave")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("filePrint"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("filePrint")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("filePrintPDF"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("filePrintPDF")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("fileQuit"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("fileQuit")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("editUndo"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("editUndo")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("editRedo"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("editRedo")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("editCut"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("editCut")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("editCopy"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("editCopy")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("editPaste"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("editPaste")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("editDelete"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("editDelete")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("viewFullscreen"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("viewFullscreen")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("viewZoomIn"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("viewZoomIn")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("viewZoomOut"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("viewZoomOut")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("viewNormalSize"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("viewNormalSize")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("viewPageWidth"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("viewPageWidth")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("viewFirstPage"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("viewFirstPage")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("viewPreviousPage"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("viewPreviousPage")),
       "can-activate-accel", G_CALLBACK(can_accel_except_text), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("viewNextPage"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("viewNextPage")),
       "can-activate-accel", G_CALLBACK(can_accel_except_text), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("viewLastPage"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("viewLastPage")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsPen"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsPen")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsEraser"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsEraser")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsHighlighter"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsHighlighter")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsText"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsText")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsSelectRegion"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsSelectRegion")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsSelectRectangle"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsSelectRectangle")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsVerticalSpace"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsVerticalSpace")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsHand"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsHand")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsTextFont"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsTextFont")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsRuler"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsRuler")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
-  g_signal_connect((gpointer) GET_COMPONENT("toolsReco"),
+  g_signal_connect((gpointer) GTK_WIDGET(GET_COMPONENT("toolsReco")),
       "can-activate-accel", G_CALLBACK(can_accel), NULL);
 }
 
@@ -2143,23 +2142,23 @@ gboolean is_event_within_textview(GdkEventButton *event)
 
 void hide_unimplemented(void)
 {
-  gtk_widget_hide(GET_COMPONENT("filePrintOptions"));
-  gtk_widget_hide(GET_COMPONENT("journalFlatten"));  
-  gtk_widget_hide(GET_COMPONENT("helpIndex")); 
+  gtk_widget_hide(GTK_WIDGET(GET_COMPONENT("filePrintOptions")));
+  gtk_widget_hide(GTK_WIDGET(GET_COMPONENT("journalFlatten")));
+  gtk_widget_hide(GTK_WIDGET(GET_COMPONENT("helpIndex")));
 
   /* config file only works with glib 2.6 and beyond */
   if (glib_minor_version<6) {
-    gtk_widget_hide(GET_COMPONENT("optionsAutoSavePrefs"));
-    gtk_widget_hide(GET_COMPONENT("optionsSavePreferences"));
+    gtk_widget_hide(GTK_WIDGET(GET_COMPONENT("optionsAutoSavePrefs")));
+    gtk_widget_hide(GTK_WIDGET(GET_COMPONENT("optionsSavePreferences")));
   }
   /* gtkprint only works with gtk+ 2.10 and beyond */
   if (gtk_check_version(2, 10, 0)) {
-    gtk_widget_hide(GET_COMPONENT("filePrint"));
+    gtk_widget_hide(GTK_WIDGET(GET_COMPONENT("filePrint")));
   }  
   
   /* screenshot feature doesn't work yet in Win32 */
 #ifdef WIN32
-  gtk_widget_hide(GET_COMPONENT("journalScreenshot"));
+  gtk_widget_hide(GTK_WIDGET(GET_COMPONENT("journalScreenshot")));
 #endif
 }  
 
@@ -2278,13 +2277,13 @@ void unset_flags(GtkWidget *w, gpointer flag)
 
 gboolean intercept_activate_events(GtkWidget *w, GdkEvent *ev, gpointer data)
 {
-  if (w == GET_COMPONENT("hbox1")) {
+  if (w == GTK_WIDGET(GET_COMPONENT("hbox1"))) {
     /* the event won't be processed since the hbox1 doesn't know what to do with it,
        so we might as well kill it and avoid confusing ourselves when it gets
        propagated further ... */
     return TRUE;
   }
-  if (w == GET_COMPONENT("spinPageNo")) {
+  if (w == GTK_WIDGET(GET_COMPONENT("spinPageNo"))) {
     /* we let the spin button take care of itself, and don't steal its focus,
        unless the user presses Esc or Tab (in those cases we intervene) */
     if (ev->type != GDK_KEY_PRESS) return FALSE;
