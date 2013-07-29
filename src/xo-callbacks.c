@@ -3801,10 +3801,31 @@ on_index_tree_cursor_changed           (GtkTreeView     *tree,
     return;
   }
 
-  gint page;
-  gtk_tree_model_get(tree_model, &tree_iter, 1, &page, -1);
-  // Minus one, since page switching is zero-indexed, but page indexes are stored in user-friendly 1-index format
-  do_switch_page(page - 1, TRUE, TRUE);
+  gint pdf_page;
+  gtk_tree_model_get(tree_model, &tree_iter, 1, &pdf_page, -1);
+  gint jump_page = 0;
+
+  // Search through the Journal Pages to find the first occurance of the background PDF's page
+  GList *page;
+  for (page = journal.pages; page != NULL; page=page->next, jump_page++) {
+    Page * pg = (Page *) page->data;
+    if(pg->bg == NULL || pg->bg->type != BG_PDF) {
+      continue;
+    }
+    if (pg->bg->file_page_seq == pdf_page) {
+      do_switch_page(jump_page, TRUE, TRUE);
+      return;
+    }
+  }
+
+  // PDF Page not found (user deleted it?)
+  GtkWidget * dialog = gtk_message_dialog_new(GTK_WINDOW(GET_COMPONENT("winMain")),
+      GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+      GTK_MESSAGE_WARNING,
+      GTK_BUTTONS_OK,
+      _("Page not found."));
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
 }
 
 void
