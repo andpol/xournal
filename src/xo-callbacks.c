@@ -2014,6 +2014,19 @@ on_toolsVerticalSpace_activate         (GtkMenuItem     *menuitem,
   update_cursor();
 }
 
+void
+on_gradient_toggle                     (GtkMenuItem     *menuitem,
+                                       gpointer         user_data)
+{
+  int i;
+  end_text();
+  ui.color_gradient =  gtk_check_menu_item_get_active(
+		GTK_CHECK_MENU_ITEM (menuitem));
+  for (i=0; i<=NUM_BUTTONS; i++)
+    ui.brushes[i][TOOL_PEN].variable_color = ui.color_gradient;
+  update_mappings_menu();
+
+}
 
 void
 on_colorBlack_activate                 (GtkMenuItem     *menuitem,

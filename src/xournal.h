@@ -111,7 +111,7 @@ typedef struct Brush {
   int thickness_no;
   double thickness;
   int tool_options;
-  gboolean ruler, recognizer, variable_width;
+  gboolean ruler, recognizer, variable_width, variable_color;
 } Brush;
 
 #define COLOR_BLACK      0
@@ -169,6 +169,7 @@ typedef struct Item {
   // 'brush' also contains color info for text items
   GnomeCanvasPoints *path;
   gdouble *widths;
+  guint *colors;
   GnomeCanvasItem *canvas_item; // the corresponding canvas item, or NULL
   struct BBox bbox;
   struct UndoErasureData *erasure; // for temporary use during erasures
@@ -273,13 +274,16 @@ typedef struct UIData {
   int cur_item_type;
   GnomeCanvasPoints cur_path; // the path being drawn
   gdouble *cur_widths; // width array for the path being drawn
+  guint32 *cur_colors; //Array containing the colors for the current path being drawn
   int cur_path_storage_alloc;
   int cur_widths_storage_alloc;
+  int cur_colors_storage_alloc;
   double zoom; // zoom factor, in pixels per pt
   gboolean use_xinput; // use input devices instead of core pointer
   gboolean allow_xinput; // allow use of xinput ?
   gboolean discard_corepointer; // discard core pointer events in XInput mode
   gboolean pressure_sensitivity; // use pen pressure to control stroke width?
+  gboolean color_gradient; //Is there a color gradient from strokes?
   double width_minimum_multiplier, width_maximum_multiplier; // calibration for pressure sensitivity
   gboolean is_corestroke; // this stroke is painted with core pointer
   gboolean saved_is_corestroke;

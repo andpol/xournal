@@ -98,6 +98,8 @@ void init_stuff (int argc, char *argv[])
   ui.cur_path.ref_count = 1;
   ui.cur_widths = NULL;
   ui.cur_widths_storage_alloc = 0;
+  ui.cur_colors = NULL;
+  ui.cur_colors_storage_alloc = 0;
 
   ui.selection = NULL;
   ui.cursor = NULL;

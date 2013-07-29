@@ -285,6 +285,10 @@ on_colorBlack_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 G_MODULE_EXPORT void
+on_gradient_toggle                     (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT void
 on_colorBlue_activate                  (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 

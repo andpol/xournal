@@ -54,6 +54,7 @@ void lower_canvas_item_to(GnomeCanvasGroup *g, GnomeCanvasItem *item, GnomeCanva
 
 void rgb_to_gdkcolor(guint rgba, GdkColor *color);
 guint32 gdkcolor_to_rgba(GdkColor gdkcolor, guint16 alpha);
+guint32 rgba_saturation(guint32 colorin, guint value);
 
 // interface misc functions
 

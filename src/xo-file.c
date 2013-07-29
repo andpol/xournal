@@ -241,6 +241,10 @@ gboolean save_journal(const char *filename)
             gzputs(f, color_names[item->brush.color_no]);
           else
             gzprintf(f, "#%08x", item->brush.color_rgba);
+          if(item->brush.variable_color)
+            for (i=0;i<item->path->num_points-1;i++)
+                gzprintf(f, " #%08x", item->colors[i]);
+
           gzprintf(f, "\" width=\"%.2f", item->brush.thickness);
           if (item->brush.variable_width)
             for (i=0;i<item->path->num_points-1;i++)
@@ -555,19 +559,41 @@ void xoj_parser_start_element(GMarkupParseContext *context,
         has_attr |= 1;
       }
       else if (!strcmp(*attribute_names, "color")) {
+        int firstlen,end;
+         firstlen = end =0;
         if (has_attr & 2) *error = xoj_invalid();
         tmpItem->brush.color_no = COLOR_OTHER;
         for (i=0; i<COLOR_MAX; i++)
-          if (!strcmp(*attribute_values, color_names[i])) {
+          if (!strncmp(*attribute_values, color_names[i], strlen(color_names[i]))) {
+            firstlen = strlen(color_names[i]);
+            if(firstlen == strlen(*attribute_values))
+              end = 1;
             tmpItem->brush.color_no = i;
             tmpItem->brush.color_rgba = predef_colors_rgba[i];
           }
         // there's also the case of hex (#rrggbbaa) colors
         if (tmpItem->brush.color_no == COLOR_OTHER && **attribute_values == '#') {
+          firstlen = 9;
           tmpItem->brush.color_rgba = strtoul(*attribute_values + 1, &ptr, 16);
-          if (*ptr!=0) *error = xoj_invalid();
+          //if (*ptr!=0) *error = xoj_invalid();
+        }
+        i = 0;       
+        while (*ptr!=0 && !end) {
+          tmpItem->brush.color_no = COLOR_OTHER;
+          realloc_cur_colors(i+1);
+          ui.cur_colors[i] = strtoul(*attribute_values+firstlen+2+(10*i), &tmpptr, 16);
+          if (tmpptr == ptr) break;
+          ptr = tmpptr;
+          i++;
+        }
+        tmpItem->brush.variable_color = (i>0);
+        if (i>0) {
+          tmpItem->brush.variable_color = TRUE;
+          tmpItem->colors = (gdouble *) g_memdup(ui.cur_colors, i*sizeof(guint));
+          ui.cur_path.num_points =  i+1;
         }
         has_attr |= 2;
+    
       }
       else if (!strcmp(*attribute_names, "tool")) {
         if (has_attr & 4) *error = xoj_invalid();
@@ -1609,6 +1635,7 @@ void init_config_default(void)
   ui.default_font_name = g_strdup(DEFAULT_FONT);
   ui.default_font_size = DEFAULT_FONT_SIZE;
   ui.pressure_sensitivity = FALSE;
+  ui.color_gradient = FALSE;
   ui.width_minimum_multiplier = 0.0;
   ui.width_maximum_multiplier = 1.25;
   ui.button_switch_mapping = FALSE;

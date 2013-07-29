@@ -238,6 +238,7 @@ void create_new_stroke(GdkEvent *event)
       "fill-color-rgba", ui.cur_item->brush.color_rgba,
       "width-units", ui.cur_item->brush.thickness, NULL);
     ui.cur_item->brush.variable_width = FALSE;
+    ui.cur_item->brush.variable_color = FALSE;
   } else
     ui.cur_item->canvas_item = gnome_canvas_item_new(
       ui.cur_layer->group, gnome_canvas_group_get_type(), NULL);
@@ -247,6 +248,7 @@ void continue_stroke(GdkEvent *event)
 {
   GnomeCanvasPoints seg;
   double *pt, current_width;
+  guint current_color;
 
   if (ui.cur_brush->ruler) {
     pt = ui.cur_path.coords;
@@ -257,19 +259,40 @@ void continue_stroke(GdkEvent *event)
   
   get_pointer_coords(event, pt+2);
   
+  //Brush variable width?
   if (ui.cur_item->brush.variable_width) {
     realloc_cur_widths(ui.cur_path.num_points);
-    current_width = ui.cur_item->brush.thickness*get_pressure_multiplier(event);
-    ui.cur_widths[ui.cur_path.num_points-1] = current_width;
+    current_width = ui.cur_item->brush.thickness*get_pressure_multiplier(event); 
+    ui.cur_widths[ui.cur_path.num_points-1] = current_width;   
   }
-  else current_width = ui.cur_item->brush.thickness;
+  else 
+    current_width = ui.cur_item->brush.thickness; 
+
+  //Color varying over the stroke?
+  if (ui.cur_item->brush.variable_color) {
+    realloc_cur_colors(ui.cur_path.num_points);
+ 
+    int n, pieces;
+    double *p;
+    for (n=0, p=ui.cur_path.coords; n<ui.cur_path.num_points-1; n++, p+=2){} //Obtain most recent segment
+    guint length = floor(5*sqrt((p[2]-p[0])*(p[2]-p[0]) + ((p[3]-p[1])*(p[3]-p[1]))));
+    if (length > 64)
+      length = 64;
+    current_color = rgba_saturation(ui.cur_item->brush.color_rgba, length);
+    ui.cur_colors[ui.cur_path.num_points-1] = current_color;
+  }
+  else  
+    current_color = ui.cur_item->brush.color_rgba;
+
+ 
   
+
   if (ui.cur_brush->ruler)
     ui.cur_path.num_points = 2;
   else {
     if (hypot(pt[0]-pt[2], pt[1]-pt[3]) < PIXEL_MOTION_THRESHOLD/ui.zoom)
       return;  // not a meaningful motion
-    ui.cur_path.num_points++;
+    ui.cur_path.num_points+=1;
   }
 
   seg.coords = pt; 
@@ -286,8 +309,9 @@ void continue_stroke(GdkEvent *event)
     gnome_canvas_item_new((GnomeCanvasGroup *)ui.cur_item->canvas_item,
        gnome_canvas_line_get_type(), "points", &seg,
        "cap-style", GDK_CAP_ROUND, "join-style", GDK_JOIN_ROUND,
-       "fill-color-rgba", ui.cur_item->brush.color_rgba,
+       "fill-color-rgba", current_color,
        "width-units", current_width, NULL);
+
 }
 
 void finalize_stroke(void)
@@ -299,31 +323,42 @@ void finalize_stroke(void)
     ui.cur_item->brush.variable_width = FALSE;
   }
   
-  if (!ui.cur_item->brush.variable_width)
+  if (!ui.cur_item->brush.variable_width && !ui.cur_item->brush.variable_color)
     subdivide_cur_path(); // split the segment so eraser will work
 
   ui.cur_item->path = gnome_canvas_points_new(ui.cur_path.num_points);
   g_memmove(ui.cur_item->path->coords, ui.cur_path.coords, 
       2*ui.cur_path.num_points*sizeof(double));
+
   if (ui.cur_item->brush.variable_width)
     ui.cur_item->widths = (gdouble *)g_memdup(ui.cur_widths, 
                             (ui.cur_path.num_points-1)*sizeof(gdouble));
-  else ui.cur_item->widths = NULL;
+  else
+    ui.cur_item->widths = NULL;
+  
+  if (ui.cur_item->brush.variable_color)
+    ui.cur_item->colors = (guint *)g_memdup(ui.cur_colors, 
+                            (ui.cur_path.num_points-1)*sizeof(guint));
+  else
+    ui.cur_item->colors = NULL;
+
   update_item_bbox(ui.cur_item);
   ui.cur_path.num_points = 0;
 
-  if (!ui.cur_item->brush.variable_width) {
+
+  //if (!ui.cur_item->brush.variable_width && !ui.cur_item->brush.variable_color) {
     // destroy the entire group of temporary line segments
     gtk_object_destroy(GTK_OBJECT(ui.cur_item->canvas_item));
     // make a new line item to replace it
     make_canvas_item_one(ui.cur_layer->group, ui.cur_item);
-  }
+// }
 
   // add undo information
   prepare_new_undo();
   undo->type = ITEM_STROKE;
   undo->item = ui.cur_item;
   undo->layer = ui.cur_layer;
+
 
   // store the item on top of the layer stack
   ui.cur_layer->items = g_list_append(ui.cur_layer->items, ui.cur_item);
@@ -369,6 +404,10 @@ void erase_stroke_portions(struct Item *item, double x, double y, double radius,
           if (newhead->brush.variable_width)
             newhead->widths = (gdouble *)g_memdup(item->widths, (i-1)*sizeof(gdouble));
           else newhead->widths = NULL;
+          if (newhead->brush.variable_color)
+            newhead->colors = (guint *)g_memdup(item->colors, (i-1)*sizeof(guint));
+          else newhead->colors = NULL;
+
         }
         while (++i < item->path->num_points) {
           pt+=2;
@@ -385,6 +424,10 @@ void erase_stroke_portions(struct Item *item, double x, double y, double radius,
             newtail->widths = (gdouble *)g_memdup(item->widths+i, 
               (item->path->num_points-i-1)*sizeof(gdouble));
           else newtail->widths = NULL;
+          if (newtail->brush.variable_color)
+            newtail->colors = (gdouble *)g_memdup(item->colors+i, 
+              (item->path->num_points-i-1)*sizeof(guint));
+          else newtail->colors = NULL;
           newtail->canvas_item = NULL;
         }
       }
