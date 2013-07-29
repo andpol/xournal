@@ -1457,6 +1457,11 @@ void bgpdf_load_index()
   poppler_index_iter_free(indexIter);
 }
 
+void bgpdf_clear_index() {
+  GtkTreeStore * tree_store = GTK_TREE_STORE(GET_COMPONENT("index_treestore"));
+  gtk_tree_store_clear(tree_store);
+}
+
 // look for all journal pages with given pdf bg, and update their bg pixmaps
 void bgpdf_update_bg(int pageno, struct BgPdfPage *bgpg)
 {

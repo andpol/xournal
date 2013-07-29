@@ -93,13 +93,30 @@ void delete_selected_bookmark() {
 
     // Remove the UI element and free allocated memory
     gtk_object_destroy(GTK_OBJECT(bookmark->canvas_item));
-    g_free(bookmark->text);
-    gnome_canvas_points_free(bookmark->path);
+    free_bookmark_resources(bookmark);
     g_free(bookmark);
   }
 
   { // Remove the list store entry
     gtk_list_store_remove(list_store, &tree_iter);
   }
+}
+
+/*
+ * Frees all the memory allocated to a bookmark's properties
+ * NOTE: Does NOT free the bookmark Item itself or destroy the UI gnome canvas item it references
+ */
+void free_bookmark_resources(Item * bookmark) {
+    g_free(bookmark->text);
+    gnome_canvas_points_free(bookmark->path);
+}
+
+/*
+ * Clear all the bookmarks from the sidebar
+ * NOTE: Does NOT free the bookmark Items or destroy the referenced gnome canvas items
+ */
+void clear_bookmarks() {
+  GtkListStore * list_store = GTK_LIST_STORE(GET_COMPONENT("bookmark_liststore"));
+  gtk_list_store_clear(list_store);
 }
 

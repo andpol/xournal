@@ -324,6 +324,8 @@ void delete_journal(struct Journal *j)
     j->pages = g_list_delete_link(j->pages, j->pages);
   }
 
+  bgpdf_clear_index();
+  clear_bookmarks();
   clear_thumbnails();
 }
 
@@ -365,6 +367,9 @@ void delete_layer(struct Layer *l)
     if (item->type == ITEM_IMAGE) {
       g_object_unref(item->image);
       g_free(item->image_png);
+    }
+    if (item->type == ITEM_BOOKMARK) {
+      free_bookmark_resources(item);
     }
     // don't need to delete the canvas_item, as it's part of the group destroyed below
     g_free(item);

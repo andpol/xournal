@@ -21,6 +21,8 @@
 Item * create_bookmark(const gchar* title, double page_pos);
 GnomeCanvasItem * create_bookmark_canvas_item(Item * bookmark, GnomeCanvasGroup * group);
 void delete_selected_bookmark();
+void free_bookmark_resources(Item * bookmark);
+void clear_bookmarks();
 
 
 #endif /* BOOKMARK_H */
