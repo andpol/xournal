@@ -112,6 +112,18 @@ struct Page *new_page_with_bg(struct Background *bg, double width, double height
   return pg;
 }
 
+// Clear and redraw the current page border
+void set_page_border() {
+	if (ui.page_border != NULL ) {
+		gtk_object_destroy(GTK_OBJECT(ui.page_border) );
+	}
+
+	ui.page_border = gnome_canvas_item_new(gnome_canvas_root(canvas), gnome_canvas_rect_get_type(), "width-pixels", 2,
+			"outline-color-rgba", PAGE_BORDER_COLOUR, "x1", 0., "x2", ui.cur_page->width, "y1", ui.cur_page->voffset + 1, "y2",
+			ui.cur_page->voffset + ui.cur_page->height - 1, NULL );
+	gnome_canvas_set_pixels_per_unit(canvas, ui.zoom);
+}
+
 // change the current page if necessary for pointer at pt
 void set_current_page(gdouble *pt)
 {
@@ -1319,7 +1331,9 @@ void do_switch_page(int pg, gboolean rescroll, gboolean refresh_all)
   ui.cur_layer = (struct Layer *)(g_list_nth_data(ui.cur_page->layers, ui.layerno));
   update_page_stuff();
   if (ui.progressive_bg) rescale_bg_pixmaps();
- 
+
+  set_page_border();
+
   if (rescroll) { // scroll and force a refresh
 /* -- this seems to cause some display bugs ??
     gtk_adjustment_set_value(gtk_layout_get_vadjustment(GTK_LAYOUT(canvas)),
