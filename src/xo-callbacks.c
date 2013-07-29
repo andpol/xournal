@@ -3805,7 +3805,8 @@ on_index_tree_cursor_changed           (GtkTreeView     *tree,
   gtk_tree_model_get(tree_model, &tree_iter, 1, &pdf_page, -1);
   gint jump_page = 0;
 
-  // Search through the Journal Pages to find the first occurance of the background PDF's page
+  // Search through the Journal Pages to find and
+  // jump the first occurance of the background PDF's page
   GList *page;
   for (page = journal.pages; page != NULL; page=page->next, jump_page++) {
     Page * pg = (Page *) page->data;
@@ -3880,9 +3881,26 @@ void
 on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
                                         gpointer        userdata)
 {
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(tree);
   GtkWidget * removeButton = GTK_WIDGET(GET_COMPONENT("remove_bookmark_button"));
 
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(tree);
+  GtkTreeModel *tree_model;
+  GtkTreeIter tree_iter;
+
+  gboolean is_selected = gtk_tree_selection_get_selected(selection, &tree_model, &tree_iter);
   // Enable/disable the "Remove" button based on selection
-  gtk_widget_set_sensitive(removeButton, gtk_tree_selection_get_selected(selection, NULL, NULL));
+  gtk_widget_set_sensitive(removeButton, is_selected);
+
+  if (!is_selected) {
+    // No selection - nothing to do
+    return;
+  }
+
+  gint page_num;
+  gtk_tree_model_get(tree_model, &tree_iter, 1, &page_num, -1);
+
+  // Jump to the page
+  do_switch_page(page_num - 1, TRUE, TRUE);
+  // Scroll to the location on the page
+  // TODO
 }
