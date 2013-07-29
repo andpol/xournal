@@ -992,6 +992,7 @@ on_findCloseButton_clicked             (GtkButton       *button,
 	hide_find_dialog();
 }
 
+
 void
 on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
                                         gpointer         user_data)
@@ -1003,6 +1004,7 @@ on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
 	}
 }
 
+
 void
 on_findCurrentLayerRadio_toggled       (GtkRadioButton  *button,
                                         gpointer         user_data)
@@ -1013,6 +1015,7 @@ on_findCurrentLayerRadio_toggled       (GtkRadioButton  *button,
 	}
 }
 
+
 void
 on_findPdfBgRadio_toggled              (GtkRadioButton  *button,
                                         gpointer         user_data)
@@ -1022,9 +1025,10 @@ on_findPdfBgRadio_toggled              (GtkRadioButton  *button,
 	}
 }
 
+
 void
 on_findText_changed                    (GtkEditable     *editable,
-		                                gpointer         user_data)
+                                        gpointer         user_data)
 {
 	const gchar *text;
 	text = gtk_entry_get_text((GtkEntry*) editable);
