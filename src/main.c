@@ -99,6 +99,7 @@ void init_stuff (int argc, char *argv[])
 
   undo = NULL; redo = NULL;
   journal.pages = NULL;
+  bgpdf.status = STATUS_NOT_INIT;
 
   new_journal();
   journalList[1] = journalSplit;
@@ -106,7 +107,7 @@ void init_stuff (int argc, char *argv[])
   canvas = canvasMain;
   journal = journalMain;
 
-  //undo = NULL; redo = NULL;
+  undo = NULL; redo = NULL;
   journal.pages = NULL;
   bgpdf.status = STATUS_NOT_INIT;
 
@@ -193,18 +194,20 @@ void init_stuff (int argc, char *argv[])
   gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
   //
 
-  gtk_widget_show (GTK_WIDGET (canvasSplit));
+  canvas = canvasSplit;
+
+  gtk_widget_show (GTK_WIDGET (canvas));
   q = GET_COMPONENT("scrolledwindowSplit");
-  gtk_container_add (GTK_CONTAINER (q), GTK_WIDGET (canvasSplit));
+  gtk_container_add (GTK_CONTAINER (q), GTK_WIDGET (canvas));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (q), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_widget_add_events (GTK_WIDGET (canvasSplit), GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-  gnome_canvas_set_pixels_per_unit (canvasSplit, ui.zoom);
-  gnome_canvas_set_center_scroll_region (canvasSplit, TRUE);
-  gtk_layout_get_hadjustment(GTK_LAYOUT (canvasSplit))->step_increment = ui.scrollbar_step_increment;
-  gtk_layout_get_vadjustment(GTK_LAYOUT (canvasSplit))->step_increment = ui.scrollbar_step_increment;
+  gtk_widget_add_events (GTK_WIDGET (canvas), GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  gnome_canvas_set_pixels_per_unit (canvas, ui.zoom);
+  gnome_canvas_set_center_scroll_region (canvas, TRUE);
+  gtk_layout_get_hadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
+  gtk_layout_get_vadjustment(GTK_LAYOUT (canvas))->step_increment = ui.scrollbar_step_increment;
   //
 
-  //canvas = canvasMain;
+  canvas = canvasMain;
   //journal = journalMain;
 
   // set up the page size and canvas size
@@ -236,34 +239,39 @@ void init_stuff (int argc, char *argv[])
                     NULL);
   g_object_set_data (G_OBJECT (winMain), "canvas", canvas);
 
+  canvas = canvasSplit;
+
+  update_page_stuff();
 
   //
-  g_signal_connect ((gpointer) canvasSplit, "button_press_event",
+  g_signal_connect ((gpointer) canvas, "button_press_event",
                     G_CALLBACK (on_canvas_button_press_event),
                     NULL);
-  g_signal_connect ((gpointer) canvasSplit, "button_release_event",
+  g_signal_connect ((gpointer) canvas, "button_release_event",
                     G_CALLBACK (on_canvas_button_release_event),
                     NULL);
-  g_signal_connect ((gpointer) canvasSplit, "enter_notify_event",
+  g_signal_connect ((gpointer) canvas, "enter_notify_event",
                     G_CALLBACK (on_canvas_enter_notify_event),
                     NULL);
-  g_signal_connect ((gpointer) canvasSplit, "leave_notify_event",
+  g_signal_connect ((gpointer) canvas, "leave_notify_event",
                     G_CALLBACK (on_canvas_leave_notify_event),
                     NULL);
-  g_signal_connect ((gpointer) canvasSplit, "expose_event",
+  g_signal_connect ((gpointer) canvas, "expose_event",
                     G_CALLBACK (on_canvas_expose_event),
                     NULL);
-  g_signal_connect ((gpointer) canvasSplit, "key_press_event",
+  g_signal_connect ((gpointer) canvas, "key_press_event",
                     G_CALLBACK (on_canvas_key_press_event),
                     NULL);
-  g_signal_connect ((gpointer) canvasSplit, "motion_notify_event",
+  g_signal_connect ((gpointer) canvas, "motion_notify_event",
                     G_CALLBACK (on_canvas_motion_notify_event),
                     NULL);
-  g_signal_connect ((gpointer) gtk_layout_get_vadjustment(GTK_LAYOUT(canvasSplit)),
+  g_signal_connect ((gpointer) gtk_layout_get_vadjustment(GTK_LAYOUT(canvas)),
                     "value-changed", G_CALLBACK (on_vscroll_changed),
                     NULL);
-  g_object_set_data (G_OBJECT (winMain), "canvasSplit", canvasSplit);
+  g_object_set_data (G_OBJECT (winMain), "canvas", canvas);
   //
+
+  canvas = canvasMain;
 
   screen = gtk_widget_get_screen(winMain);
   ui.screen_width = gdk_screen_get_width(screen);
