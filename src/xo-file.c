@@ -560,7 +560,7 @@ void xoj_parser_start_element(GMarkupParseContext *context,
         for (i=0; i<COLOR_MAX; i++)
           if (!strncmp(*attribute_values, color_names[i], strlen(color_names[i]))) {
             firstlen = strlen(color_names[i]);
-            if(firstlen = strlen(*attribute_values))
+            if(firstlen == strlen(*attribute_values))
               end = 1;
             tmpItem->brush.color_no = i;
             tmpItem->brush.color_rgba = predef_colors_rgba[i];
