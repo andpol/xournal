@@ -17,6 +17,7 @@
 #  include <config.h>
 #endif
 
+#include <error.h>
 #include <signal.h>
 #include <memory.h>
 #include <string.h>
@@ -70,6 +71,8 @@ void new_journal(void)
   ui.saved = TRUE;
   ui.filename = NULL;
   update_file_name(NULL);
+
+  update_thumbnails();
 }
 
 // check attachment names
@@ -966,6 +969,9 @@ gboolean open_journal(char *filename)
   update_page_stuff();
   rescale_bg_pixmaps(); // this requests the PDF pages if need be
   gtk_adjustment_set_value(gtk_layout_get_vadjustment(GTK_LAYOUT(canvas)), 0);
+
+  update_thumbnails();
+
   return TRUE;
 }
 

@@ -116,6 +116,7 @@ on_fileNewBackground_activate          (GtkMenuItem     *menuitem,
   set_cursor_busy(FALSE);
   if (success) {
     g_free(filename);
+    update_thumbnails();
     return;
   }
 
@@ -1246,6 +1247,8 @@ on_journalNewPageBefore_activate       (GtkMenuItem     *menuitem,
   undo->type = ITEM_NEW_PAGE;
   undo->val = ui.pageno;
   undo->page = pg;
+
+  update_thumbnails();
 }
 
 
@@ -1266,6 +1269,8 @@ on_journalNewPageAfter_activate        (GtkMenuItem     *menuitem,
   undo->type = ITEM_NEW_PAGE;
   undo->val = ui.pageno;
   undo->page = pg;
+
+  update_thumbnails();
 }
 
 
@@ -1286,6 +1291,8 @@ on_journalNewPageEnd_activate          (GtkMenuItem     *menuitem,
   undo->type = ITEM_NEW_PAGE;
   undo->val = ui.pageno;
   undo->page = pg;
+
+  update_thumbnails();
 }
 
 
@@ -1322,6 +1329,8 @@ on_journalDeletePage_activate          (GtkMenuItem     *menuitem,
   ui.cur_page = NULL;
      // so do_switch_page() won't try to remap the layers of the defunct page
   do_switch_page(ui.pageno, TRUE, TRUE);
+
+  update_thumbnails();
 }
 
 
@@ -1719,6 +1728,8 @@ on_journalLoadBackground_activate      (GtkMenuItem     *menuitem,
     rescale_images();
   }
   do_switch_page(ui.pageno, TRUE, TRUE);
+
+  update_thumbnails();
 }
 
 void
@@ -3909,8 +3920,8 @@ void
 on_sidebar_combobox_changed            (GtkComboBox      *combobox,
                                         gpointer         userdata)
 {
-  GtkWidget *sidebar_contents[] = { GTK_WIDGET(GET_COMPONENT("index_tree")), GTK_WIDGET(GET_COMPONENT("bookmarks")) };
-  int num_sidebar_contents = 2;
+  GtkWidget *sidebar_contents[] = { GTK_WIDGET(GET_COMPONENT("index_tree")), GTK_WIDGET(GET_COMPONENT("bookmarks")), GTK_WIDGET(GET_COMPONENT("thumbnails_vbox")) };
+  int num_sidebar_contents = 3;
   int selected_index = gtk_combo_box_get_active(combobox);
 
   if (selected_index >= num_sidebar_contents) {
@@ -4015,6 +4026,41 @@ on_remove_bookmark_button_clicked         (GtkButton       *button,
 {
   delete_selected_bookmark();
 }
+
+void
+on_thumbnail_clicked                   (GtkButton       *button,
+                                        gpointer        userdata)
+{
+	GdkColor white, orange;
+	GtkVBox *thumbnails_vbox;
+	GList *children;
+	GtkWidget *child;
+	int i, page_index = -1;
+
+	gdk_color_parse("white", &white);
+	gdk_color_parse("orange", &orange);
+
+	thumbnails_vbox = GTK_VBOX(GET_COMPONENT("thumbnails_vbox"));
+
+	children = gtk_container_get_children(GTK_CONTAINER(thumbnails_vbox) );
+	for (i = 0; children != NULL ; children = g_list_next(children), i++) {
+		child = GTK_WIDGET(children->data);
+		if (GTK_BUTTON(child) == button) {
+			page_index = i;
+		}
+
+		gtk_widget_modify_bg(child, GTK_STATE_NORMAL, &white);
+		gtk_widget_modify_bg(child, GTK_STATE_PRELIGHT, &white);
+	}
+
+	gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_NORMAL, &orange);
+	gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &orange);
+
+	if (page_index != -1) {
+		do_switch_page(page_index, TRUE, TRUE);
+	}
+}
+
 
 void
 on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,

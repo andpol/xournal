@@ -726,6 +726,10 @@ on_index_tree_cursor_changed           (GtkTreeView     *tree,
                                         gpointer        userdata);
 
 G_MODULE_EXPORT void
+on_thumbnail_clicked                   (GtkButton      *button,
+                                        gpointer        userdata);
+
+G_MODULE_EXPORT void
 on_add_bookmark_button_clicked         (GtkButton       *button,
                                         gpointer         userdata);
 
