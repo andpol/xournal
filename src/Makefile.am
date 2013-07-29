@@ -23,7 +23,7 @@ xournal_SOURCES = \
 	xo-image.c xo-image.h \
 	xo-print.c xo-print.h \
 	xo-callbacks.c xo-callbacks.h \
-    xo-search.c xo-search.h \
+	xo-search.c xo-search.h \
 	xo-shapes.c xo-shapes.h \
 	xo-bookmark.c xo-bookmark.h \
 	intl.h

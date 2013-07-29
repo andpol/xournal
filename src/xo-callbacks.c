@@ -645,7 +645,6 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
     undo->item->text = tmpstr;
     gnome_canvas_item_set(undo->item->canvas_item, "text", tmpstr, NULL);
     update_item_bbox(undo->item);
-    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
   else if (undo->type == ITEM_TEXT_ATTRIB) {
     tmpstr = undo->str;
@@ -661,7 +660,6 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
       "fill-color-rgba", undo->item->brush.color_rgba, NULL);
     update_text_item_displayfont(undo->item);
     update_item_bbox(undo->item);
-    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
 
   // move item from undo to redo stack
@@ -698,7 +696,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     // re-create the canvas_item
     make_canvas_item_one(redo->layer->group, redo->item);
     // reinsert the item on its layer
-    redo->layer->items = g_list_insert_sorted(redo->layer->items, redo->item, compare_items);
+    redo->layer->items = g_list_append(redo->layer->items, redo->item);
     redo->layer->nitems++;
   }
   else if (redo->type == ITEM_ERASURE || redo->type == ITEM_RECOGNIZER) {
@@ -812,7 +810,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     for (itemlist = redo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
       it = (struct Item *)itemlist->data;
       make_canvas_item_one(redo->layer->group, it);
-      redo->layer->items = g_list_insert_sorted(redo->layer->items, it, compare_items);
+      redo->layer->items = g_list_append(redo->layer->items, it);
       redo->layer->nitems++;
     }
   }
@@ -872,7 +870,6 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     redo->item->text = tmpstr;
     gnome_canvas_item_set(redo->item->canvas_item, "text", tmpstr, NULL);
     update_item_bbox(redo->item);
-    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
   else if (redo->type == ITEM_TEXT_ATTRIB) {
     tmpstr = redo->str;
@@ -888,7 +885,6 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
       "fill-color-rgba", redo->item->brush.color_rgba, NULL);
     update_text_item_displayfont(redo->item);
     update_item_bbox(redo->item);
-    undo->layer->items = g_list_sort(undo->layer->items, compare_items);
   }
 
   // move item from redo to undo stack
@@ -943,38 +939,9 @@ void
 on_editFind_activate                   (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	GtkWidget *find_dialog;
-	GtkEntry *find_text;
-	GtkCheckButton *case_sensitive;
-	GtkRadioButton *current_layer, *background_pdf;
-
 	update_search_string_from_selection();
 	reset_selection();
-
-	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
-
-	// Put the search string into the text box
-	find_text = (GtkEntry*) GTK_WIDGET(GET_COMPONENT("findText"));
-	gtk_entry_set_text(find_text, search_string == NULL ? "" : search_string);
-
-	// Set the case sensitive checkbox
-	case_sensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
-	gtk_toggle_button_set_active(&(case_sensitive->toggle_button), search_case_sensitive);
-
-	// Set the layer search options radio buttons
-	current_layer = (GtkRadioButton*)GTK_WIDGET(GET_COMPONENT("findCurrentLayerRadio"));
-	background_pdf = (GtkRadioButton*)GTK_WIDGET(GET_COMPONENT("findPdfBgRadio"));
-
-	if (search_type == SEARCH_CURRENT_LAYER) {
-		gtk_toggle_button_set_active(&current_layer->check_button.toggle_button, TRUE);
-	} else if (search_type == SEARCH_BACKGROUND_PDF) {
-		gtk_toggle_button_set_active(&background_pdf->check_button.toggle_button, TRUE);
-	}
-
-	// Restore focus to the find next button since we're just reusing the same dialog instance
-	gtk_widget_grab_focus(GTK_WIDGET(GET_COMPONENT("findNextButton")));
-
-	gtk_widget_show(find_dialog);
+	show_find_dialog();
 }
 
 
@@ -982,7 +949,9 @@ void
 on_editFindNext_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+	set_cursor_busy(TRUE);
 	find_next(FALSE);
+	set_cursor_busy(FALSE);
 }
 
 
@@ -990,7 +959,9 @@ void
 on_editFindPrevious_activate           (GtkMenuItem     *menuitem,
 		                                gpointer         user_data)
 {
+	set_cursor_busy(TRUE);
 	find_next(TRUE);
+	set_cursor_busy(FALSE);
 }
 
 
@@ -998,7 +969,9 @@ void
 on_findNextButton_clicked              (GtkButton       *button,
                                         gpointer         user_data)
 {
+	set_cursor_busy(TRUE);
 	find_next(FALSE);
+	set_cursor_busy(FALSE);
 }
 
 
@@ -1006,7 +979,9 @@ void
 on_findPreviousButton_clicked          (GtkButton       *button,
 		                                gpointer         user_data)
 {
+	set_cursor_busy(TRUE);
 	find_next(TRUE);
+	set_cursor_busy(FALSE);
 }
 
 
@@ -1014,9 +989,7 @@ void
 on_findCloseButton_clicked             (GtkButton       *button,
 		                                gpointer         user_data)
 {
-	GtkWidget *find_dialog;
-	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
-	gtk_widget_hide(find_dialog);
+	hide_find_dialog();
 }
 
 void
@@ -1024,9 +997,9 @@ on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
                                         gpointer         user_data)
 {
 	if (button->toggle_button.active) {
-		search_case_sensitive = TRUE;
+		search_data.search_case_sensitive = TRUE;
 	} else {
-		search_case_sensitive = FALSE;
+		search_data.search_case_sensitive = FALSE;
 	}
 }
 
@@ -1035,7 +1008,7 @@ on_findCurrentLayerRadio_toggled       (GtkRadioButton  *button,
                                         gpointer         user_data)
 {
 	if (button->check_button.toggle_button.active) {
-		search_type = SEARCH_CURRENT_LAYER;
+		search_data.search_type = SEARCH_CURRENT_LAYER;
 		clear_pdf_matches();
 	}
 }
@@ -1045,7 +1018,7 @@ on_findPdfBgRadio_toggled              (GtkRadioButton  *button,
                                         gpointer         user_data)
 {
 	if (button->check_button.toggle_button.active) {
-		search_type = SEARCH_BACKGROUND_PDF;
+		search_data.search_type = SEARCH_BACKGROUND_PDF;
 	}
 }
 
@@ -1062,8 +1035,7 @@ on_findText_changed                    (GtkEditable     *editable,
 		update_search_string(text);
 	}
 
-	clear_pdf_matches();
-	current_match = num_matches = -1;
+	reset_pdf_search();
 }
 
 
@@ -1207,7 +1179,6 @@ on_viewShowLayer_activate              (GtkMenuItem     *menuitem,
   reset_selection();
   ui.layerno++;
   ui.cur_page->layerno++;
-  printf("%d %d\n", ui.layerno, ui.cur_page->layerno);
   ui.cur_layer = g_list_nth_data(ui.cur_page->layers, ui.layerno);
   gnome_canvas_item_show(GNOME_CANVAS_ITEM(ui.cur_layer->group));
   update_page_stuff();

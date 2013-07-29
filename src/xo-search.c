@@ -25,6 +25,33 @@
 #include "xo-paint.h"
 #include "xo-search.h"
 
+void init_search() {
+	update_search_string(NULL );
+	search_data.search_case_sensitive = FALSE; // TODO: user preference?
+	search_data.search_type = SEARCH_CURRENT_LAYER;
+
+	reset_pdf_search();
+
+	search_data.find_dialog_x = -1;
+	search_data.find_dialog_y = -1;
+}
+
+// Reset all state associated with search.
+void reset_search() {
+	GtkWidget *find_dialog;
+
+	if (search_data.search_string != NULL ) {
+		free(search_data.search_string);
+		search_data.search_string = NULL;
+	}
+	search_data.search_case_sensitive = FALSE;
+	search_data.search_type = SEARCH_CURRENT_LAYER;
+
+	reset_pdf_search();
+
+	hide_find_dialog();
+}
+
 // Returns the starting index of the last match of needle in
 // haystack that ends before limit characters (-1 if not found).
 int rstrstr_index(const char *haystack, const char *needle, int limit) {
@@ -56,7 +83,8 @@ int rstrstr_index(const char *haystack, const char *needle, int limit) {
 // Returns the index of the first occurrence of needle in haystack (-1 if not found).
 // Starts search at from; moves backwards to start if backwards is TRUE, else forwards to end.
 // from == -1 means search whole string.
-int strstr_index(const char *haystack, const char *needle, int from, gboolean backwards, gboolean case_sensitive) {
+int strstr_index(const char *haystack, const char *needle, int from, gboolean backwards,
+		gboolean case_sensitive) {
 	int i;
 	char *match;
 	const char *new_haystack, *new_needle;
@@ -135,12 +163,12 @@ gchar * get_selected_text() {
 }
 
 // Update the search string and make all required changes
-void update_search_string(gchar *text) {
+void update_search_string(const gchar *text) {
 	GtkWidget *widget;
 	gboolean sensitive;
 
-	search_string = text;
-	sensitive = (search_string != NULL );
+	search_data.search_string = g_strdup(text);
+	sensitive = (search_data.search_string != NULL );
 
 	// Enable or disable the find next and previous widgets
 	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editFindNext")), sensitive);
@@ -211,15 +239,15 @@ void select_text_range(struct Item *item, int start_index, int end_index) {
 // Show a dialog that supersedes the find dialog.
 void show_find_popup(const gchar *message) {
 	GtkWidget *dialog, *find_dialog;
-	gint x, y;
 	gboolean restore_find_dialog;
 
-	dialog = gtk_message_dialog_new(GTK_WINDOW (winMain), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO,
-			GTK_BUTTONS_OK, "%s", message);
+	dialog = gtk_message_dialog_new(GTK_WINDOW (winMain), GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s", message);
 	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
 
 	// Save find dialog position to move it back after
-	gtk_window_get_position(GTK_WINDOW(find_dialog), &x, &y);
+	gtk_window_get_position(GTK_WINDOW(find_dialog), &search_data.find_dialog_x,
+			&search_data.find_dialog_y);
 
 	restore_find_dialog = gtk_widget_get_visible(find_dialog);
 
@@ -231,7 +259,7 @@ void show_find_popup(const gchar *message) {
 
 	if (restore_find_dialog) {
 		// Move the find dialog back to its previous position and bring it back
-		gtk_window_move(GTK_WINDOW(find_dialog), x, y);
+		gtk_window_move(GTK_WINDOW(find_dialog), search_data.find_dialog_x, search_data.find_dialog_y);
 		gtk_widget_show(find_dialog);
 	}
 }
@@ -247,7 +275,8 @@ gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboo
 		return FALSE;
 	}
 
-	index = strstr_index(item->text, search_string, item_offset, backwards, search_case_sensitive);
+	index = strstr_index(item->text, search_data.search_string, item_offset, backwards,
+			search_data.search_case_sensitive);
 	if (index >= 0) {
 		// Calculate the page number of the item
 		if (backwards) {
@@ -268,7 +297,7 @@ gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboo
 		scroll_to_item(item);
 
 		// Select the text match
-		select_text_range(item, index, index + strlen(search_string));
+		select_text_range(item, index, index + strlen(search_data.search_string));
 		return TRUE;
 	}
 
@@ -276,9 +305,10 @@ gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboo
 }
 
 void find_next(gboolean backwards) {
-	if (search_type == SEARCH_CURRENT_LAYER) {
+	if (search_data.search_type == SEARCH_CURRENT_LAYER) {
+		reset_selection();
 		find_next_text(backwards);
-	} else if (search_type == SEARCH_BACKGROUND_PDF) {
+	} else if (search_data.search_type == SEARCH_BACKGROUND_PDF) {
 		find_next_pdf(backwards);
 	}
 }
@@ -287,8 +317,8 @@ void find_next(gboolean backwards) {
 // Searches backwards if backwards is TRUE, otherwise searches forwards.
 void find_next_text(gboolean backwards) {
 	int i;
-	struct Page *pg;
-	struct Layer *l;
+	struct Page *page;
+	struct Layer *layer;
 	struct Item *item;
 	GList *pagelist, *itemlist;
 	GtkTextBuffer *text_buffer;
@@ -297,7 +327,7 @@ void find_next_text(gboolean backwards) {
 	int first_page_offset = 0, limit;
 
 	// Nothing to search for
-	if (search_string == NULL ) {
+	if (search_data.search_string == NULL ) {
 		return;
 	}
 
@@ -315,22 +345,25 @@ void find_next_text(gboolean backwards) {
 	// Start on the current page
 	pagelist = g_list_nth(journal.pages, ui.pageno);
 	if (ui.layerno >= 0) { // Can only search if we're on a non-background layer
-		pg = (struct Page *) (pagelist->data);
-		l = (struct Layer *) (g_list_nth(pg->layers, ui.layerno)->data);
+		page = (struct Page *) (pagelist->data);
+		layer = (struct Layer *) (g_list_nth(page->layers, ui.layerno)->data);
 
-		itemlist = NULL;
+		// Sort items by vertical order on page
+		// TODO: filter list before sorting
+		itemlist = g_list_sort(g_list_copy(layer->items), compare_items);
+
 		if (ui.cur_item != NULL ) {
 			// Find starting place; item after current item, or first item if none
-			itemlist = g_list_find(l->items, ui.cur_item);
+			itemlist = g_list_find(itemlist, ui.cur_item);
 			if (itemlist != NULL ) {
 				itemlist = (backwards ? itemlist->prev : itemlist->next);
 			}
-		} else {
-			itemlist = (backwards ? g_list_last(l->items) : g_list_first(l->items));
+		} else if (backwards) {
+			itemlist = g_list_last(itemlist);
 		}
 
 		// Search the current page to the end (or start, if searching backwards)
-		for (i = 0; i < l->nitems && itemlist != NULL ; i++) {
+		for (i = 0; itemlist != NULL ; i++) {
 			item = (struct Item *) itemlist->data;
 			if (do_find_match(0, item, -1, backwards)) {
 				return;
@@ -352,17 +385,23 @@ void find_next_text(gboolean backwards) {
 			pagelist = (backwards ? g_list_last(journal.pages) : g_list_first(journal.pages));
 		}
 
-		pg = (struct Page *) (pagelist->data);
-		if (pg->layerno < 0) {
+		page = (struct Page *) (pagelist->data);
+		if (page->layerno < 0) {
 			// Can't search background for text items
 			continue;
 		}
 
 		// Get current layer
-		l = (struct Layer *) (g_list_nth(pg->layers, pg->layerno)->data);
-		itemlist = (backwards ? g_list_last(l->items) : g_list_first(l->items));
+		layer = (struct Layer *) (g_list_nth(page->layers, page->layerno)->data);
 
-		limit = l->nitems;
+		// Sort items by vertical order on page
+		// TODO: filter list before sorting
+		itemlist = g_list_sort(g_list_copy(layer->items), compare_items);
+		if (backwards) {
+			itemlist = g_list_last(itemlist);
+		}
+
+		limit = layer->nitems;
 		if (page_offset == journal.npages) {
 			// Only go partway through the page since we searched half earlier
 			limit -= first_page_offset;
@@ -381,23 +420,54 @@ void find_next_text(gboolean backwards) {
 	show_find_popup("Search text not found.");
 }
 
-void get_num_matches() {
-	GList *pagelist, *findlist;
+void free_pdf_match(void *data) {
+	struct PdfMatch *match = (struct PdfMatch *) data;
+	poppler_rectangle_free(match->rect);
+	free(match);
+}
+
+void get_pdf_matches() {
+	GList *pagelist, *findlist, *finditer;
 	struct Page *page;
 	PopplerPage *pdf_page;
-	int current_page, len;
+	PopplerRectangle *rect;
+	struct PdfMatch *match;
+	int current_page, i;
+	double width, height, tmp;
 
-	num_matches = 0;
+	search_data.num_matches = 0;
+	if (search_data.pdf_matches != NULL ) {
+		g_list_free_full(search_data.pdf_matches, free_pdf_match);
+		search_data.pdf_matches = NULL;
+	}
 
-	for (pagelist = journal.pages; pagelist != NULL ; pagelist = pagelist->next) {
+	for (pagelist = journal.pages, i = 0; pagelist != NULL ; pagelist = g_list_next(pagelist), i++) {
 		page = (struct Page *) pagelist->data;
 
 		if (page->bg->type == BG_PDF) {
 			current_page = page->bg->file_page_seq - 1;
 			pdf_page = poppler_document_get_page(bgpdf.document, current_page);
 			if (pdf_page != NULL ) {
-				findlist = poppler_page_find_text(pdf_page, search_string);
-				num_matches += g_list_length(findlist);
+				findlist = poppler_page_find_text(pdf_page, search_data.search_string);
+				if (findlist != NULL ) {
+					poppler_page_get_size(pdf_page, &width, &height);
+					for (finditer = findlist; finditer != NULL ; finditer = g_list_next(finditer)) {
+						rect = (PopplerRectangle*) finditer->data;
+
+						// Flip y coordinates
+						tmp = rect->y1;
+						rect->y1 = height - rect->y2;
+						rect->y2 = height - tmp;
+
+						match = g_new(struct PdfMatch, 1);
+						match->rect = rect;
+						match->pageno = i;
+						finditer->data = match;
+					}
+
+					search_data.pdf_matches = g_list_concat(search_data.pdf_matches, findlist);
+					search_data.num_matches += g_list_length(findlist);
+				}
 			}
 		}
 	}
@@ -409,22 +479,40 @@ void clear_pdf_matches() {
 
 	for (pagelist = journal.pages; pagelist != NULL ; pagelist = pagelist->next) {
 		page = (struct Page *) pagelist->data;
-
 		if (page->search_layer != NULL ) {
 			delete_layer(page->search_layer);
+			page->search_layer = NULL;
 		}
-
-		page->search_layer = g_new(struct Layer, 1);
-		page->search_layer->items = NULL;
-		page->search_layer->nitems = 0;
-		page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(page->group,
-				gnome_canvas_group_get_type(), NULL );
-		lower_canvas_item_to(page->group, GNOME_CANVAS_ITEM(page->search_layer->group), page->bg->canvas_item);
 	}
 }
 
+create_search_layer(struct Page *page) {
+	if (page->search_layer != NULL ) {
+		delete_layer(page->search_layer);
+	}
+
+	page->search_layer = g_new(struct Layer, 1);
+	page->search_layer->items = NULL;
+	page->search_layer->nitems = 0;
+	page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(page->group,
+			gnome_canvas_group_get_type(), NULL );
+	lower_canvas_item_to(page->group, GNOME_CANVAS_ITEM(page->search_layer->group),
+			page->bg->canvas_item);
+
+	page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(page->group,
+			gnome_canvas_group_get_type(), NULL );
+	lower_canvas_item_to(page->group, GNOME_CANVAS_ITEM(page->search_layer->group),
+			page->bg->canvas_item);
+}
+
 // Draw a rectangle on top of a search match found in a PDF background.
-void highlight_pdf_match(PopplerRectangle *rect) {
+void highlight_pdf_match(struct PdfMatch *match) {
+	PopplerRectangle *rect = match->rect;
+
+	if (match->pageno != ui.pageno) {
+		do_switch_page(match->pageno, FALSE, FALSE);
+	}
+
 	// Create the highlighting rectangle
 	struct Item *search_rect = (struct Item *) g_malloc(sizeof(struct Item));
 	search_rect->type = ITEM_SELECTRECT;
@@ -434,111 +522,121 @@ void highlight_pdf_match(PopplerRectangle *rect) {
 	search_rect->bbox.left = rect->x1;
 	search_rect->bbox.right = rect->x2;
 
-	// Create the search layer and lower it to right above the background
-	ui.cur_page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(ui.cur_page->group,
-			gnome_canvas_group_get_type(), NULL );
-	lower_canvas_item_to(ui.cur_page->group, GNOME_CANVAS_ITEM(ui.cur_page->search_layer->group),
-			ui.cur_page->bg->canvas_item);
+	create_search_layer(ui.cur_page);
 
-	// Create the highlighting rectangle canvas item
-	search_rect->canvas_item = gnome_canvas_item_new(ui.cur_page->search_layer->group, gnome_canvas_rect_get_type(),
-			"width-pixels", 2, "fill-color-rgba", SEARCH_HIGHLIGHT_COLOUR, "x1", rect->x1, "x2", rect->x2, "y1",
-			rect->y1, "y2", rect->y2, NULL );
+// Create the highlighting rectangle canvas item
+	search_rect->canvas_item = gnome_canvas_item_new(ui.cur_page->search_layer->group,
+			gnome_canvas_rect_get_type(), "width-pixels", 2, "fill-color-rgba", SEARCH_HIGHLIGHT_COLOUR,
+			"x1", rect->x1, "x2", rect->x2, "y1", rect->y1, "y2", rect->y2, NULL );
 	ui.cur_page->search_layer->items = g_list_append(ui.cur_page->search_layer->items, search_rect);
 	ui.cur_page->search_layer->nitems++;
 
-	// Put the match in view
+// Put the match in view
 	scroll_to_item(search_rect);
 
-	// Trigger redraw
+// Trigger redraw
 	gnome_canvas_set_pixels_per_unit(canvas, ui.zoom);
 }
 
 // Find the next match in the PDF background.
 void find_next_pdf(gboolean backwards) {
-	int i;
-	GList *pagelist, *findlist, *itemlist;
-	struct Page *page;
-	PopplerPage *pdf_page;
-	int current_page, position, len, pageno;
-	double width, height, tmp;
-	PopplerRectangle *rect = NULL;
-	GtkWidget *dialog, *findDialog;
+	struct PdfMatch *match;
+	PopplerRectangle *rect;
 
 	if (bgpdf.status == STATUS_NOT_INIT) {
 		show_find_popup("No background PDF to search.");
 		return;
 	}
 
-	if (num_matches == -1) {
-		get_num_matches();
+	if (search_data.num_matches == -1) {
+		get_pdf_matches();
 	}
 
-	if (num_matches == 0) {
+	if (search_data.num_matches == 0) {
 		// Not found, show a message
 		show_find_popup("Search text not found.");
 		return;
 	}
 
 	if (backwards) {
-		current_match--;
-		current_match += num_matches;
+		search_data.current_pdf_match = g_list_previous(search_data.current_pdf_match);
+		if (search_data.current_pdf_match == NULL ) {
+			search_data.current_pdf_match = g_list_last(search_data.pdf_matches);
+		}
 	} else {
-		current_match++;
-	}
-	current_match %= num_matches;
-
-	clear_pdf_matches();
-
-	position = 0;
-	pageno = 0;
-
-	for (pagelist = journal.pages; pagelist != NULL ; pagelist = pagelist->next, pageno++) {
-		page = (struct Page *) pagelist->data;
-
-		if (page->bg->type == BG_PDF) {
-			current_page = page->bg->file_page_seq - 1;
-			pdf_page = poppler_document_get_page(bgpdf.document, current_page);
-			if (pdf_page != NULL ) {
-				findlist = poppler_page_find_text(pdf_page, search_string);
-				if (findlist != NULL ) {
-					poppler_page_get_size(pdf_page, &width, &height);
-					len = g_list_length(findlist);
-
-					if (rect == NULL && position + len > current_match) {
-						rect = (PopplerRectangle *) g_list_nth_data(findlist, current_match - position);
-						do_switch_page(pageno, FALSE, FALSE);
-						break;
-					}
-
-					position += len;
-				}
-			}
+		search_data.current_pdf_match = g_list_next(search_data.current_pdf_match);
+		if (search_data.current_pdf_match == NULL ) {
+			search_data.current_pdf_match = g_list_first(search_data.pdf_matches);
 		}
 	}
 
-	if (rect == NULL ) {
-		fprintf(stderr, "error: rectangle is still null!\n");
-	}
-
-	tmp = rect->y1;
-	rect->y1 = height - rect->y2;
-	rect->y2 = height - tmp;
-
-	highlight_pdf_match(rect);
-}
-
-// Reset all state associated with search.
-void reset_search() {
-	GtkWidget *find_dialog;
-
-	search_string = NULL;
-	search_case_sensitive = FALSE;
-	search_type = SEARCH_CURRENT_LAYER;
-	current_match = num_matches = -1;
+	match = (struct PdfMatch *) search_data.current_pdf_match->data;
 
 	clear_pdf_matches();
+	highlight_pdf_match(match);
+}
+
+// Resets num_matches, pdf_matches, and current_pdf_match.
+// Clears highlighting too.
+void reset_pdf_search() {
+	search_data.num_matches = -1;
+	if (search_data.pdf_matches != NULL ) {
+		g_list_free_full(search_data.pdf_matches, free_pdf_match);
+		search_data.pdf_matches = NULL;
+	}
+	search_data.current_pdf_match = NULL;
+
+	clear_pdf_matches();
+}
+
+void show_find_dialog() {
+	GtkWidget *find_dialog;
+	GtkEntry *find_text;
+	GtkCheckButton *case_sensitive;
+	GtkRadioButton *current_layer, *background_pdf;
 
 	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
+
+	// Put the search string into the text box
+	find_text = (GtkEntry*) GTK_WIDGET(GET_COMPONENT("findText"));
+	gtk_entry_set_text(find_text, search_data.search_string == NULL ? "" : search_data.search_string);
+
+	// Set the case sensitive checkbox
+	case_sensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
+	gtk_toggle_button_set_active(&(case_sensitive->toggle_button), search_data.search_case_sensitive);
+
+	// Set the layer search options radio buttons
+	current_layer = (GtkRadioButton*) GTK_WIDGET(GET_COMPONENT("findCurrentLayerRadio"));
+	background_pdf = (GtkRadioButton*) GTK_WIDGET(GET_COMPONENT("findPdfBgRadio"));
+
+	if (search_data.search_type == SEARCH_CURRENT_LAYER) {
+		gtk_toggle_button_set_active(&current_layer->check_button.toggle_button, TRUE);
+	} else if (search_data.search_type == SEARCH_BACKGROUND_PDF) {
+		gtk_toggle_button_set_active(&background_pdf->check_button.toggle_button, TRUE);
+	}
+
+	// Restore focus to the find next button since we're just reusing the same dialog instance
+	gtk_widget_grab_focus(GTK_WIDGET(GET_COMPONENT("findNextButton")) );
+
+	if (search_data.find_dialog_x > 0 && search_data.find_dialog_y > 0) {
+		gtk_window_move(GTK_WINDOW(find_dialog), search_data.find_dialog_x, search_data.find_dialog_y);
+	}
+	gtk_widget_show(find_dialog);
+
+}
+
+void hide_find_dialog() {
+	GtkWidget *find_dialog;
+	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
+
+	// Save position before hiding
+	gtk_window_get_position(GTK_WINDOW(find_dialog), &search_data.find_dialog_x,
+			&search_data.find_dialog_y);
 	gtk_widget_hide(find_dialog);
 }
+
+// Sorts items from top to bottom based on their bounding boxes.
+int compare_items(const void * a, const void * b) {
+	return ((*(struct Item *) a).bbox.top - (*(struct Item *) b).bbox.top);
+}
+

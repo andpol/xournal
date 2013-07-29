@@ -105,6 +105,10 @@ struct Page *new_page_with_bg(struct Background *bg, double width, double height
   l->group = (GnomeCanvasGroup *) gnome_canvas_item_new(
       pg->group, gnome_canvas_group_get_type(), NULL);
   
+  if (bg->type == BG_PDF && search_data.search_type == SEARCH_BACKGROUND_PDF) {
+  	reset_pdf_search();
+  }
+
   return pg;
 }
 
@@ -343,8 +347,8 @@ void delete_page(struct Page *pg)
     if (pg->bg->pixbuf != NULL) g_object_unref(pg->bg->pixbuf);
     if (pg->bg->filename != NULL) refstring_unref(pg->bg->filename);
 
-    if (pg->bg->type == BG_PDF && search_type == SEARCH_BACKGROUND_PDF) {
-    	reset_search();
+    if (pg->bg->type == BG_PDF && search_data.search_type == SEARCH_BACKGROUND_PDF) {
+    	reset_pdf_search();
     }
   }
   g_free(pg->bg);
@@ -1310,15 +1314,6 @@ void do_switch_page(int pg, gboolean rescroll, gboolean refresh_all)
   GList *list;
   
   ui.pageno = pg;
-
-  /* re-show all the layers of the old page */
-  if (ui.cur_page != NULL)
-    for (i=0, list = ui.cur_page->layers; list!=NULL; i++, list = list->next) {
-      layer = (struct Layer *)list->data;
-      if (layer->group!=NULL)
-        gnome_canvas_item_show(GNOME_CANVAS_ITEM(layer->group));
-    }
-  
   ui.cur_page = g_list_nth_data(journal.pages, ui.pageno);
   ui.layerno = ui.cur_page->layerno;
   ui.cur_layer = (struct Layer *)(g_list_nth_data(ui.cur_page->layers, ui.layerno));
@@ -1357,7 +1352,6 @@ void update_page_stuff(void)
 	  pg = (struct Page *)pglist->data;
 	  for (layerlist = pg->layers; layerlist != NULL; layerlist = layerlist->next) {
 		  layer = (struct Layer *)layerlist->data;
-		  layer->items = g_list_sort(layer->items, compare_items);
 	  }
   }
 
@@ -2459,11 +2453,6 @@ wrapper_poppler_page_render_to_pixbuf (PopplerPage *page,
 
   wrapper_copy_cairo_surface_to_pixbuf (surface, pixbuf);
   cairo_surface_destroy (surface);
-}
-
-// Compare two 'Item' structs based on their page position (top to bottom)
-int compare_items(const void * a, const void * b) {
-	return ((*(struct Item *) a).bbox.top - (*(struct Item *) b).bbox.top);
 }
 
 // Delete the thumbnails in the sidebar.

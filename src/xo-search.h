@@ -13,9 +13,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// TODO: config setting
 #define SEARCH_HIGHLIGHT_COLOUR 0xffff0080
 
-void update_search_string(gchar *text);
+struct PdfMatch {
+	PopplerRectangle *rect;
+	int pageno;
+};
+
+void update_search_string(const gchar *text);
 void update_search_string_from_selection();
 
 void find_next(gboolean backwards);
@@ -24,3 +30,8 @@ void find_next_pdf(gboolean backwards);
 
 void clear_pdf_matches();
 void reset_search();
+
+void show_find_dialog();
+void hide_find_dialog();
+
+int compare_items(const void *a, const void *b);
