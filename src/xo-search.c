@@ -276,8 +276,6 @@ void find_next(gboolean backwards) {
 	struct TextMatch *text_match = NULL;
 	GList *pdf_match = NULL;
 	struct PdfMatch *m;
-	int pg1, pg2;
-	double x1, x2, y1, y2;
 
 	clear_pdf_matches();
 
@@ -306,10 +304,12 @@ void find_next(gboolean backwards) {
 		}
 	}
 
+	// Try to find a match in annotation text items
 	if (search_data.search_type & SEARCH_TYPE_CURRENT_LAYER) {
 		reset_selection();
 		text_match = find_next_text(backwards, ui.pageno, x, y);
 	}
+	// Try to find a match in the background PDF
 	if (search_data.search_type & SEARCH_TYPE_BACKGROUND_PDF) {
 		if (bgpdf.status == STATUS_NOT_INIT) {
 			show_find_popup("No background PDF to search.");
@@ -318,79 +318,77 @@ void find_next(gboolean backwards) {
 		}
 	}
 
+	// No matches on either search
 	if (text_match == NULL && pdf_match == NULL ) {
 		show_find_popup("Search text not found.");
-	} else if (text_match != NULL && pdf_match != NULL ) {
+		return;
+	}
+
+	// Determine which match should come first
+	if (text_match != NULL && pdf_match != NULL ) {
 		m = (struct PdfMatch *) pdf_match->data;
 
-		pg1 = text_match->pageno;
-		pg2 = m->pageno;
-
-		x1 = text_match->item->bbox.left;
-		y1 = text_match->item->bbox.top;
-		x2 = m->rect->x1;
-		y2 = m->rect->y1;
-
-		if (!backwards) {
-			if (pg1 < ui.pageno) {
-				pg1 += journal.npages;
-			}
-			if (pg2 < ui.pageno) {
-				pg2 += journal.npages;
-			}
-
-			if (pg1 == pg2 && pg1 == ui.pageno) {
-				if (y1 < y || (y1 == y && x1 < x)) {
-					pg1 += journal.npages;
-				}
-				if (y2 < y || (y2 == y && x2 < x)) {
-					pg2 += journal.npages;
-				}
-			}
-		} else {
-			if (pg1 > ui.pageno) {
-				pg1 -= journal.npages;
-			}
-			if (pg2 > ui.pageno) {
-				pg2 -= journal.npages;
-			}
-
-			if (pg1 == pg2 && pg1 == ui.pageno) {
-				if (y1 > y || (y1 == y && x1 > x)) {
-					pg1 -= journal.npages;
-				}
-				if (y2 > y || (y2 == y && x2 > x)) {
-					pg2 -= journal.npages;
-				}
-			}
-		}
-
-		printf("txt: %d (%f, %f) -- pdf: %d (%f, %f)\n", pg1, x1, y1, pg2, x2, y2);
-		if (is_farther(backwards, pg1, x1, y1, pg2, x2, y2)) {
+		if (match_comes_first(backwards, x, y, text_match->pageno, text_match->item->bbox.left,
+				text_match->item->bbox.top, m->pageno, m->rect->x1, m->rect->y1)) {
 			pdf_match = NULL;
 		} else {
+			free(text_match);
 			text_match = NULL;
 		}
 	}
 
 	if (text_match != NULL && pdf_match == NULL ) {
-		printf("text: %f\n", text_match->item->bbox.top);
-
 		highlight_text_match(text_match);
+		free(text_match);
 		search_data.current_pdf_match = NULL;
 	} else if (text_match == NULL && pdf_match != NULL ) {
-		printf("pdf: %f\n", ((struct PdfMatch *) pdf_match->data)->rect->y1);
-
 		search_data.current_pdf_match = (struct PdfMatch *) pdf_match->data;
+		highlight_pdf_match(pdf_match);
 		end_text();
 		ui.cur_item = NULL;
 		ui.cur_item_type = ITEM_NONE;
-		highlight_pdf_match(pdf_match);
+	}
+}
+
+gboolean match_comes_first(gboolean backwards, double x, double y, int pg1, double x1, double y1,
+		int pg2, double x2, double y2) {
+	if (!backwards) {
+		if (pg1 < ui.pageno) {
+			pg1 += journal.npages;
+		}
+		if (pg2 < ui.pageno) {
+			pg2 += journal.npages;
+		}
+
+		if (pg1 == pg2 && pg1 == ui.pageno) {
+			if (y1 < y || (y1 == y && x1 < x)) {
+				pg1 += journal.npages;
+			}
+			if (y2 < y || (y2 == y && x2 < x)) {
+				pg2 += journal.npages;
+			}
+		}
+	} else {
+		if (pg1 > ui.pageno) {
+			pg1 -= journal.npages;
+		}
+		if (pg2 > ui.pageno) {
+			pg2 -= journal.npages;
+		}
+
+		if (pg1 == ui.pageno) {
+			if (y1 > y || (y1 == y && x1 > x)) {
+				pg1 -= journal.npages;
+			}
+		}
+		if (pg2 == ui.pageno) {
+			if (y2 > y || (y2 == y && x2 > x)) {
+				pg2 -= journal.npages;
+			}
+		}
 	}
 
-	if (text_match != NULL ) {
-		free(text_match);
-	}
+	return is_farther(backwards, pg1, x1, y1, pg2, x2, y2);
 }
 
 struct TextMatch * create_text_match(gboolean backwards, struct Item *item, int item_offset,
@@ -684,15 +682,13 @@ GList * find_next_pdf(gboolean backwards, int pageno, double x, double y) {
 	// TODO: inefficient
 	for (i = 0; i < search_data.num_matches; i++) {
 		struct PdfMatch *m = (struct PdfMatch *) match->data;
-		printf("txt: %d (%f, %f) -- pdf: %d (%f, %f)\n", pageno, x, y, m->pageno, m->rect->x1, m->rect->y1);
 		if (is_farther(backwards, pageno, x, y, m->pageno, m->rect->x1, m->rect->y1)) {
-			printf("found\n");
 			break;
 		}
 		match = backwards ? match->prev : match->next;
 	}
 
-	if (match == NULL) {
+	if (match == NULL ) {
 		match = backwards ? g_list_last(search_data.pdf_matches) : search_data.pdf_matches;
 	}
 

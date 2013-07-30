@@ -1325,6 +1325,10 @@ void do_switch_page(int pg, gboolean rescroll, gboolean refresh_all)
   struct Layer *layer;
   GList *list;
   
+  end_text();
+	ui.cur_item = NULL;
+	ui.cur_item_type = ITEM_NONE;
+
   ui.pageno = pg;
   ui.cur_page = g_list_nth_data(journal.pages, ui.pageno);
   ui.layerno = ui.cur_page->layerno;
