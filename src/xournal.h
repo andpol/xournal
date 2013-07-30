@@ -427,19 +427,20 @@ extern struct UndoItem *undo, *redo;
 
 // search
 
-typedef enum {
-	SEARCH_CURRENT_LAYER,
-	SEARCH_BACKGROUND_PDF
-} SearchType;
+enum SearchType {
+	SEARCH_TYPE_CURRENT_LAYER  = 1 << 0,
+	SEARCH_TYPE_BACKGROUND_PDF = 1 << 1
+};
 
 typedef struct SearchData {
 	gchar *search_string;
 	gboolean search_case_sensitive;
-	SearchType search_type;
+	guint search_type;
 
 	// For PDF searching only
 	int num_matches;
-	GList *pdf_matches, *current_pdf_match;
+	GList *pdf_matches;
+	struct PdfMatch *current_pdf_match;
 
 	gint find_dialog_x, find_dialog_y;
 } SearchData;

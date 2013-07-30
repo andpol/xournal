@@ -28,7 +28,7 @@
 void init_search() {
 	update_search_string(NULL );
 	search_data.search_case_sensitive = FALSE; // TODO: user preference?
-	search_data.search_type = SEARCH_CURRENT_LAYER;
+	search_data.search_type = SEARCH_TYPE_CURRENT_LAYER;
 
 	reset_pdf_search();
 
@@ -45,7 +45,7 @@ void reset_search() {
 		search_data.search_string = NULL;
 	}
 	search_data.search_case_sensitive = FALSE;
-	search_data.search_type = SEARCH_CURRENT_LAYER;
+	search_data.search_type = SEARCH_TYPE_CURRENT_LAYER;
 
 	reset_pdf_search();
 
@@ -264,58 +264,172 @@ void show_find_popup(const gchar *message) {
 	}
 }
 
-// Checks a text item, starting at item_offset, for the search string.
-// Returns TRUE if a match was found and selected.
-// page_offset is how many pages we are from the current page; if search direction
-// is backwards, this is the number of pages we're behind, otherwise number of pages ahead.
-gboolean do_find_match(int page_offset, struct Item *item, int item_offset, gboolean backwards) {
-	int index, new_page_no;
+int page_number_from_offset(int page_offset, gboolean backwards) {
+	int new_pageno;
 
-	if (item->type != ITEM_TEXT) {
-		return FALSE;
+	if (backwards) {
+		new_pageno = (ui.pageno - page_offset) % journal.npages;
+		while (new_pageno < 0) {
+			new_pageno += journal.npages;
+		}
+	} else {
+		new_pageno = (page_offset + ui.pageno) % journal.npages;
 	}
 
-	index = strstr_index(item->text, search_data.search_string, item_offset, backwards,
-			search_data.search_case_sensitive);
-	if (index >= 0) {
-		// Calculate the page number of the item
-		if (backwards) {
-			new_page_no = (ui.pageno - page_offset) % journal.npages;
-			while (new_page_no < 0) {
-				new_page_no += journal.npages;
-			}
-		} else {
-			new_page_no = (page_offset + ui.pageno) % journal.npages;
-		}
-
-		// Switch if we're not on the right page
-		if (new_page_no != ui.pageno) {
-			do_switch_page(new_page_no, FALSE, FALSE);
-		}
-
-		// Put the item in view
-		scroll_to_item(item);
-
-		// Select the text match
-		select_text_range(item, index, index + strlen(search_data.search_string));
-		return TRUE;
-	}
-
-	return FALSE;
+	return new_pageno;
 }
 
 void find_next(gboolean backwards) {
-	if (search_data.search_type == SEARCH_CURRENT_LAYER) {
-		reset_selection();
-		find_next_text(backwards);
-	} else if (search_data.search_type == SEARCH_BACKGROUND_PDF) {
-		find_next_pdf(backwards);
+	double x, y;
+	struct TextMatch *text_match = NULL;
+	GList *pdf_match = NULL;
+	struct PdfMatch *m;
+	int pg1, pg2;
+	double x1, x2, y1, y2;
+
+	clear_pdf_matches();
+
+	// No search types selected
+	if (search_data.search_type == 0) {
+		return;
 	}
+
+	if (ui.cur_item != NULL ) {
+		// Start from the current item by default
+		x = ui.cur_item->bbox.left;
+		y = ui.cur_item->bbox.top;
+		printf("from item: %f %f\n", x, y);
+	} else if (search_data.current_pdf_match != NULL
+			&& search_data.current_pdf_match->pageno == ui.pageno) {
+		// Start from last PDF match only if it's on the page we're looking at
+		x = ((struct PdfMatch *) search_data.current_pdf_match)->rect->x1;
+		y = ((struct PdfMatch *) search_data.current_pdf_match)->rect->y1;
+		printf("from pdf: %f %f\n", x, y);
+	} else {
+		// If all else fails, just start from the top of the current page
+		// (or bottom if searching backwards)
+		if (backwards) {
+			x = ui.cur_page->width + 1;
+			y = ui.cur_page->height + 1;
+		} else {
+			x = y = -1;
+		}
+		printf("from page: %f %f\n", x, y);
+	}
+
+	if (search_data.search_type & SEARCH_TYPE_CURRENT_LAYER) {
+		reset_selection();
+		text_match = find_next_text(backwards, ui.pageno, x, y);
+	}
+	if (search_data.search_type & SEARCH_TYPE_BACKGROUND_PDF) {
+		if (bgpdf.status == STATUS_NOT_INIT) {
+			show_find_popup("No background PDF to search.");
+		} else {
+			pdf_match = find_next_pdf(backwards, ui.pageno, x, y);
+		}
+	}
+
+	if (text_match == NULL && pdf_match == NULL ) {
+		show_find_popup("Search text not found.");
+	} else if (text_match != NULL && pdf_match != NULL ) {
+		m = (struct PdfMatch *) pdf_match->data;
+		printf("both: (%d,%f)  (%d,%f)\n", text_match->pageno, text_match->item->bbox.top, m->pageno,
+				m->rect->y1);
+
+		pg1 = text_match->pageno;
+
+		pg2 = m->pageno;
+
+		x1 = text_match->item->bbox.left;
+		y1 = text_match->item->bbox.top;
+		x2 = m->rect->x1;
+		y2 = m->rect->y1;
+
+		if (!backwards) {
+			if (pg1 < ui.pageno) {
+				pg1 += journal.npages;
+			}
+			if (pg2 < ui.pageno) {
+				pg2 += journal.npages;
+			}
+
+			if (pg1 == pg2 && pg1 == ui.pageno) {
+				if (y1 < y || (y1 == y && x1 < x)) {
+					pg1 += journal.npages;
+				}
+				if (y2 < y || (y2 == y && x2 < x)) {
+					pg2 += journal.npages;
+				}
+			}
+		} else {
+			if (pg1 > ui.pageno) {
+				pg1 -= journal.npages;
+			}
+			if (pg2 > ui.pageno) {
+				pg2 -= journal.npages;
+			}
+
+			if (pg1 == pg2 && pg1 == ui.pageno) {
+				if (y1 > y || (y1 == y && x1 > x)) {
+					pg1 -= journal.npages;
+				}
+				if (y2 > y || (y2 == y && x2 > x)) {
+					pg2 -= journal.npages;
+				}
+			}
+		}
+
+		if (is_farther(backwards, pg1, x1, y1, pg2, x2, y2)) {
+			pdf_match = NULL;
+		} else {
+			text_match = NULL;
+		}
+	}
+
+	if (text_match != NULL && pdf_match == NULL ) {
+		printf("text: %f\n", text_match->item->bbox.top);
+
+		highlight_text_match(text_match);
+		search_data.current_pdf_match = NULL;
+	} else if (text_match == NULL && pdf_match != NULL ) {
+		printf("pdf: %f\n", ((struct PdfMatch *) pdf_match->data)->rect->y1);
+
+		search_data.current_pdf_match = (struct PdfMatch *) pdf_match->data;
+		end_text();
+		ui.cur_item = NULL;
+		ui.cur_item_type = ITEM_NONE;
+		highlight_pdf_match(pdf_match);
+	}
+
+	if (text_match != NULL ) {
+		free(text_match);
+	}
+}
+
+struct TextMatch * create_text_match(gboolean backwards, struct Item *item, int item_offset,
+		int page_offset) {
+	int index;
+	struct TextMatch *match;
+
+	if (item->type == ITEM_TEXT) {
+		index = strstr_index(item->text, search_data.search_string, item_offset, backwards,
+				search_data.search_case_sensitive);
+
+		if (index >= 0) {
+			match = g_new(struct TextMatch, 1);
+			match->item = item;
+			match->index = index;
+			match->pageno = page_number_from_offset(page_offset, backwards);
+			return match;
+		}
+	}
+
+	return NULL ;
 }
 
 // Find the next occurrence of search_string in text items on the current layer.
 // Searches backwards if backwards is TRUE, otherwise searches forwards.
-void find_next_text(gboolean backwards) {
+struct TextMatch * find_next_text(gboolean backwards, int pageno, double x, double y) {
 	int i;
 	struct Page *page;
 	struct Layer *layer;
@@ -323,27 +437,32 @@ void find_next_text(gboolean backwards) {
 	GList *pagelist, *itemlist;
 	GtkTextBuffer *text_buffer;
 	GtkTextIter start, end, select_start, select_end;
-	int cursor;
+	int cursor, index;
 	int first_page_offset = 0, limit;
+	struct TextMatch *match;
 
-	// Nothing to search for
+// Nothing to search for
 	if (search_data.search_string == NULL ) {
-		return;
+		return NULL ;
 	}
 
-	// Check for a match inside the current item, after the current selection or cursor position
+// Check for a match inside the current item, after the current selection or cursor position
 	if (ui.cur_item_type == ITEM_TEXT) {
 		cursor = get_cursor_offset(backwards);
 		end_text();
-		if (cursor != -1 && do_find_match(0, ui.cur_item, cursor, backwards)) {
-			return;
+
+		if (cursor >= 0) {
+			match = create_text_match(backwards, ui.cur_item, cursor, 0);
+			if (match != NULL ) {
+				return match;
+			}
 		}
 	}
 
 	end_text();
 
-	// Start on the current page
-	pagelist = g_list_nth(journal.pages, ui.pageno);
+// Start on the current page
+	pagelist = g_list_nth(journal.pages, pageno);
 	if (ui.layerno >= 0) { // Can only search if we're on a non-background layer
 		page = (struct Page *) (pagelist->data);
 		layer = (struct Layer *) (g_list_nth(page->layers, ui.layerno)->data);
@@ -351,22 +470,25 @@ void find_next_text(gboolean backwards) {
 		// Sort items by vertical order on page
 		// TODO: filter list before sorting
 		itemlist = g_list_sort(g_list_copy(layer->items), compare_items);
-
-		if (ui.cur_item != NULL ) {
-			// Find starting place; item after current item, or first item if none
-			itemlist = g_list_find(itemlist, ui.cur_item);
-			if (itemlist != NULL ) {
-				itemlist = (backwards ? itemlist->prev : itemlist->next);
-			}
-		} else if (backwards) {
+		if (backwards) {
 			itemlist = g_list_last(itemlist);
+		}
+
+		while (itemlist != NULL ) {
+			item = (struct Item *) itemlist->data;
+			if (is_farther(backwards, pageno, x, y, pageno, item->bbox.left, item->bbox.top)) {
+				break;
+			}
+
+			itemlist = (backwards ? itemlist->prev : itemlist->next);
 		}
 
 		// Search the current page to the end (or start, if searching backwards)
 		for (i = 0; itemlist != NULL ; i++) {
 			item = (struct Item *) itemlist->data;
-			if (do_find_match(0, item, -1, backwards)) {
-				return;
+			match = create_text_match(backwards, item, -1, 0);
+			if (match != NULL ) {
+				return match;
 			}
 
 			itemlist = (backwards ? itemlist->prev : itemlist->next);
@@ -376,7 +498,7 @@ void find_next_text(gboolean backwards) {
 		first_page_offset = i;
 	}
 
-	// Loop through all other pages
+// Loop through all other pages
 	int page_offset;
 	for (page_offset = 1; page_offset <= journal.npages; page_offset++) {
 		pagelist = (backwards ? pagelist->prev : pagelist->next);
@@ -409,15 +531,44 @@ void find_next_text(gboolean backwards) {
 
 		for (i = 0; i < limit; i++) {
 			item = (struct Item *) itemlist->data;
-			if (do_find_match(page_offset, item, -1, backwards)) {
-				return;
+			match = create_text_match(backwards, item, -1, page_offset);
+			if (match != NULL ) {
+				return match;
 			}
 
 			itemlist = (backwards ? itemlist->prev : itemlist->next);
 		}
 	}
 
-	show_find_popup("Search text not found.");
+	return NULL ;
+}
+
+void highlight_text_match(struct TextMatch *match) {
+	if (match->pageno != ui.pageno) {
+		do_switch_page(match->pageno, FALSE, FALSE);
+	}
+
+	select_text_range(match->item, match->index, match->index + strlen(search_data.search_string));
+	scroll_to_item(match->item);
+}
+
+void create_search_layer(struct Page *page) {
+	if (page->search_layer != NULL ) {
+		delete_layer(page->search_layer);
+	}
+
+	page->search_layer = g_new(struct Layer, 1);
+	page->search_layer->items = NULL;
+	page->search_layer->nitems = 0;
+	page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(page->group,
+			gnome_canvas_group_get_type(), NULL );
+	lower_canvas_item_to(page->group, GNOME_CANVAS_ITEM(page->search_layer->group),
+			page->bg->canvas_item);
+
+	page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(page->group,
+			gnome_canvas_group_get_type(), NULL );
+	lower_canvas_item_to(page->group, GNOME_CANVAS_ITEM(page->search_layer->group),
+			page->bg->canvas_item);
 }
 
 void free_pdf_match(void *data) {
@@ -486,34 +637,16 @@ void clear_pdf_matches() {
 	}
 }
 
-create_search_layer(struct Page *page) {
-	if (page->search_layer != NULL ) {
-		delete_layer(page->search_layer);
-	}
-
-	page->search_layer = g_new(struct Layer, 1);
-	page->search_layer->items = NULL;
-	page->search_layer->nitems = 0;
-	page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(page->group,
-			gnome_canvas_group_get_type(), NULL );
-	lower_canvas_item_to(page->group, GNOME_CANVAS_ITEM(page->search_layer->group),
-			page->bg->canvas_item);
-
-	page->search_layer->group = (GnomeCanvasGroup *) gnome_canvas_item_new(page->group,
-			gnome_canvas_group_get_type(), NULL );
-	lower_canvas_item_to(page->group, GNOME_CANVAS_ITEM(page->search_layer->group),
-			page->bg->canvas_item);
-}
-
 // Draw a rectangle on top of a search match found in a PDF background.
-void highlight_pdf_match(struct PdfMatch *match) {
-	PopplerRectangle *rect = match->rect;
+void highlight_pdf_match(GList *match) {
+	struct PdfMatch *pdf_match = (struct PdfMatch *) match->data;
+	PopplerRectangle *rect = pdf_match->rect;
 
-	if (match->pageno != ui.pageno) {
-		do_switch_page(match->pageno, FALSE, FALSE);
+	if (pdf_match->pageno != ui.pageno) {
+		do_switch_page(pdf_match->pageno, FALSE, FALSE);
 	}
 
-	// Create the highlighting rectangle
+// Create the highlighting rectangle
 	struct Item *search_rect = (struct Item *) g_malloc(sizeof(struct Item));
 	search_rect->type = ITEM_SELECTRECT;
 	search_rect->path = NULL;
@@ -539,13 +672,13 @@ void highlight_pdf_match(struct PdfMatch *match) {
 }
 
 // Find the next match in the PDF background.
-void find_next_pdf(gboolean backwards) {
-	struct PdfMatch *match;
+GList * find_next_pdf(gboolean backwards, int pageno, double x, double y) {
+	GList *match = NULL;
 	PopplerRectangle *rect;
+	int i;
 
-	if (bgpdf.status == STATUS_NOT_INIT) {
-		show_find_popup("No background PDF to search.");
-		return;
+	if (search_data.search_string == NULL || bgpdf.status == STATUS_NOT_INIT) {
+		return NULL ;
 	}
 
 	if (search_data.num_matches == -1) {
@@ -553,27 +686,55 @@ void find_next_pdf(gboolean backwards) {
 	}
 
 	if (search_data.num_matches == 0) {
-		// Not found, show a message
-		show_find_popup("Search text not found.");
-		return;
+		return NULL ;
 	}
 
-	if (backwards) {
-		search_data.current_pdf_match = g_list_previous(search_data.current_pdf_match);
-		if (search_data.current_pdf_match == NULL ) {
-			search_data.current_pdf_match = g_list_last(search_data.pdf_matches);
+	match = backwards ? g_list_last(search_data.pdf_matches) : search_data.pdf_matches;
+
+	// TODO: inefficient
+	for (i = 0; i < search_data.num_matches; i++) {
+		struct PdfMatch *m = (struct PdfMatch *) match->data;
+		if (is_farther(backwards, pageno, x, y, m->pageno, m->rect->x1, m->rect->y1)) {
+			break;
 		}
+		match = backwards ? match->prev : match->next;
+	}
+
+	return match;
+}
+
+gboolean is_farther(gboolean backwards, int pageno, double x, double y, int my_pageno, double my_x,
+		double my_y) {
+	gboolean result;
+
+	if (pageno == my_pageno && x == my_x && y == my_y) {
+		return FALSE;
 	} else {
-		search_data.current_pdf_match = g_list_next(search_data.current_pdf_match);
-		if (search_data.current_pdf_match == NULL ) {
-			search_data.current_pdf_match = g_list_first(search_data.pdf_matches);
+		result = is_farther_forward(pageno, x, y, my_pageno, my_x, my_y);
+		return backwards ? !result : result;
+	}
+}
+
+gboolean is_farther_forward(int pageno, double x, double y, int my_pageno, double my_x, double my_y) {
+	if (my_pageno > pageno) {
+		return TRUE;
+	} else if (my_pageno < pageno) {
+		return FALSE;
+	} else {
+		// Same page
+		if (my_y > y) {
+			return TRUE;
+		} else if (my_y < y) {
+			return FALSE;
+		} else {
+			// Same height
+			if (my_x > x) {
+				return TRUE;
+			} else {
+				return FALSE;
+			}
 		}
 	}
-
-	match = (struct PdfMatch *) search_data.current_pdf_match->data;
-
-	clear_pdf_matches();
-	highlight_pdf_match(match);
 }
 
 // Resets num_matches, pdf_matches, and current_pdf_match.
@@ -592,30 +753,29 @@ void reset_pdf_search() {
 void show_find_dialog() {
 	GtkWidget *find_dialog;
 	GtkEntry *find_text;
-	GtkCheckButton *case_sensitive;
-	GtkRadioButton *current_layer, *background_pdf;
+	GtkCheckButton *case_sensitive, *current_layer, *background_pdf;
 
 	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
 
-	// Put the search string into the text box
+// Put the search string into the text box
 	find_text = (GtkEntry*) GTK_WIDGET(GET_COMPONENT("findText"));
 	gtk_entry_set_text(find_text, search_data.search_string == NULL ? "" : search_data.search_string);
 
-	// Set the case sensitive checkbox
+// Set the case sensitive checkbox
 	case_sensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
 	gtk_toggle_button_set_active(&(case_sensitive->toggle_button), search_data.search_case_sensitive);
 
-	// Set the layer search options radio buttons
-	current_layer = (GtkRadioButton*) GTK_WIDGET(GET_COMPONENT("findCurrentLayerRadio"));
-	background_pdf = (GtkRadioButton*) GTK_WIDGET(GET_COMPONENT("findPdfBgRadio"));
+// Set the layer search options radio buttons
+	current_layer = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCurrentLayerCheckbox"));
+	background_pdf = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchBgPdfCheckbox"));
 
-	if (search_data.search_type == SEARCH_CURRENT_LAYER) {
-		gtk_toggle_button_set_active(&current_layer->check_button.toggle_button, TRUE);
-	} else if (search_data.search_type == SEARCH_BACKGROUND_PDF) {
-		gtk_toggle_button_set_active(&background_pdf->check_button.toggle_button, TRUE);
+	if (search_data.search_type & SEARCH_TYPE_CURRENT_LAYER) {
+		gtk_toggle_button_set_active(&current_layer->toggle_button, TRUE);
+	} else if (search_data.search_type & SEARCH_TYPE_BACKGROUND_PDF) {
+		gtk_toggle_button_set_active(&background_pdf->toggle_button, TRUE);
 	}
 
-	// Restore focus to the find next button since we're just reusing the same dialog instance
+// Restore focus to the find next button since we're just reusing the same dialog instance
 	gtk_widget_grab_focus(GTK_WIDGET(GET_COMPONENT("findNextButton")) );
 
 	if (search_data.find_dialog_x > 0 && search_data.find_dialog_y > 0) {
@@ -629,7 +789,7 @@ void hide_find_dialog() {
 	GtkWidget *find_dialog;
 	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
 
-	// Save position before hiding
+// Save position before hiding
 	gtk_window_get_position(GTK_WINDOW(find_dialog), &search_data.find_dialog_x,
 			&search_data.find_dialog_y);
 	gtk_widget_hide(find_dialog);
@@ -637,6 +797,23 @@ void hide_find_dialog() {
 
 // Sorts items from top to bottom based on their bounding boxes.
 int compare_items(const void * a, const void * b) {
-	return ((*(struct Item *) a).bbox.top - (*(struct Item *) b).bbox.top);
+	struct Item *i1 = (struct Item *) a;
+	struct Item *i2 = (struct Item *) b;
+
+	double diff_y = i1->bbox.top - i2->bbox.top;
+	if (diff_y < 0) {
+		return -1;
+	} else if (diff_y > 0) {
+		return 1;
+	} else {
+		double diff_x = i1->bbox.left - i2->bbox.left;
+		if (diff_x < 0) {
+			return -1;
+		} else if (diff_x > 0) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
 }
 

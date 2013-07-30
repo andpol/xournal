@@ -105,7 +105,7 @@ struct Page *new_page_with_bg(struct Background *bg, double width, double height
   l->group = (GnomeCanvasGroup *) gnome_canvas_item_new(
       pg->group, gnome_canvas_group_get_type(), NULL);
   
-  if (bg->type == BG_PDF && search_data.search_type == SEARCH_BACKGROUND_PDF) {
+  if (bg->type == BG_PDF) {
   	reset_pdf_search();
   }
 
@@ -359,7 +359,7 @@ void delete_page(struct Page *pg)
     if (pg->bg->pixbuf != NULL) g_object_unref(pg->bg->pixbuf);
     if (pg->bg->filename != NULL) refstring_unref(pg->bg->filename);
 
-    if (pg->bg->type == BG_PDF && search_data.search_type == SEARCH_BACKGROUND_PDF) {
+    if (pg->bg->type == BG_PDF) {
     	reset_pdf_search();
     }
   }

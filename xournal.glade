@@ -232,14 +232,13 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkRadioButton" id="findCurrentLayerRadio">
-                    <property name="label" translatable="yes">Current Annotation Layer</property>
+                  <object class="GtkCheckButton" id="searchCurrentLayerCheckbox">
+                    <property name="label" translatable="yes">Current Layer</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
-                    <property name="active">True</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="on_findCurrentLayerRadio_toggled" swapped="no"/>
+                    <signal name="toggled" handler="on_searchCurrentLayerCheckbox_toggled" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -248,15 +247,13 @@ and other contributors
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkRadioButton" id="findPdfBgRadio">
-                    <property name="label" translatable="yes">PDF Background</property>
+                  <object class="GtkCheckButton" id="searchBgPdfCheckbox">
+                    <property name="label" translatable="yes">Background PDF</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
-                    <property name="active">True</property>
                     <property name="draw_indicator">True</property>
-                    <property name="group">findCurrentLayerRadio</property>
-                    <signal name="toggled" handler="on_findPdfBgRadio_toggled" swapped="no"/>
+                    <signal name="toggled" handler="on_searchBgPdfCheckbox_toggled" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>

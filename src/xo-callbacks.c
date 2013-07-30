@@ -1006,22 +1006,25 @@ on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
 
 
 void
-on_findCurrentLayerRadio_toggled       (GtkRadioButton  *button,
+on_searchCurrentLayerCheckbox_toggled  (GtkCheckButton  *button,
                                         gpointer         user_data)
 {
-	if (button->check_button.toggle_button.active) {
-		search_data.search_type = SEARCH_CURRENT_LAYER;
-		clear_pdf_matches();
+	if (button->toggle_button.active) {
+		search_data.search_type |= SEARCH_TYPE_CURRENT_LAYER;
+	} else {
+		search_data.search_type &= ~SEARCH_TYPE_CURRENT_LAYER;
 	}
 }
 
 
 void
-on_findPdfBgRadio_toggled              (GtkRadioButton  *button,
+on_searchBgPdfCheckbox_toggled         (GtkCheckButton  *button,
                                         gpointer         user_data)
 {
-	if (button->check_button.toggle_button.active) {
-		search_data.search_type = SEARCH_BACKGROUND_PDF;
+	if (button->toggle_button.active) {
+		search_data.search_type |= SEARCH_TYPE_BACKGROUND_PDF;
+	} else {
+		search_data.search_type &= ~SEARCH_TYPE_BACKGROUND_PDF;
 	}
 }
 
