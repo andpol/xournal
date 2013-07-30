@@ -2400,6 +2400,181 @@ on_canvas_button_press_event           (GtkWidget       *widget,
   struct Item *item;
   GdkEvent scroll_event;
 
+  canvas = canvasList[0];
+  journal = journalList[0];
+
+#ifdef INPUT_DEBUG
+  printf("DEBUG: ButtonPress (%s) (x,y)=(%.2f,%.2f), button %d, modifier %x\n", 
+    event->device->name, event->x, event->y, event->button, event->state);
+#endif
+
+  // abort any page changes pending in the spin button, and take the focus
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(GET_COMPONENT("spinPageNo")), ui.pageno+1);
+  reset_focus();
+    
+  is_core = (event->device == gdk_device_get_core_pointer());
+  if (!ui.use_xinput && !is_core) return FALSE;
+  if (ui.use_xinput && is_core && ui.discard_corepointer) return FALSE;
+  if (event->type != GDK_BUTTON_PRESS) return FALSE; 
+    // double-clicks may have broken axes member (free'd) due to a bug in GDK
+
+  if (event->button > 3) { // scroll wheel events! don't paint...
+    if (ui.use_xinput && !gtk_check_version(2, 17, 0) && event->button <= 7) {
+      /* with GTK+ 2.17 and later, the entire widget hierarchy is xinput-aware,
+         so the core button event gets discarded and the scroll event never 
+         gets processed by the main window. This is arguably a GTK+ bug.
+         We work around it. */
+      scroll_event.scroll.type = GDK_SCROLL;
+      scroll_event.scroll.window = event->window;
+      scroll_event.scroll.send_event = event->send_event;
+      scroll_event.scroll.time = event->time;
+      scroll_event.scroll.x = event->x;
+      scroll_event.scroll.y = event->y;
+      scroll_event.scroll.state = event->state;
+      scroll_event.scroll.device = event->device;
+      scroll_event.scroll.x_root = event->x_root;
+      scroll_event.scroll.y_root = event->y_root;
+      if (event->button == 4) scroll_event.scroll.direction = GDK_SCROLL_UP;
+      else if (event->button == 5) scroll_event.scroll.direction = GDK_SCROLL_DOWN;
+      else if (event->button == 6) scroll_event.scroll.direction = GDK_SCROLL_LEFT;
+      else scroll_event.scroll.direction = GDK_SCROLL_RIGHT;
+      gtk_widget_event(GET_COMPONENT("scrolledwindowMain"), &scroll_event);
+    }
+    return FALSE;
+  }
+  if ((event->state & (GDK_CONTROL_MASK|GDK_MOD1_MASK)) != 0) return FALSE;
+    // no control-clicking or alt-clicking
+  if (!is_core) gdk_device_get_state(event->device, event->window, event->axes, NULL);
+    // synaptics touchpads send bogus axis values with ButtonDown
+  if (!is_core)
+    fix_xinput_coords((GdkEvent *)event);
+
+  if (!finite_sized(event->x) || !finite_sized(event->y)) return FALSE; // Xorg 7.3 bug
+
+  if (ui.cur_item_type == ITEM_TEXT) {
+    if (!is_event_within_textview(event)) end_text();
+    else return FALSE;
+  }
+  if (ui.cur_item_type == ITEM_STROKE && ui.is_corestroke && !is_core &&
+      ui.cur_path.num_points == 1) { 
+      // Xorg 7.3+ sent core event before XInput event: fix initial point 
+    ui.is_corestroke = FALSE;
+    ui.stroke_device = event->device;
+    get_pointer_coords((GdkEvent *)event, ui.cur_path.coords);
+  }
+  if (ui.cur_item_type != ITEM_NONE) return FALSE; // we're already doing something
+
+  // if button_switch_mapping enabled, button 2 or 3 clicks only switch mapping
+  if (ui.button_switch_mapping && event->button > 1) {
+    ui.which_unswitch_button = event->button;
+    switch_mapping(event->button-1);
+    return FALSE;
+  }
+
+  ui.is_corestroke = is_core;
+  ui.stroke_device = event->device;
+
+  if (ui.use_erasertip && event->device->source == GDK_SOURCE_ERASER)
+    mapping = NUM_BUTTONS;
+  else if (ui.button_switch_mapping) {
+    mapping = ui.cur_mapping;
+    if (!mapping && (event->state & GDK_BUTTON2_MASK)) mapping = 1;
+    if (!mapping && (event->state & GDK_BUTTON3_MASK)) mapping = 2;
+  }
+  else mapping = event->button-1;
+
+  // check whether we're in a page
+  get_pointer_coords((GdkEvent *)event, pt);
+  set_current_page(pt);
+  
+  // can't paint on the background...
+
+  if (ui.cur_layer == NULL) {
+    /* warn */
+    dialog = gtk_message_dialog_new(GTK_WINDOW(winMain), GTK_DIALOG_MODAL,
+      GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, _("Drawing is not allowed on the "
+      "background layer.\n Switching to Layer 1."));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    on_viewShowLayer_activate(NULL, NULL);
+    return FALSE;
+  }
+
+  // switch mappings if needed
+  
+  ui.which_mouse_button = event->button;
+  switch_mapping(mapping);
+#ifdef WIN32
+  update_cursor();
+#endif
+
+  // in text tool, clicking in a text area edits it
+  if (ui.toolno[mapping] == TOOL_TEXT) {
+    item = click_is_in_text(ui.cur_layer, pt[0], pt[1]);
+    if (item!=NULL) { 
+      reset_selection();
+      start_text((GdkEvent *)event, item);
+      return FALSE;
+    }
+  }
+
+  // if this can be a selection move or resize, then it takes precedence over anything else  
+  if (start_resizesel((GdkEvent *)event)) return FALSE;
+  if (start_movesel((GdkEvent *)event)) return FALSE;
+  
+  if (ui.toolno[mapping] != TOOL_SELECTREGION && ui.toolno[mapping] != TOOL_SELECTRECT)
+    reset_selection();
+
+  // process the event
+  
+  if (ui.toolno[mapping] == TOOL_HAND) {
+    ui.cur_item_type = ITEM_HAND;
+    get_pointer_coords((GdkEvent *)event, ui.hand_refpt);
+    ui.hand_refpt[0] += ui.cur_page->hoffset;
+    ui.hand_refpt[1] += ui.cur_page->voffset;
+  } 
+  else if (ui.toolno[mapping] == TOOL_PEN || ui.toolno[mapping] == TOOL_HIGHLIGHTER ||
+        (ui.toolno[mapping] == TOOL_ERASER && ui.cur_brush->tool_options == TOOLOPT_ERASER_WHITEOUT)) {
+    create_new_stroke((GdkEvent *)event);
+  } 
+  else if (ui.toolno[mapping] == TOOL_ERASER) {
+    ui.cur_item_type = ITEM_ERASURE;
+    do_eraser((GdkEvent *)event, ui.cur_brush->thickness/2,
+               ui.cur_brush->tool_options == TOOLOPT_ERASER_STROKES);
+  }
+  else if (ui.toolno[mapping] == TOOL_SELECTREGION) {
+    start_selectregion((GdkEvent *)event);
+  }
+  else if (ui.toolno[mapping] == TOOL_SELECTRECT) {
+    start_selectrect((GdkEvent *)event);
+  }
+  else if (ui.toolno[mapping] == TOOL_VERTSPACE) {
+    start_vertspace((GdkEvent *)event);
+  }
+  else if (ui.toolno[mapping] == TOOL_TEXT) {
+    start_text((GdkEvent *)event, NULL);
+  }
+  else if (ui.toolno[mapping] == TOOL_IMAGE) {
+    insert_image((GdkEvent *)event);
+  }
+  return FALSE;
+}
+
+gboolean
+on_canvas_button_press_event2          (GtkWidget       *widget,
+                                        GdkEventButton  *event,
+                                        gpointer         user_data)
+{
+  double pt[2];
+  GtkWidget *dialog;
+  int mapping;
+  gboolean is_core;
+  struct Item *item;
+  GdkEvent scroll_event;
+
+  canvas = canvasList[1];
+  journal = journalList[1];
+
 #ifdef INPUT_DEBUG
   printf("DEBUG: ButtonPress (%s) (x,y)=(%.2f,%.2f), button %d, modifier %x\n", 
     event->device->name, event->x, event->y, event->button, event->state);

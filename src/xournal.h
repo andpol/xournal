@@ -403,6 +403,7 @@ typedef struct BgPdf {
 
 extern GtkWidget *winMain;
 extern GnomeCanvas *canvas;
+extern GnomeCanvas *canvasList[2];
 
 // the GtkBuilder used to load the Glade XML UI
 extern GtkBuilder *builder;
@@ -410,6 +411,7 @@ extern GtkBuilder *builder;
 // the data
 
 extern struct Journal journal;
+extern Journal journalList[2];
 extern struct UIData ui;
 extern struct BgPdf bgpdf;
 extern struct UndoItem *undo, *redo;

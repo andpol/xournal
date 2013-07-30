@@ -410,6 +410,11 @@ on_canvas_button_press_event           (GtkWidget       *widget,
                                         gpointer         user_data);
 
 G_MODULE_EXPORT gboolean
+on_canvas_button_press_event2          (GtkWidget       *widget,
+                                        GdkEventButton  *event,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT gboolean
 on_canvas_button_release_event         (GtkWidget       *widget,
                                         GdkEventButton  *event,
                                         gpointer         user_data);
