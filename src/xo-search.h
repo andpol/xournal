@@ -29,8 +29,7 @@ struct PdfMatch {
 
 void update_search_string(const gchar *text);
 void update_search_string_from_selection();
-void search_type_updated();
-void set_search_enabled(gboolean enabled);
+void update_search_enabled();
 
 void find_next(gboolean backwards);
 

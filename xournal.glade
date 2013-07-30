@@ -160,6 +160,7 @@ and other contributors
     <property name="type_hint">dialog</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
+    <property name="transient_for">winMain</property>
     <signal name="delete-event" handler="gtk_widget_hide_on_delete" swapped="no"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox5">
@@ -2697,6 +2698,34 @@ and other contributors
               </packing>
             </child>
             <child>
+              <object class="GtkToolButton" id="buttonFind">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Find</property>
+                <property name="stock_id">gtk-find</property>
+                <signal name="clicked" handler="on_editFind_activate" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolItem" id="toolitem1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkVSeparator" id="vseparator3">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkToolButton" id="buttonUndo">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -2727,7 +2756,7 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkVSeparator" id="vseparator3">
+                  <object class="GtkVSeparator" id="vseparator4">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
@@ -2794,7 +2823,7 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkVSeparator" id="vseparator4">
+                  <object class="GtkVSeparator" id="vseparator5">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
@@ -3009,7 +3038,7 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkVSeparator" id="vseparator5">
+                  <object class="GtkVSeparator" id="vseparator6">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
@@ -3088,7 +3117,7 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkVSeparator" id="vseparator6">
+                  <object class="GtkVSeparator" id="vseparator7">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
@@ -3208,7 +3237,7 @@ and other contributors
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkVSeparator" id="vseparator7">
+                  <object class="GtkVSeparator" id="vseparator9">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
@@ -3833,7 +3862,7 @@ and other contributors
               </packing>
             </child>
             <child>
-              <object class="GtkVSeparator" id="vseparator9">
+              <object class="GtkVSeparator" id="vseparator11">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
               </object>

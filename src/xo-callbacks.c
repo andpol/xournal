@@ -3811,7 +3811,7 @@ on_searchCurrentLayerCheckbox_toggled  (GtkCheckButton  *button,
 	} else {
 		search_data.search_type &= ~SEARCH_TYPE_CURRENT_LAYER;
 	}
-	set_search_enabled(search_data.search_type);
+	update_search_enabled();
 }
 
 
@@ -3824,7 +3824,7 @@ on_searchBgPdfCheckbox_toggled         (GtkCheckButton  *button,
 	} else {
 		search_data.search_type &= ~SEARCH_TYPE_BACKGROUND_PDF;
 	}
-	set_search_enabled(search_data.search_type);
+	update_search_enabled();
 }
 
 

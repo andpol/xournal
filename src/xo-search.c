@@ -157,11 +157,19 @@ void update_search_string(const gchar *text) {
 		search_data.search_string = g_strdup(text);
 	}
 
-	search_enabled = (search_data.search_string != NULL );
-	set_search_enabled(search_enabled);
+	update_search_enabled();
 }
 
-void set_search_enabled(gboolean enabled) {
+void update_search_enabled() {
+	gboolean enabled = TRUE;
+
+	if (search_data.search_string == NULL) {
+		enabled = FALSE;
+	}
+	if (!search_data.search_type) {
+		enabled = FALSE;
+	}
+
 	// Enable or disable the find next and previous widgets
 	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editFindNext")), enabled);
 	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editFindPrevious")), enabled);
@@ -771,7 +779,6 @@ void show_find_dialog() {
 		gtk_window_move(GTK_WINDOW(find_dialog), search_data.find_dialog_x, search_data.find_dialog_y);
 	}
 	gtk_widget_show(find_dialog);
-
 }
 
 // Hide the find dialog.
