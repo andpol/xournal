@@ -2402,6 +2402,7 @@ on_canvas_button_press_event           (GtkWidget       *widget,
 
   canvas = canvasList[0];
   journal = journalList[0];
+  gtk_widget_grab_focus(GTK_WIDGET(canvas));
 
 #ifdef INPUT_DEBUG
   printf("DEBUG: ButtonPress (%s) (x,y)=(%.2f,%.2f), button %d, modifier %x\n", 
@@ -2574,6 +2575,7 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
 
   canvas = canvasList[1];
   journal = journalList[1];
+  gtk_widget_grab_focus(GTK_WIDGET(canvas));
 
 #ifdef INPUT_DEBUG
   printf("DEBUG: ButtonPress (%s) (x,y)=(%.2f,%.2f), button %d, modifier %x\n", 
