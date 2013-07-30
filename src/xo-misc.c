@@ -1461,6 +1461,8 @@ void update_page_stuff(void)
     gnome_canvas_set_scroll_region(canvas, 0, 0, ui.cur_page->width, ui.cur_page->height);
   }
 
+  set_page_border();
+
   // update the page / layer info at bottom of screen
 
   spin = GTK_SPIN_BUTTON(GET_COMPONENT("spinPageNo"));
