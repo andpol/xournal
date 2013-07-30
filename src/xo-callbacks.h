@@ -726,21 +726,25 @@ on_sidebar_combobox_changed            (GtkComboBox      *combobox,
                                         gpointer         userdata);
 
 G_MODULE_EXPORT void
-on_index_tree_cursor_changed           (GtkTreeView     *tree,
-                                        gpointer        userdata);
-
-G_MODULE_EXPORT void
-on_thumbnail_clicked                   (GtkButton      *button,
-                                        gpointer        userdata);
-
-G_MODULE_EXPORT void
-on_add_bookmark_button_clicked         (GtkButton       *button,
+on_index_tree_cursor_changed           (GtkTreeView      *tree,
                                         gpointer         userdata);
 
 G_MODULE_EXPORT void
-on_remove_bookmark_button_clicked         (GtkButton       *button,
+on_thumbnail_clicked                   (GtkEventBox      *event_box,
                                         gpointer         userdata);
 
 G_MODULE_EXPORT void
-on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
-                                        gpointer        userdata);
+on_thumbnails_refresh_button_clicked   (GtkToolButton    *toolbutton,
+                                        gpointer         user_data);
+
+G_MODULE_EXPORT void
+on_add_bookmark_button_clicked         (GtkButton        *button,
+                                        gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_remove_bookmark_button_clicked      (GtkButton        *button,
+                                        gpointer         userdata);
+
+G_MODULE_EXPORT void
+on_bookmark_tree_cursor_changed        (GtkTreeView      *tree,
+                                        gpointer         userdata);

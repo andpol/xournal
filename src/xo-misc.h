@@ -153,8 +153,11 @@ wrapper_poppler_page_render_to_pixbuf (PopplerPage *page,
 
 // thumbnails
 
+void adjust_thumbnail_scroll(int index);
 void start_thumbnails_task();
 void update_thumbnails();
+void clear_thumbnail_highlighting();
 void change_current_thumbnail(int pageno);
 
+#define THUMBNAIL_HIGHLIGHT_COLOUR "#F08348"
 #define THUMBNAIL_SCALE_FACTOR 5.0

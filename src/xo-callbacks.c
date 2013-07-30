@@ -4028,50 +4028,38 @@ on_add_bookmark_button_clicked         (GtkButton       *button,
   gtk_widget_destroy(dialog);
 }
 
+
 void
-on_remove_bookmark_button_clicked         (GtkButton       *button,
+on_remove_bookmark_button_clicked      (GtkButton       *button,
                                         gpointer         userdata)
 {
   delete_selected_bookmark();
 }
 
+
 void
-on_thumbnail_clicked                   (GtkButton       *button,
+on_thumbnail_clicked                   (GtkEventBox     *event_box,
                                         gpointer        userdata)
 {
-	GdkColor white, orange;
 	GtkVBox *thumbnails_vbox;
 	GList *children;
-	GtkWidget *child;
-	int i, page_index = -1;
-
-	gdk_color_parse("white", &white);
-	gdk_color_parse("orange", &orange);
+	int page_index = -1;
 
 	thumbnails_vbox = GTK_VBOX(GET_COMPONENT("thumbnails_vbox"));
-
 	children = gtk_container_get_children(GTK_CONTAINER(thumbnails_vbox) );
-	for (i = 0; children != NULL ; children = g_list_next(children), i++) {
-		child = GTK_WIDGET(children->data);
-		if (GTK_BUTTON(child) == button) {
-			page_index = i;
-		}
+	page_index = g_list_index(children, event_box);
 
-		gtk_widget_modify_bg(child, GTK_STATE_NORMAL, &white);
-		gtk_widget_modify_bg(child, GTK_STATE_PRELIGHT, &white);
-	}
+	if (page_index >= 0) {
+		clear_thumbnail_highlighting();
+		highlight_thumbnail(GTK_WIDGET(event_box) );
 
-	gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_NORMAL, &orange);
-	gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &orange);
-
-	if (page_index != -1) {
 		do_switch_page(page_index, TRUE, TRUE);
 	}
 }
 
 
 void
-on_thumbnails_refresh_button_clicked   (GtkToolButton   *toolbutton,
+on_thumbnails_refresh_button_clicked   (GtkToolButton    *toolbutton,
                                         gpointer         user_data)
 {
 	update_thumbnails();

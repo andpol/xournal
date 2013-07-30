@@ -50,7 +50,9 @@ double predef_thickness[NUM_STROKE_TOOLS][THICKNESS_MAX] =
     { 2.83, 2.83, 8.50, 19.84, 19.84 }, // highlighter thicknesses = 1, 3, 7 mm
   };
 
+GtkWidget *highlighted_thumbnail = NULL;
 gboolean update_thumbnails_request = FALSE;
+gint thumbnail_size = 0;
 
 // some manipulation functions
 
@@ -2579,21 +2581,42 @@ GdkPixmap * new_pixmap_from_page(PopplerPage *page) {
 	return pixmap;
 }
 
-void new_thumbnail_from_pixmap(GdkPixmap *pixmap) {
-	GtkWidget *thumbnails_vbox, *button, *image;
-
-	thumbnails_vbox = GTK_WIDGET(GET_COMPONENT("thumbnails_vbox"));
+GtkWidget * new_thumbnail_from_pixmap(GdkPixmap *pixmap, int index) {
+	GtkWidget *event_box, *image, *vbox, *page_number, *align1, *align2;
+	gchar buffer[6];
 
 	// Extract the image and add to the sidebar
 	image = gtk_image_new_from_pixmap(pixmap, NULL );
-	button = gtk_button_new();
-	gtk_container_add(GTK_CONTAINER(button), image);
-	g_signal_connect(G_OBJECT (button), "button_press_event", G_CALLBACK (on_thumbnail_clicked),
-			image);
+	gtk_misc_set_alignment(GTK_MISC(image), 0, 3);
 
-	gtk_box_pack_start(GTK_BOX(thumbnails_vbox), button, FALSE, FALSE, 0);
-	gtk_widget_show(button);
-	gtk_widget_show(image);
+	align1 = gtk_alignment_new(0.5, 0, 0, 0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(align1), 8, 0, 0, 0);
+	gtk_container_add(GTK_CONTAINER(align1), image);
+
+	// Create a label with the page number
+	snprintf(buffer, 5, "%d", index + 1);
+	page_number = gtk_label_new(buffer);
+	gtk_misc_set_padding(GTK_MISC(page_number), 0, 5);
+
+	align2 = gtk_alignment_new(0.5, 1, 0, 0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(align2), 0, 3, 0, 0);
+	gtk_container_add(GTK_CONTAINER(align2), page_number);
+
+	// Put image and number in a vbox
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), align1, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), align2, FALSE, FALSE, 0);
+
+	// Put everything in an event box to get click events
+	event_box = gtk_event_box_new();
+	gtk_container_add(GTK_CONTAINER(event_box), vbox);
+
+	g_signal_connect(G_OBJECT (event_box), "button_press_event", G_CALLBACK (on_thumbnail_clicked),
+			NULL);
+
+	gtk_widget_show_all(event_box);
+
+	return event_box;
 }
 
 // Update the thumbnails displayed in the sidebar.
@@ -2604,6 +2627,7 @@ gboolean update_thumbnails_task(gpointer data) {
 	PopplerDocument *tmp_pdf;
 	PopplerPage *page;
 	int npages;
+	GtkWidget *thumbnails_vbox, *thumbnail;
 	GtkLabel *updating_message;
 	GdkPixmap **thumbnail_pixmaps;
 
@@ -2646,9 +2670,12 @@ gboolean update_thumbnails_task(gpointer data) {
 	remove(tmp_pdf_path);
 	free(tmp_pdf_path);
 
+	thumbnails_vbox = GTK_WIDGET(GET_COMPONENT("thumbnails_vbox"));
+
 	empty_thumbnails_vbox();
 	for (i = 0; i < npages; i++) {
-		new_thumbnail_from_pixmap(thumbnail_pixmaps[i]);
+		thumbnail = new_thumbnail_from_pixmap(thumbnail_pixmaps[i], i);
+		gtk_box_pack_start(GTK_BOX(thumbnails_vbox), thumbnail, FALSE, FALSE, 0);
 //		g_free(thumbnail_pixmaps[i]);
 	}
 	free(thumbnail_pixmaps);
@@ -2676,28 +2703,72 @@ void start_thumbnails_task() {
 	g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, 1000, update_thumbnails_task, NULL, NULL);
 }
 
+void clear_thumbnail_highlighting() {
+	if (highlighted_thumbnail != NULL && GTK_IS_WIDGET(highlighted_thumbnail)) {
+		gtk_widget_modify_bg(highlighted_thumbnail, GTK_STATE_NORMAL, NULL);
+		gtk_widget_modify_bg(highlighted_thumbnail, GTK_STATE_PRELIGHT, NULL);
+	}
+
+	highlighted_thumbnail = NULL;
+}
+
+void highlight_thumbnail(GtkWidget* thumbnail) {
+	GdkColor highlight_colour;
+	gdk_color_parse(THUMBNAIL_HIGHLIGHT_COLOUR, &highlight_colour);
+	gtk_widget_modify_bg(thumbnail, GTK_STATE_NORMAL, &highlight_colour);
+	gtk_widget_modify_bg(thumbnail, GTK_STATE_PRELIGHT, &highlight_colour);
+
+	highlighted_thumbnail = thumbnail;
+}
+
+void adjust_thumbnail_scroll(int index) {
+	GtkWidget *thumbnails_vbox, *thumbnail;
+	GtkScrolledWindow *thumbnails_window;
+	GList *children;
+	GtkAllocation allocation;
+	GtkAdjustment *adjustment;
+	int upper, lower;
+
+	thumbnails_vbox = GTK_WIDGET(GET_COMPONENT("thumbnails_vbox"));
+	children = gtk_container_get_children(GTK_CONTAINER(thumbnails_vbox) );
+	if (children != NULL ) {
+		thumbnail = GTK_WIDGET(children->data);
+		gtk_widget_get_allocation(thumbnail, &allocation);
+
+		if (allocation.height > 1) {
+			thumbnails_window = GTK_SCROLLED_WINDOW(GET_COMPONENT("thumbnails_scrolled_window"));
+			adjustment = gtk_scrolled_window_get_vadjustment(thumbnails_window);
+
+			lower = allocation.height * index;
+			upper = lower + allocation.height;
+
+			if (adjustment->value > lower) {
+				adjustment->value = lower;
+				gtk_scrolled_window_set_vadjustment(thumbnails_window, adjustment);
+			} else if (adjustment->value + adjustment->page_size < upper) {
+				adjustment->value = upper - adjustment->page_size;
+				gtk_scrolled_window_set_vadjustment(thumbnails_window, adjustment);
+			}
+		}
+	}
+}
+
 void change_current_thumbnail(int pageno) {
-	GdkColor white, orange;
+	GdkColor orange;
 	GtkVBox *thumbnails_vbox;
 	GList *children;
-	GtkWidget *child;
-	int i;
+	GtkWidget *thumbnail;
 
-	gdk_color_parse("white", &white);
-	gdk_color_parse("orange", &orange);
+	clear_thumbnail_highlighting();
 
 	thumbnails_vbox = GTK_VBOX(GET_COMPONENT("thumbnails_vbox"));
-
 	children = gtk_container_get_children(GTK_CONTAINER(thumbnails_vbox) );
-	for (i = 0; children != NULL ; children = g_list_next(children), i++) {
-		child = GTK_WIDGET(children->data);
+	children = g_list_nth(children, pageno);
 
-		if (i == pageno) {
-			gtk_widget_modify_bg(child, GTK_STATE_NORMAL, &orange);
-			gtk_widget_modify_bg(child, GTK_STATE_PRELIGHT, &orange);
-		} else {
-			gtk_widget_modify_bg(child, GTK_STATE_NORMAL, &white);
-			gtk_widget_modify_bg(child, GTK_STATE_PRELIGHT, &white);
-		}
+	if (children != NULL ) {
+		thumbnail = GTK_WIDGET(children->data);
+		highlight_thumbnail(thumbnail);
+
+		adjust_thumbnail_scroll(pageno);
 	}
 }
