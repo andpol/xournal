@@ -245,7 +245,7 @@ void init_stuff (int argc, char *argv[])
 
   //
   g_signal_connect ((gpointer) canvas, "button_press_event",
-                    G_CALLBACK (on_canvas_button_press_event),
+                    G_CALLBACK (on_canvas_button_press_event2),
                     NULL);
   g_signal_connect ((gpointer) canvas, "button_release_event",
                     G_CALLBACK (on_canvas_button_release_event),
