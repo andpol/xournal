@@ -23,6 +23,7 @@ GnomeCanvasItem * create_bookmark_canvas_item(Item * bookmark, GnomeCanvasGroup 
 void delete_selected_bookmark();
 void free_bookmark_resources(Item * bookmark);
 void clear_bookmarks();
+gboolean get_bookmark_list_store_entry(Item * bookmark, GtkListStore ** out_listStore, GtkTreeIter * outIter);
 
 
 #endif /* BOOKMARK_H */

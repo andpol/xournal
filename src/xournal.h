@@ -181,7 +181,6 @@ typedef struct Item {
   GdkPixbuf *image;  // the image
   gchar *image_png;  // PNG of original image, for save and clipboard
   gsize image_png_len;
-  int page_num; // 0-indexed page number, if ITEM_BOOKMARK
 } Item;
 
 // item type values for Item.type, UndoItem.type, ui.cur_item_type ...

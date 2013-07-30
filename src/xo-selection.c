@@ -429,8 +429,17 @@ void continue_movesel(GdkEvent *event)
     gnome_canvas_item_reparent(ui.selection->canvas_item, ui.selection->move_layer->group);
     for (list = ui.selection->items; list!=NULL; list = list->next) {
       item = (struct Item *)list->data;
-      if (item->canvas_item!=NULL)
+      if (item->canvas_item!=NULL) {
         gnome_canvas_item_reparent(item->canvas_item, ui.selection->move_layer->group);
+      }
+      if (item->type == ITEM_BOOKMARK) {
+        // Update the list store entry's page number
+        GtkListStore * list_store;
+        GtkTreeIter bookmark_iter;
+        if (get_bookmark_list_store_entry(item, &list_store, &bookmark_iter)) {
+          gtk_list_store_set(list_store, &bookmark_iter, 1, tmppageno + 1, -1);
+        }
+      }
     }
     // avoid a refresh bug
     gnome_canvas_item_move(GNOME_CANVAS_ITEM(ui.selection->move_layer->group), 0., 0.);

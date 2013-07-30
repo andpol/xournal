@@ -19,11 +19,11 @@
 
 #include "xo-bookmark.h"
 
-void add_bookmark_listtore_entry(Item * bookmark, Layer * layer) {
+void add_bookmark_listtore_entry(Item * bookmark, int page_num, Layer * layer) {
   GtkListStore * list_store = GTK_LIST_STORE(GET_COMPONENT("bookmark_liststore"));
 
   // TODO: insert into order
-  gtk_list_store_insert_with_values(list_store, NULL, -1, 0, bookmark->text, 1, bookmark->page_num + 1, 2, layer, 3, bookmark, -1);
+  gtk_list_store_insert_with_values(list_store, NULL, -1, 0, bookmark->text, 1, page_num + 1, 2, layer, 3, bookmark, -1);
 }
 
 GnomeCanvasItem * create_bookmark_canvas_item(Item * bookmark, GnomeCanvasGroup * group) {
@@ -43,7 +43,6 @@ Item * create_bookmark(const gchar* title, double page_pos) {
 
   bmrk->type = ITEM_BOOKMARK;
   bmrk->text = g_strdup(title);
-  bmrk->page_num = g_list_index(journal.pages, page);
 
   bmrk->bbox.left =   page->width - 100;
   bmrk->bbox.right =  page->width;
@@ -60,7 +59,7 @@ Item * create_bookmark(const gchar* title, double page_pos) {
   bmrk->canvas_item = create_bookmark_canvas_item(bmrk, ui.cur_layer->group);
 
   // Add the bookmark to the liststore for displaying in the sidebar tree
-  add_bookmark_listtore_entry(bmrk, ui.cur_layer);
+  add_bookmark_listtore_entry(bmrk, g_list_index(journal.pages, page), ui.cur_layer);
 
   // Append the bookmark the the page's top layer
   ui.cur_layer->items = g_list_append(ui.cur_layer->items, bmrk);
@@ -118,5 +117,34 @@ void free_bookmark_resources(Item * bookmark) {
 void clear_bookmarks() {
   GtkListStore * list_store = GTK_LIST_STORE(GET_COMPONENT("bookmark_liststore"));
   gtk_list_store_clear(list_store);
+}
+
+
+/*
+ * Returns an iterator pointing to the matching GtkListStore entry for the
+ * specified bookmark Item, or NULL if none found
+ */
+gboolean get_bookmark_list_store_entry(Item * bookmark, GtkListStore ** out_listStore, GtkTreeIter * outIter) {
+  GtkTreeModel * list_store = GTK_TREE_MODEL(GET_COMPONENT("bookmark_liststore"));
+  *out_listStore = GTK_LIST_STORE(list_store);
+  GtkTreeIter it;
+
+  if (bookmark == NULL ||
+      bookmark->type != ITEM_BOOKMARK ||
+      !gtk_tree_model_get_iter_first(list_store, &it)) {
+    return FALSE;
+  }
+
+  do {
+    Item * bkmrk;
+    gtk_tree_model_get(list_store, &it, 3, &bkmrk, -1);
+    if (bkmrk == bookmark) {
+      // Found the matching bookmark, copy the iterator for the list store entry
+      *outIter = it;
+      return TRUE;
+    }
+  } while (gtk_tree_model_iter_next(list_store, &it));
+
+  return FALSE;
 }
 
