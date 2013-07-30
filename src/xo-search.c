@@ -36,22 +36,6 @@ void init_search() {
 	search_data.find_dialog_y = -1;
 }
 
-// Reset all state associated with search.
-void reset_search() {
-	GtkWidget *find_dialog;
-
-	if (search_data.search_string != NULL ) {
-		free(search_data.search_string);
-		search_data.search_string = NULL;
-	}
-	search_data.search_case_sensitive = FALSE;
-	search_data.search_type = SEARCH_TYPE_CURRENT_LAYER;
-
-	reset_pdf_search();
-
-	hide_find_dialog();
-}
-
 // Returns the starting index of the last match of needle in
 // haystack that ends before limit characters (-1 if not found).
 int rstrstr_index(const char *haystack, const char *needle, int limit) {
@@ -141,7 +125,7 @@ int strstr_index(const char *haystack, const char *needle, int from, gboolean ba
 	return retval;
 }
 
-// Get the currently selected text in a text item, if any
+// Get the currently selected text in a text item, if any.
 gchar * get_selected_text() {
 	GtkTextBuffer *text_buffer;
 	GtkTextIter start, end;
@@ -162,19 +146,27 @@ gchar * get_selected_text() {
 	return text;
 }
 
-// Update the search string and make all required changes
+// Update the search string and make all required changes.
 void update_search_string(const gchar *text) {
 	GtkWidget *widget;
-	gboolean sensitive;
+	gboolean search_enabled;
 
-	search_data.search_string = g_strdup(text);
-	sensitive = (search_data.search_string != NULL );
+	if (text == NULL || strlen(text) == 0) {
+		search_data.search_string = NULL;
+	} else {
+		search_data.search_string = g_strdup(text);
+	}
 
+	search_enabled = (search_data.search_string != NULL );
+	set_search_enabled(search_enabled);
+}
+
+void set_search_enabled(gboolean enabled) {
 	// Enable or disable the find next and previous widgets
-	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editFindNext")), sensitive);
-	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editFindPrevious")), sensitive);
-	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("findNextButton")), sensitive);
-	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("findPreviousButton")), sensitive);
+	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editFindNext")), enabled);
+	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("editFindPrevious")), enabled);
+	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("findNextButton")), enabled);
+	gtk_widget_set_sensitive(GTK_WIDGET(GET_COMPONENT("findPreviousButton")), enabled);
 }
 
 // Fetch the new search string from selected text, if any.
@@ -298,13 +290,11 @@ void find_next(gboolean backwards) {
 		// Start from the current item by default
 		x = ui.cur_item->bbox.left;
 		y = ui.cur_item->bbox.top;
-		printf("from item: %f %f\n", x, y);
 	} else if (search_data.current_pdf_match != NULL
 			&& search_data.current_pdf_match->pageno == ui.pageno) {
 		// Start from last PDF match only if it's on the page we're looking at
 		x = ((struct PdfMatch *) search_data.current_pdf_match)->rect->x1;
 		y = ((struct PdfMatch *) search_data.current_pdf_match)->rect->y1;
-		printf("from pdf: %f %f\n", x, y);
 	} else {
 		// If all else fails, just start from the top of the current page
 		// (or bottom if searching backwards)
@@ -314,7 +304,6 @@ void find_next(gboolean backwards) {
 		} else {
 			x = y = -1;
 		}
-		printf("from page: %f %f\n", x, y);
 	}
 
 	if (search_data.search_type & SEARCH_TYPE_CURRENT_LAYER) {
@@ -333,11 +322,8 @@ void find_next(gboolean backwards) {
 		show_find_popup("Search text not found.");
 	} else if (text_match != NULL && pdf_match != NULL ) {
 		m = (struct PdfMatch *) pdf_match->data;
-		printf("both: (%d,%f)  (%d,%f)\n", text_match->pageno, text_match->item->bbox.top, m->pageno,
-				m->rect->y1);
 
 		pg1 = text_match->pageno;
-
 		pg2 = m->pageno;
 
 		x1 = text_match->item->bbox.left;
@@ -379,6 +365,7 @@ void find_next(gboolean backwards) {
 			}
 		}
 
+		printf("txt: %d (%f, %f) -- pdf: %d (%f, %f)\n", pg1, x1, y1, pg2, x2, y2);
 		if (is_farther(backwards, pg1, x1, y1, pg2, x2, y2)) {
 			pdf_match = NULL;
 		} else {
@@ -577,6 +564,7 @@ void free_pdf_match(void *data) {
 	free(match);
 }
 
+// Store the list of matches in the background PDF document
 void get_pdf_matches() {
 	GList *pagelist, *findlist, *finditer;
 	struct Page *page;
@@ -624,6 +612,7 @@ void get_pdf_matches() {
 	}
 }
 
+// Delete any leftover search layers.
 void clear_pdf_matches() {
 	GList *pagelist, *itemlist;
 	struct Page *page;
@@ -642,6 +631,7 @@ void highlight_pdf_match(GList *match) {
 	struct PdfMatch *pdf_match = (struct PdfMatch *) match->data;
 	PopplerRectangle *rect = pdf_match->rect;
 
+	// Switch pages if we need to
 	if (pdf_match->pageno != ui.pageno) {
 		do_switch_page(pdf_match->pageno, FALSE, FALSE);
 	}
@@ -694,10 +684,16 @@ GList * find_next_pdf(gboolean backwards, int pageno, double x, double y) {
 	// TODO: inefficient
 	for (i = 0; i < search_data.num_matches; i++) {
 		struct PdfMatch *m = (struct PdfMatch *) match->data;
+		printf("txt: %d (%f, %f) -- pdf: %d (%f, %f)\n", pageno, x, y, m->pageno, m->rect->x1, m->rect->y1);
 		if (is_farther(backwards, pageno, x, y, m->pageno, m->rect->x1, m->rect->y1)) {
+			printf("found\n");
 			break;
 		}
 		match = backwards ? match->prev : match->next;
+	}
+
+	if (match == NULL) {
+		match = backwards ? g_list_last(search_data.pdf_matches) : search_data.pdf_matches;
 	}
 
 	return match;
@@ -710,35 +706,31 @@ gboolean is_farther(gboolean backwards, int pageno, double x, double y, int my_p
 	if (pageno == my_pageno && x == my_x && y == my_y) {
 		return FALSE;
 	} else {
-		result = is_farther_forward(pageno, x, y, my_pageno, my_x, my_y);
+		if (my_pageno > pageno) {
+			result = TRUE;
+		} else if (my_pageno < pageno) {
+			result = FALSE;
+		} else {
+			// Same page
+			if (my_y > y) {
+				result = TRUE;
+			} else if (my_y < y) {
+				result = FALSE;
+			} else {
+				// Same height
+				if (my_x > x) {
+					result = TRUE;
+				} else {
+					result = FALSE;
+				}
+			}
+		}
+
 		return backwards ? !result : result;
 	}
 }
 
-gboolean is_farther_forward(int pageno, double x, double y, int my_pageno, double my_x, double my_y) {
-	if (my_pageno > pageno) {
-		return TRUE;
-	} else if (my_pageno < pageno) {
-		return FALSE;
-	} else {
-		// Same page
-		if (my_y > y) {
-			return TRUE;
-		} else if (my_y < y) {
-			return FALSE;
-		} else {
-			// Same height
-			if (my_x > x) {
-				return TRUE;
-			} else {
-				return FALSE;
-			}
-		}
-	}
-}
-
-// Resets num_matches, pdf_matches, and current_pdf_match.
-// Clears highlighting too.
+// Resets the list of matches and clears highlighting.
 void reset_pdf_search() {
 	search_data.num_matches = -1;
 	if (search_data.pdf_matches != NULL ) {
@@ -750,12 +742,11 @@ void reset_pdf_search() {
 	clear_pdf_matches();
 }
 
+// Populate and show the find dialog.
 void show_find_dialog() {
 	GtkWidget *find_dialog;
 	GtkEntry *find_text;
 	GtkCheckButton *case_sensitive, *current_layer, *background_pdf;
-
-	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
 
 // Put the search string into the text box
 	find_text = (GtkEntry*) GTK_WIDGET(GET_COMPONENT("findText"));
@@ -765,19 +756,21 @@ void show_find_dialog() {
 	case_sensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
 	gtk_toggle_button_set_active(&(case_sensitive->toggle_button), search_data.search_case_sensitive);
 
-// Set the layer search options radio buttons
+	// Set the search type checkboxes
 	current_layer = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCurrentLayerCheckbox"));
 	background_pdf = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchBgPdfCheckbox"));
-
 	if (search_data.search_type & SEARCH_TYPE_CURRENT_LAYER) {
 		gtk_toggle_button_set_active(&current_layer->toggle_button, TRUE);
 	} else if (search_data.search_type & SEARCH_TYPE_BACKGROUND_PDF) {
 		gtk_toggle_button_set_active(&background_pdf->toggle_button, TRUE);
 	}
 
-// Restore focus to the find next button since we're just reusing the same dialog instance
-	gtk_widget_grab_focus(GTK_WIDGET(GET_COMPONENT("findNextButton")) );
+// Restore focus to the text field since we're just reusing the same dialog instance
+	gtk_widget_grab_focus(GTK_WIDGET(find_text) );
 
+	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
+
+	// Move back to the last recorded position
 	if (search_data.find_dialog_x > 0 && search_data.find_dialog_y > 0) {
 		gtk_window_move(GTK_WINDOW(find_dialog), search_data.find_dialog_x, search_data.find_dialog_y);
 	}
@@ -785,6 +778,7 @@ void show_find_dialog() {
 
 }
 
+// Hide the find dialog.
 void hide_find_dialog() {
 	GtkWidget *find_dialog;
 	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
@@ -795,18 +789,21 @@ void hide_find_dialog() {
 	gtk_widget_hide(find_dialog);
 }
 
-// Sorts items from top to bottom based on their bounding boxes.
+// Sorts items from top to bottom (and left to right) based on their bounding boxes.
 int compare_items(const void * a, const void * b) {
 	struct Item *i1 = (struct Item *) a;
 	struct Item *i2 = (struct Item *) b;
 
 	double diff_y = i1->bbox.top - i2->bbox.top;
+
+	// Need to return 1 or -1 since small float differences get floored
 	if (diff_y < 0) {
 		return -1;
 	} else if (diff_y > 0) {
 		return 1;
 	} else {
 		double diff_x = i1->bbox.left - i2->bbox.left;
+
 		if (diff_x < 0) {
 			return -1;
 		} else if (diff_x > 0) {
@@ -816,4 +813,3 @@ int compare_items(const void * a, const void * b) {
 		}
 	}
 }
-

@@ -294,7 +294,7 @@ gboolean close_journal(void)
   reset_recognizer();
   clear_redo_stack();
   clear_undo_stack();
-  reset_search();
+  reset_pdf_search();
 
   shutdown_bgpdf();
   delete_journal(&journal);
