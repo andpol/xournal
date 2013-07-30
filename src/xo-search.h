@@ -16,6 +16,12 @@
 // TODO: config setting
 #define SEARCH_HIGHLIGHT_COLOUR 0xffff0080
 
+struct TextMatch {
+	Item *item;
+	int index;
+	int pageno;
+};
+
 struct PdfMatch {
 	PopplerRectangle *rect;
 	int pageno;
@@ -23,13 +29,19 @@ struct PdfMatch {
 
 void update_search_string(const gchar *text);
 void update_search_string_from_selection();
+void search_type_updated();
+void set_search_enabled(gboolean enabled);
 
 void find_next(gboolean backwards);
-void find_next_text(gboolean backwards);
-void find_next_pdf(gboolean backwards);
 
-void clear_pdf_matches();
+struct TextMatch * find_next_text(gboolean backwards, int pageno, double x, double y);
+void highlight_text_match(struct TextMatch *match);
+GList * find_next_pdf(gboolean backwards, int pageno, double x, double y);
+void highlight_pdf_match(GList *match);
+
 void reset_search();
+void reset_pdf_search();
+void clear_pdf_matches();
 
 void show_find_dialog();
 void hide_find_dialog();

@@ -105,7 +105,7 @@ struct Page *new_page_with_bg(struct Background *bg, double width, double height
   l->group = (GnomeCanvasGroup *) gnome_canvas_item_new(
       pg->group, gnome_canvas_group_get_type(), NULL);
   
-  if (bg->type == BG_PDF && search_data.search_type == SEARCH_BACKGROUND_PDF) {
+  if (bg->type == BG_PDF) {
   	reset_pdf_search();
   }
 
@@ -365,7 +365,7 @@ void delete_page(struct Page *pg)
     if (pg->bg->pixbuf != NULL) g_object_unref(pg->bg->pixbuf);
     if (pg->bg->filename != NULL) refstring_unref(pg->bg->filename);
 
-    if (pg->bg->type == BG_PDF && search_data.search_type == SEARCH_BACKGROUND_PDF) {
+    if (pg->bg->type == BG_PDF) {
     	reset_pdf_search();
     }
   }
@@ -1383,6 +1383,10 @@ void do_switch_page(int pg, gboolean rescroll, gboolean refresh_all)
   struct Layer *layer;
   GList *list;
   
+  end_text();
+	ui.cur_item = NULL;
+	ui.cur_item_type = ITEM_NONE;
+
   ui.pageno = pg;
   ui.cur_page = g_list_nth_data(journal.pages, ui.pageno);
   ui.layerno = ui.cur_page->layerno;

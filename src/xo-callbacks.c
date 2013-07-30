@@ -553,12 +553,14 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
     if (ui.pageno >= undo->val) ui.pageno--;
     if (ui.pageno < 0) ui.pageno = 0;
     do_switch_page(ui.pageno, TRUE, TRUE);
+    reset_pdf_search();
   }
   else if (undo->type == ITEM_DELETE_PAGE) {
     journal.pages = g_list_insert(journal.pages, undo->page, undo->val);
     journal.npages++;
     make_canvas_items(); // re-create the canvas items
     do_switch_page(undo->val, TRUE, TRUE);
+    reset_pdf_search();
   }
   else if (undo->type == ITEM_MOVESEL) {
     for (itemlist = undo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
@@ -768,6 +770,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     journal.pages = g_list_insert(journal.pages, redo->page, redo->val);
     journal.npages++;
     do_switch_page(redo->val, TRUE, TRUE);
+    reset_pdf_search();
   }
   else if (redo->type == ITEM_DELETE_PAGE) {
     // unmap all the canvas items
@@ -786,6 +789,7 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
     ui.cur_page = NULL;
       // so do_switch_page() won't try to remap the layers of the defunct page
     do_switch_page(ui.pageno, TRUE, TRUE);
+    reset_pdf_search();
   }
   else if (redo->type == ITEM_MOVESEL) {
     for (itemlist = redo->itemlist; itemlist != NULL; itemlist = itemlist->next) {
@@ -969,80 +973,6 @@ on_editFindPrevious_activate           (GtkMenuItem     *menuitem,
 
 
 void
-on_findNextButton_clicked              (GtkButton       *button,
-                                        gpointer         user_data)
-{
-	set_cursor_busy(TRUE);
-	find_next(FALSE);
-	set_cursor_busy(FALSE);
-}
-
-
-void
-on_findPreviousButton_clicked          (GtkButton       *button,
-		                                gpointer         user_data)
-{
-	set_cursor_busy(TRUE);
-	find_next(TRUE);
-	set_cursor_busy(FALSE);
-}
-
-
-void
-on_findCloseButton_clicked             (GtkButton       *button,
-		                                gpointer         user_data)
-{
-	hide_find_dialog();
-}
-
-void
-on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
-                                        gpointer         user_data)
-{
-	if (button->toggle_button.active) {
-		search_data.search_case_sensitive = TRUE;
-	} else {
-		search_data.search_case_sensitive = FALSE;
-	}
-}
-
-void
-on_findCurrentLayerRadio_toggled       (GtkRadioButton  *button,
-                                        gpointer         user_data)
-{
-	if (button->check_button.toggle_button.active) {
-		search_data.search_type = SEARCH_CURRENT_LAYER;
-		clear_pdf_matches();
-	}
-}
-
-void
-on_findPdfBgRadio_toggled              (GtkRadioButton  *button,
-                                        gpointer         user_data)
-{
-	if (button->check_button.toggle_button.active) {
-		search_data.search_type = SEARCH_BACKGROUND_PDF;
-	}
-}
-
-void
-on_findText_changed                    (GtkEditable     *editable,
-		                                gpointer         user_data)
-{
-	const gchar *text;
-	text = gtk_entry_get_text((GtkEntry*) editable);
-
-	if (strlen(text) == 0) {
-		update_search_string(NULL);
-	} else {
-		update_search_string(text);
-	}
-
-	reset_pdf_search();
-}
-
-
-void
 on_viewContinuous_activate             (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
@@ -1222,6 +1152,7 @@ on_journalNewPageBefore_activate       (GtkMenuItem     *menuitem,
   undo->val = ui.pageno;
   undo->page = pg;
 
+  reset_pdf_search();
   update_thumbnails();
 }
 
@@ -1244,6 +1175,7 @@ on_journalNewPageAfter_activate        (GtkMenuItem     *menuitem,
   undo->val = ui.pageno;
   undo->page = pg;
 
+  reset_pdf_search();
   update_thumbnails();
 }
 
@@ -1266,6 +1198,7 @@ on_journalNewPageEnd_activate          (GtkMenuItem     *menuitem,
   undo->val = ui.pageno;
   undo->page = pg;
 
+  reset_pdf_search();
   update_thumbnails();
 }
 
@@ -1304,6 +1237,7 @@ on_journalDeletePage_activate          (GtkMenuItem     *menuitem,
      // so do_switch_page() won't try to remap the layers of the defunct page
   do_switch_page(ui.pageno, TRUE, TRUE);
 
+  reset_pdf_search();
   update_thumbnails();
 }
 
@@ -1703,6 +1637,7 @@ on_journalLoadBackground_activate      (GtkMenuItem     *menuitem,
   }
   do_switch_page(ui.pageno, TRUE, TRUE);
 
+  reset_pdf_search();
   update_thumbnails();
 }
 
@@ -3824,6 +3759,88 @@ on_optionsButtonsSwitchMappings_activate(GtkMenuItem    *menuitem,
   ui.button_switch_mapping = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM (menuitem));
 }
 
+
+void
+on_findNextButton_clicked              (GtkButton       *button,
+                                        gpointer         user_data)
+{
+	set_cursor_busy(TRUE);
+	find_next(FALSE);
+	set_cursor_busy(FALSE);
+}
+
+
+void
+on_findPreviousButton_clicked          (GtkButton       *button,
+		                                gpointer         user_data)
+{
+	set_cursor_busy(TRUE);
+	find_next(TRUE);
+	set_cursor_busy(FALSE);
+}
+
+
+void
+on_findCloseButton_clicked             (GtkButton       *button,
+		                                gpointer         user_data)
+{
+	hide_find_dialog();
+}
+
+
+void
+on_searchCaseCheckbox_toggled          (GtkCheckButton  *button,
+                                        gpointer         user_data)
+{
+	if (button->toggle_button.active) {
+		search_data.search_case_sensitive = TRUE;
+	} else {
+		search_data.search_case_sensitive = FALSE;
+	}
+}
+
+
+void
+on_searchCurrentLayerCheckbox_toggled  (GtkCheckButton  *button,
+                                        gpointer         user_data)
+{
+	if (button->toggle_button.active) {
+		search_data.search_type |= SEARCH_TYPE_CURRENT_LAYER;
+	} else {
+		search_data.search_type &= ~SEARCH_TYPE_CURRENT_LAYER;
+	}
+	set_search_enabled(search_data.search_type);
+}
+
+
+void
+on_searchBgPdfCheckbox_toggled         (GtkCheckButton  *button,
+                                        gpointer         user_data)
+{
+	if (button->toggle_button.active) {
+		search_data.search_type |= SEARCH_TYPE_BACKGROUND_PDF;
+	} else {
+		search_data.search_type &= ~SEARCH_TYPE_BACKGROUND_PDF;
+	}
+	set_search_enabled(search_data.search_type);
+}
+
+
+void
+on_findText_changed                    (GtkEditable     *editable,
+                                        gpointer         user_data)
+{
+	const gchar *text;
+	text = gtk_entry_get_text((GtkEntry*) editable);
+
+	if (strlen(text) == 0) {
+		update_search_string(NULL);
+	} else {
+		update_search_string(text);
+	}
+
+	reset_pdf_search();
+}
 
 
 void
