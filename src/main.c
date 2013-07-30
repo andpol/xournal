@@ -264,6 +264,8 @@ void init_stuff (int argc, char *argv[])
   gtk_widget_show (winMain);
   update_cursor();
 
+  start_thumbnails_task();
+
   /* this will cause extension events to get enabled/disabled, but
      we need the windows to be mapped first */
   gtk_check_menu_item_set_active(

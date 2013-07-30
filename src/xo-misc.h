@@ -147,13 +147,14 @@ wrapper_poppler_page_render_to_pixbuf (PopplerPage *page,
 #define RULING_BOTTOMMARGIN RULING_SPACING
 #define RULING_GRAPHSPACING 14.17
 
+// page border
+
 #define PAGE_BORDER_COLOUR 0x777777ff
 
 // thumbnails
 
-void clear_thumbnails();
+void start_thumbnails_task();
 void update_thumbnails();
+void change_current_thumbnail(int pageno);
 
-#define THUMBNAIL_PADDING 0
 #define THUMBNAIL_SCALE_FACTOR 5.0
-
