@@ -4016,6 +4016,7 @@ on_add_bookmark_button_clicked         (GtkButton       *button,
   }
 
   // Create the bookmark using the user-entered text for a title
+  // TODO: find top of currently displayd page + 50
   create_bookmark(gtk_entry_get_text(GTK_ENTRY(entry)), 100);
   gtk_widget_destroy(dialog);
 }
@@ -4082,10 +4083,11 @@ on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
   }
 
   gint page_num;
-  gtk_tree_model_get(tree_model, &tree_iter, 1, &page_num, -1);
+  Item * bookmark;
+  gtk_tree_model_get(tree_model, &tree_iter, BOOKMARK_COL_PAGENUM, &page_num, BOOKMARK_COL_ITEM, &bookmark, -1);
 
   // Jump to the page
   do_switch_page(page_num - 1, TRUE, TRUE);
   // Scroll to the location on the page
-  // TODO
+  scroll_to_item(bookmark);
 }

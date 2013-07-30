@@ -325,7 +325,6 @@ void delete_journal(struct Journal *j)
   }
 
   bgpdf_clear_index();
-  clear_bookmarks();
   clear_thumbnails();
 }
 

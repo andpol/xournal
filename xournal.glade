@@ -103,18 +103,6 @@ and other contributors
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/blue.png</property>
   </object>
-  <object class="GtkListStore" id="bookmark_liststore">
-    <columns>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-      <!-- column-name page_num -->
-      <column type="gint"/>
-      <!-- column-name layer -->
-      <column type="gpointer"/>
-      <!-- column-name bookmark_item -->
-      <column type="gpointer"/>
-    </columns>
-  </object>
   <object class="GtkImage" id="close_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -710,11 +698,6 @@ and other contributors
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/white.png</property>
-  </object>
-  <object class="GtkImage" id="yellow_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">pixmaps/yellow.png</property>
   </object>
   <object class="GtkWindow" id="winMain">
     <property name="can_focus">False</property>
@@ -3553,7 +3536,6 @@ and other contributors
                                   <object class="GtkTreeView" id="bookmark_tree">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="model">bookmark_liststore</property>
                                     <property name="headers_visible">False</property>
                                     <signal name="cursor-changed" handler="on_bookmark_tree_cursor_changed" swapped="no"/>
                                     <child>
@@ -3798,6 +3780,11 @@ and other contributors
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkImage" id="yellow_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">pixmaps/yellow.png</property>
   </object>
   <object class="GtkAdjustment" id="zoom_adjustment">
     <property name="lower">10</property>

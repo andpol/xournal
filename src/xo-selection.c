@@ -30,6 +30,7 @@
 #include "xo-misc.h"
 #include "xo-paint.h"
 #include "xo-selection.h"
+#include "xo-bookmark.h"
 
 /************ selection tools ***********/
 
@@ -434,10 +435,9 @@ void continue_movesel(GdkEvent *event)
       }
       if (item->type == ITEM_BOOKMARK) {
         // Update the list store entry's page number
-        GtkListStore * list_store;
         GtkTreeIter bookmark_iter;
-        if (get_bookmark_list_store_entry(item, &list_store, &bookmark_iter)) {
-          gtk_list_store_set(list_store, &bookmark_iter, 1, tmppageno + 1, -1);
+        if (get_bookmark_list_store_entry(bookmark_liststore, item, &bookmark_iter)) {
+          gtk_list_store_set(bookmark_liststore, &bookmark_iter, 1, tmppageno + 1, -1);
         }
       }
     }

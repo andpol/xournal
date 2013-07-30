@@ -19,14 +19,39 @@
 
 #include "xo-bookmark.h"
 
-void add_bookmark_listtore_entry(Item * bookmark, int page_num, Layer * layer) {
-  GtkListStore * list_store = GTK_LIST_STORE(GET_COMPONENT("bookmark_liststore"));
+GtkListStore * create_new_bookmark_liststore() {
+  // NOTE: the order of each of the column params MUST match the enum definition
+  GtkListStore * store = gtk_list_store_new(BOOKMARK_COL_COUNT,
+      G_TYPE_STRING,
+      G_TYPE_INT,
+      G_TYPE_POINTER,
+      G_TYPE_POINTER);
+
+  return store;
+}
+
+void add_bookmark_liststore_entry(GtkListStore * list_store, Item * bookmark, const gchar * title, int page_num, Layer * layer) {
+  if(bookmark == NULL || bookmark->type != ITEM_BOOKMARK) {
+    g_error("add_bookmark_liststore_entry() passed a non-bookmark Item");
+    return;
+  }
 
   // TODO: insert into order
-  gtk_list_store_insert_with_values(list_store, NULL, -1, 0, bookmark->text, 1, page_num + 1, 2, layer, 3, bookmark, -1);
+  //
+  gtk_list_store_insert_with_values(list_store, NULL, -1,
+      BOOKMARK_COL_TITLE, title,
+      BOOKMARK_COL_PAGENUM, page_num + 1,
+      BOOKMARK_COL_LAYER, layer,
+      BOOKMARK_COL_ITEM, bookmark,
+      -1);
 }
 
 GnomeCanvasItem * create_bookmark_canvas_item(Item * bookmark, GnomeCanvasGroup * group) {
+  if(bookmark == NULL || bookmark->type != ITEM_BOOKMARK) {
+    g_error("create_bookmark_canvas_item() passed a non-bookmark Item");
+    return NULL;
+  }
+
   return gnome_canvas_item_new(group,
       gnome_canvas_line_get_type(),
       "points", bookmark->path,
@@ -42,7 +67,6 @@ Item * create_bookmark(const gchar* title, double page_pos) {
   Item * bmrk = g_new(struct Item, 1);
 
   bmrk->type = ITEM_BOOKMARK;
-  bmrk->text = g_strdup(title);
 
   bmrk->bbox.left =   page->width - 100;
   bmrk->bbox.right =  page->width;
@@ -59,7 +83,7 @@ Item * create_bookmark(const gchar* title, double page_pos) {
   bmrk->canvas_item = create_bookmark_canvas_item(bmrk, ui.cur_layer->group);
 
   // Add the bookmark to the liststore for displaying in the sidebar tree
-  add_bookmark_listtore_entry(bmrk, g_list_index(journal.pages, page), ui.cur_layer);
+  add_bookmark_liststore_entry(bookmark_liststore, bmrk, title, g_list_index(journal.pages, page), ui.cur_layer);
 
   // Append the bookmark the the page's top layer
   ui.cur_layer->items = g_list_append(ui.cur_layer->items, bmrk);
@@ -67,8 +91,10 @@ Item * create_bookmark(const gchar* title, double page_pos) {
   return bmrk;
 }
 
+/*
+ * Deletes the currently selected bookmark in the sidebar
+ */
 void delete_selected_bookmark() {
-  GtkListStore * list_store = GTK_LIST_STORE(GET_COMPONENT("bookmark_liststore"));
   GtkTreeView *tree = GTK_TREE_VIEW(GET_COMPONENT("bookmark_tree"));
 
 
@@ -85,7 +111,7 @@ void delete_selected_bookmark() {
     gint page_num;
     Item * bookmark;
     Layer * layer;
-    gtk_tree_model_get(tree_model, &tree_iter, 1, &page_num, 2, &layer, 3, &bookmark, -1);
+    gtk_tree_model_get(tree_model, &tree_iter, BOOKMARK_COL_PAGENUM, &page_num, BOOKMARK_COL_LAYER, &layer, BOOKMARK_COL_ITEM, &bookmark, -1);
 
     // Remove the layer's bookmark 'Item'
     layer->items = g_list_remove(layer->items, bookmark);
@@ -97,7 +123,7 @@ void delete_selected_bookmark() {
   }
 
   { // Remove the list store entry
-    gtk_list_store_remove(list_store, &tree_iter);
+    gtk_list_store_remove(bookmark_liststore, &tree_iter);
   }
 }
 
@@ -106,7 +132,10 @@ void delete_selected_bookmark() {
  * NOTE: Does NOT free the bookmark Item itself or destroy the UI gnome canvas item it references
  */
 void free_bookmark_resources(Item * bookmark) {
-    g_free(bookmark->text);
+  if(bookmark == NULL || bookmark->type != ITEM_BOOKMARK) {
+    g_error("free_bookmark_resources() passed a non-bookmark Item");
+    return;
+  }
     gnome_canvas_points_free(bookmark->path);
 }
 
@@ -114,8 +143,7 @@ void free_bookmark_resources(Item * bookmark) {
  * Clear all the bookmarks from the sidebar
  * NOTE: Does NOT free the bookmark Items or destroy the referenced gnome canvas items
  */
-void clear_bookmarks() {
-  GtkListStore * list_store = GTK_LIST_STORE(GET_COMPONENT("bookmark_liststore"));
+void clear_bookmarks(GtkListStore * list_store) {
   gtk_list_store_clear(list_store);
 }
 
@@ -124,26 +152,29 @@ void clear_bookmarks() {
  * Returns an iterator pointing to the matching GtkListStore entry for the
  * specified bookmark Item, or NULL if none found
  */
-gboolean get_bookmark_list_store_entry(Item * bookmark, GtkListStore ** out_listStore, GtkTreeIter * outIter) {
-  GtkTreeModel * list_store = GTK_TREE_MODEL(GET_COMPONENT("bookmark_liststore"));
-  *out_listStore = GTK_LIST_STORE(list_store);
+gboolean get_bookmark_list_store_entry(GtkListStore * list_store, Item * bookmark, GtkTreeIter * outIter) {
+  if(bookmark == NULL || bookmark->type != ITEM_BOOKMARK) {
+    g_error("get_bookmark_list_store_entry() passed a non-bookmark Item");
+    return FALSE;
+  }
+
+  GtkTreeModel * tree_model = GTK_TREE_MODEL(list_store);
   GtkTreeIter it;
 
-  if (bookmark == NULL ||
-      bookmark->type != ITEM_BOOKMARK ||
-      !gtk_tree_model_get_iter_first(list_store, &it)) {
+  if (!gtk_tree_model_get_iter_first(tree_model, &it)) {
+    g_error("get_bookmark_list_store_entry() could not find the first iterator");
     return FALSE;
   }
 
   do {
     Item * bkmrk;
-    gtk_tree_model_get(list_store, &it, 3, &bkmrk, -1);
+    gtk_tree_model_get(tree_model, &it, 3, &bkmrk, -1);
     if (bkmrk == bookmark) {
       // Found the matching bookmark, copy the iterator for the list store entry
       *outIter = it;
       return TRUE;
     }
-  } while (gtk_tree_model_iter_next(list_store, &it));
+  } while (gtk_tree_model_iter_next(tree_model, &it));
 
   return FALSE;
 }

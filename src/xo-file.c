@@ -44,6 +44,7 @@
 #include "xo-paint.h"
 #include "xo-image.h"
 #include "xo-search.h"
+#include "xo-bookmark.h"
 #include "intl.h"
 
 const char *tool_names[NUM_TOOLS] = {"pen", "eraser", "highlighter", "text", "selectregion", "selectrect", "vertspace", "hand", "image"};
@@ -72,6 +73,7 @@ void new_journal(void)
   ui.filename = NULL;
   update_file_name(NULL);
 
+  clear_bookmarks(bookmark_liststore);
   update_thumbnails();
 }
 
@@ -265,10 +267,37 @@ gboolean save_journal(const char *filename)
           g_free(tmpstr);
         }
         if (item->type == ITEM_IMAGE) {
-          gzprintf(f, "<image left=\"%.2f\" top=\"%.2f\" right=\"%.2f\" bottom=\"%.2f\">", 
+          gzprintf(f, "<image left=\"%.2f\" top=\"%.2f\" right=\"%.2f\" bottom=\"%.2f\">",
             item->bbox.left, item->bbox.top, item->bbox.right, item->bbox.bottom);
           if (!write_image(f, item)) success = FALSE;
           gzprintf(f, "</image>\n");
+        }
+        if (item->type == ITEM_BOOKMARK) {
+          // TODO
+          GtkTreeIter list_store_entry;
+          if ((get_bookmark_list_store_entry(bookmark_liststore, item, &list_store_entry))) {
+            gchar *title;
+            int page_num;
+            gtk_tree_model_get(GTK_TREE_MODEL(bookmark_liststore), &list_store_entry,
+                BOOKMARK_COL_TITLE, &title, BOOKMARK_COL_PAGENUM, &page_num, -1);
+
+            gzprintf(f, "<bookmark left=\"%.2f\" top=\"%.2f\" right=\"%.2f\" bottom=\"%.2f\" pageno=\"%d\">",
+                item->bbox.left, item->bbox.top, item->bbox.right, item->bbox.bottom, page_num - 1);
+
+            // Sanitize the user-input title and save it
+            tmpstr = g_markup_escape_text(title, -1);
+            gzputs(f, tmpstr);
+            g_free(tmpstr);
+            g_free(title);
+
+            // TODO: save the image file? Probably not.
+            //if (!write_image(f, item)) success = FALSE;
+
+            gzprintf(f, "</bookmark>\n");
+          } else {
+            // Unable to find list store entry
+            success = FALSE;
+          }
         }
       }
       gzprintf(f, "</layer>\n");
@@ -319,6 +348,7 @@ void cleanup_numeric(char *s)
 // the XML parser functions for open_journal()
 
 struct Journal tmpJournal;
+GtkListStore * tmpBookmarkStore = NULL;
 struct Page *tmpPage;
 struct Layer *tmpLayer;
 struct Item *tmpItem;
@@ -703,6 +733,70 @@ void xoj_parser_start_element(GMarkupParseContext *context,
     }
     if (has_attr!=15) *error = xoj_invalid();
   }
+  else if (!strcmp(element_name, "bookmark")) { // start of a bookmark item
+    // TODO
+    if (tmpLayer == NULL || tmpItem != NULL) {
+      *error = xoj_invalid();
+      return;
+    }
+    tmpItem = (struct Item *)g_malloc0(sizeof(struct Item));
+    tmpItem->type = ITEM_BOOKMARK;
+    tmpItem->canvas_item = NULL;
+    tmpLayer->items = g_list_append(tmpLayer->items, tmpItem);
+    tmpLayer->nitems++;
+
+    gint page_num;
+    // scan for bookmark attributes
+    has_attr = 0;
+    while (*attribute_names!=NULL) {
+      if (!strcmp(*attribute_names, "left")) {
+        if (has_attr & 1) *error = xoj_invalid();
+        cleanup_numeric((gchar *)*attribute_values);
+        tmpItem->bbox.left = g_ascii_strtod(*attribute_values, &ptr);
+        if (ptr == *attribute_values) *error = xoj_invalid();
+        has_attr |= 1;
+      }
+      else if (!strcmp(*attribute_names, "top")) {
+        if (has_attr & 2) *error = xoj_invalid();
+        cleanup_numeric((gchar *)*attribute_values);
+        tmpItem->bbox.top = g_ascii_strtod(*attribute_values, &ptr);
+        if (ptr == *attribute_values) *error = xoj_invalid();
+        has_attr |= 2;
+      }
+      else if (!strcmp(*attribute_names, "right")) {
+        if (has_attr & 4) *error = xoj_invalid();
+        cleanup_numeric((gchar *)*attribute_values);
+        tmpItem->bbox.right = g_ascii_strtod(*attribute_values, &ptr);
+        if (ptr == *attribute_values) *error = xoj_invalid();
+        has_attr |= 4;
+      }
+      else if (!strcmp(*attribute_names, "bottom")) {
+        if (has_attr & 8) *error = xoj_invalid();
+        cleanup_numeric((gchar *)*attribute_values);
+        tmpItem->bbox.bottom = g_ascii_strtod(*attribute_values, &ptr);
+        if (ptr == *attribute_values) *error = xoj_invalid();
+        has_attr |= 8;
+      }
+      else if (!strcmp(*attribute_names, "pageno")) {
+        if (has_attr & 16) *error = xoj_invalid();
+        cleanup_numeric((gchar *)*attribute_values);
+        page_num = g_ascii_strtod(*attribute_values, &ptr);
+        if (ptr == *attribute_values) *error = xoj_invalid();
+        has_attr |= 16;
+      }
+      else {
+        *error = xoj_invalid();
+      }
+      attribute_names++;
+      attribute_values++;
+    }
+    if (has_attr!=31) {
+      *error = xoj_invalid();
+      return;
+    }
+    // TODO: Make the bookmark liststore entry with a temporary title (gets set later in load process)
+    add_bookmark_liststore_entry(tmpBookmarkStore, tmpItem, "tmp", page_num, tmpLayer);
+  }
 }
 
 void xoj_parser_end_element(GMarkupParseContext *context,
@@ -716,14 +810,14 @@ void xoj_parser_end_element(GMarkupParseContext *context,
     if (tmpPage->nlayers == 0 || tmpPage->bg->type < 0) *error = xoj_invalid();
     tmpPage = NULL;
   }
-  if (!strcmp(element_name, "layer")) {
+  else if (!strcmp(element_name, "layer")) {
     if (tmpLayer == NULL || tmpItem != NULL) {
       *error = xoj_invalid();
       return;
     }
     tmpLayer = NULL;
   }
-  if (!strcmp(element_name, "stroke")) {
+  else if (!strcmp(element_name, "stroke")) {
     if (tmpItem == NULL) {
       *error = xoj_invalid();
       return;
@@ -731,20 +825,28 @@ void xoj_parser_end_element(GMarkupParseContext *context,
     update_item_bbox(tmpItem);
     tmpItem = NULL;
   }
-  if (!strcmp(element_name, "text")) {
+  else if (!strcmp(element_name, "text")) {
     if (tmpItem == NULL) {
       *error = xoj_invalid();
       return;
     }
     tmpItem = NULL;
   }
-  if (!strcmp(element_name, "image")) {
+  else if (!strcmp(element_name, "image")) {
     if (tmpItem == NULL) {
       *error = xoj_invalid();
       return;
     }
     tmpItem = NULL;
   }
+  else if (!strcmp(element_name, "bookmark")) {
+    if (tmpItem == NULL) {
+      *error = xoj_invalid();
+      return;
+    }
+    tmpItem = NULL;
+  }
+
 }
 
 void xoj_parser_text(GMarkupParseContext *context,
@@ -752,10 +854,12 @@ void xoj_parser_text(GMarkupParseContext *context,
 {
   const gchar *element_name, *ptr;
   int n;
-  
+
   element_name = g_markup_parse_context_get_element(context);
-  if (element_name == NULL) return;
-  if (!strcmp(element_name, "stroke")) {
+  if (element_name == NULL) {
+    return;
+  }
+  else if (!strcmp(element_name, "stroke")) {
     cleanup_numeric((gchar *)text);
     ptr = text;
     n = 0;
@@ -777,13 +881,36 @@ void xoj_parser_text(GMarkupParseContext *context,
     tmpItem->path = gnome_canvas_points_new(n/2);
     g_memmove(tmpItem->path->coords, ui.cur_path.coords, n*sizeof(double));
   }
-  if (!strcmp(element_name, "text")) {
+  else if (!strcmp(element_name, "text")) {
     tmpItem->text = g_malloc(text_len+1);
     g_memmove(tmpItem->text, text, text_len);
     tmpItem->text[text_len]=0;
   }
-  if (!strcmp(element_name, "image")) {
+  else if (!strcmp(element_name, "image")) {
     tmpItem->image = read_pixbuf(text, text_len);
+  } 
+  else if (!strcmp(element_name, "bookmark")) {
+    // TODO: Set the title of the bookmark as saved in the XOJ file
+    GtkTreeIter list_store_entry;
+    if ((get_bookmark_list_store_entry(tmpBookmarkStore, tmpItem, &list_store_entry))) {
+      gtk_list_store_set(tmpBookmarkStore, &list_store_entry, BOOKMARK_COL_TITLE, text, -1);
+    } else {
+      // Unable to find list store entry
+      *error = xoj_invalid();
+      return;
+    }
+
+    {
+      // TEMPORARY! Allocate gnome_canvas_points for the graphic
+      // TODO: replace/remove this terrible code
+      tmpItem->path = gnome_canvas_points_new(2);
+      gdouble pts_array[] = {
+        tmpPage->width - 100, tmpItem->bbox.top + 5.0,
+        tmpPage->width      , tmpItem->bbox.top + 5.0,
+      };
+      memcpy(tmpItem->path->coords, pts_array, sizeof(pts_array));
+    }
+
   }
 }
 
@@ -875,6 +1002,12 @@ gboolean open_journal(char *filename)
   tmpBg_pdf = NULL;
   maybe_pdf = TRUE;
 
+  if (tmpBookmarkStore != NULL) {
+    gtk_list_store_clear(tmpBookmarkStore);
+  } else {
+    tmpBookmarkStore = create_new_bookmark_liststore();
+  }
+
   while (valid && !gzeof(f)) {
     len = gzread(f, buffer, 1000);
     if (len<0) valid = FALSE;
@@ -906,6 +1039,14 @@ gboolean open_journal(char *filename)
   ui.saved = TRUE; // force close_journal() to do its job
   close_journal();
   g_memmove(&journal, &tmpJournal, sizeof(struct Journal));
+  
+  // TODO: copy bookmarks liststore from temp to dest
+  // Swap the temp bookmark liststore and the one displayed by the bookmark tree in the sidebar
+  GtkTreeView * tree_view = GTK_TREE_VIEW(GET_COMPONENT("bookmark_tree"));
+  gtk_tree_view_set_model(tree_view, GTK_TREE_MODEL(tmpBookmarkStore));
+  tmpBookmarkStore = bookmark_liststore;
+  clear_bookmarks(tmpBookmarkStore);
+  bookmark_liststore = GTK_LIST_STORE(gtk_tree_view_get_model(tree_view));
   
   // if we need to initialize a fresh pdf loader
   if (tmpBg_pdf!=NULL) { 
