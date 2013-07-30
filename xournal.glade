@@ -699,6 +699,11 @@ and other contributors
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/white.png</property>
   </object>
+  <object class="GtkImage" id="yellow_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">pixmaps/yellow.png</property>
+  </object>
   <object class="GtkWindow" id="winMain">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Xournal</property>
@@ -3536,12 +3541,14 @@ and other contributors
                                   <object class="GtkTreeView" id="bookmark_tree">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="headers_visible">False</property>
                                     <signal name="cursor-changed" handler="on_bookmark_tree_cursor_changed" swapped="no"/>
                                     <child>
                                       <object class="GtkTreeViewColumn" id="bookmark_column">
                                         <property name="title" translatable="yes">Name</property>
                                         <property name="expand">True</property>
+                                        <property name="clickable">True</property>
+                                        <property name="sort_indicator">True</property>
+                                        <property name="sort_column_id">0</property>
                                         <child>
                                           <object class="GtkCellRendererText" id="bookmark_name_cellrenderer">
                                             <property name="editable">True</property>
@@ -3555,6 +3562,9 @@ and other contributors
                                     <child>
                                       <object class="GtkTreeViewColumn" id="bookmark_page_column">
                                         <property name="title" translatable="yes">Page</property>
+                                        <property name="clickable">True</property>
+                                        <property name="sort_indicator">True</property>
+                                        <property name="sort_column_id">1</property>
                                         <child>
                                           <object class="GtkCellRendererText" id="bookmark_page_cellrenderer"/>
                                           <attributes>
@@ -3780,11 +3790,6 @@ and other contributors
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkImage" id="yellow_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">pixmaps/yellow.png</property>
   </object>
   <object class="GtkAdjustment" id="zoom_adjustment">
     <property name="lower">10</property>

@@ -27,6 +27,9 @@ GtkListStore * create_new_bookmark_liststore() {
       G_TYPE_POINTER,
       G_TYPE_POINTER);
 
+  // Sort by page num by default
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), BOOKMARK_COL_PAGENUM, GTK_SORT_ASCENDING);
+
   return store;
 }
 
@@ -36,8 +39,6 @@ void add_bookmark_liststore_entry(GtkListStore * list_store, Item * bookmark, co
     return;
   }
 
-  // TODO: insert into order
-  //
   gtk_list_store_insert_with_values(list_store, NULL, -1,
       BOOKMARK_COL_TITLE, title,
       BOOKMARK_COL_PAGENUM, page_num + 1,

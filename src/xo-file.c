@@ -273,7 +273,6 @@ gboolean save_journal(const char *filename)
           gzprintf(f, "</image>\n");
         }
         if (item->type == ITEM_BOOKMARK) {
-          // TODO
           GtkTreeIter list_store_entry;
           if ((get_bookmark_list_store_entry(bookmark_liststore, item, &list_store_entry))) {
             gchar *title;
@@ -289,9 +288,6 @@ gboolean save_journal(const char *filename)
             gzputs(f, tmpstr);
             g_free(tmpstr);
             g_free(title);
-
-            // TODO: save the image file? Probably not.
-            //if (!write_image(f, item)) success = FALSE;
 
             gzprintf(f, "</bookmark>\n");
           } else {
@@ -734,7 +730,6 @@ void xoj_parser_start_element(GMarkupParseContext *context,
     if (has_attr!=15) *error = xoj_invalid();
   }
   else if (!strcmp(element_name, "bookmark")) { // start of a bookmark item
-    // TODO
     if (tmpLayer == NULL || tmpItem != NULL) {
       *error = xoj_invalid();
       return;
@@ -794,8 +789,8 @@ void xoj_parser_start_element(GMarkupParseContext *context,
       *error = xoj_invalid();
       return;
     }
-    // TODO: Make the bookmark liststore entry with a temporary title (gets set later in load process)
-    add_bookmark_liststore_entry(tmpBookmarkStore, tmpItem, "tmp", page_num, tmpLayer);
+    // Make the bookmark liststore entry with a temporary title (gets set later in load process)
+    add_bookmark_liststore_entry(tmpBookmarkStore, tmpItem, "", page_num, tmpLayer);
   }
 }
 
@@ -890,7 +885,7 @@ void xoj_parser_text(GMarkupParseContext *context,
     tmpItem->image = read_pixbuf(text, text_len);
   } 
   else if (!strcmp(element_name, "bookmark")) {
-    // TODO: Set the title of the bookmark as saved in the XOJ file
+    // Set the title of the bookmark as saved in the XOJ file
     GtkTreeIter list_store_entry;
     if ((get_bookmark_list_store_entry(tmpBookmarkStore, tmpItem, &list_store_entry))) {
       gtk_list_store_set(tmpBookmarkStore, &list_store_entry, BOOKMARK_COL_TITLE, text, -1);
@@ -1040,13 +1035,13 @@ gboolean open_journal(char *filename)
   close_journal();
   g_memmove(&journal, &tmpJournal, sizeof(struct Journal));
   
-  // TODO: copy bookmarks liststore from temp to dest
   // Swap the temp bookmark liststore and the one displayed by the bookmark tree in the sidebar
   GtkTreeView * tree_view = GTK_TREE_VIEW(GET_COMPONENT("bookmark_tree"));
   gtk_tree_view_set_model(tree_view, GTK_TREE_MODEL(tmpBookmarkStore));
   tmpBookmarkStore = bookmark_liststore;
   clear_bookmarks(tmpBookmarkStore);
   bookmark_liststore = GTK_LIST_STORE(gtk_tree_view_get_model(tree_view));
+
   
   // if we need to initialize a fresh pdf loader
   if (tmpBg_pdf!=NULL) { 

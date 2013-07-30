@@ -23,6 +23,7 @@
 #include <libgnomecanvas/libgnomecanvas.h>
 
 #include "xournal.h"
+#include "xo-bookmark.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
