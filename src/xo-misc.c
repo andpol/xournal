@@ -391,6 +391,12 @@ void delete_layer(struct Layer *l)
       g_free(item->image_png);
     }
     if (item->type == ITEM_BOOKMARK) {
+      GtkTreeIter bkmrk_iter;
+      if(!get_bookmark_list_store_entry(bookmark_liststore, item, &bkmrk_iter)) {
+        g_error("Could not find bookmark liststore entry");
+      }
+      // Remove the list store entry
+      gtk_list_store_remove(bookmark_liststore, &bkmrk_iter);
       free_bookmark_resources(item);
     }
     // don't need to delete the canvas_item, as it's part of the group destroyed below

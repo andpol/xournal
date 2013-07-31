@@ -543,7 +543,20 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
     if (undo->page->group!=NULL) gtk_object_destroy(GTK_OBJECT(undo->page->group));
       // also destroys the background and layer's canvas items
     undo->page->group = NULL;
-    undo->page->bg->canvas_item = NULL;
+    undo->page->bg->canvas_item = NULL;  /*
+  bmrk->bbox.left =   page->width - 100;
+  bmrk->bbox.right =  page->width;
+  bmrk->bbox.top =    page_pos - 5.0; // 5.0 = half of line width
+  bmrk->bbox.bottom = page_pos + 5.0;
+
+  bmrk->path = gnome_canvas_points_new(2);
+  gdouble pts_array[] = {
+    page->width - 100, page_pos,
+    page->width      , page_pos,
+  };
+  memcpy(bmrk->path->coords, pts_array, sizeof(pts_array));
+  */
+
     journal.pages = g_list_remove(journal.pages, undo->page);
     journal.npages--;
     if (ui.cur_page == undo->page) ui.cur_page = NULL;
@@ -1227,8 +1240,21 @@ on_journalDeletePage_activate          (GtkMenuItem     *menuitem,
   ui.cur_page->bg->canvas_item = NULL;
   for (layerlist = ui.cur_page->layers; layerlist!=NULL; layerlist = layerlist->next) {
     l = (struct Layer *)layerlist->data;
-    for (itemlist = l->items; itemlist!=NULL; itemlist = itemlist->next)
-      ((struct Item *)itemlist->data)->canvas_item = NULL;
+    for (itemlist = l->items; itemlist!=NULL; itemlist = itemlist->next) {
+      Item * item = itemlist->data;
+      if (item->type == ITEM_BOOKMARK) {
+        // Free/delete the bookmark item (cannot undo this action)
+        GtkTreeIter bkmrk_iter;
+        if(!get_bookmark_list_store_entry(bookmark_liststore, item, &bkmrk_iter)) {
+          g_error("Could not find bookmark liststore entry");
+        }
+        gtk_list_store_remove(bookmark_liststore, &bkmrk_iter);
+        free_bookmark_resources(item);
+        g_free(item);
+      } else {
+        item->canvas_item = NULL;
+      }
+    }
     l->group = NULL;
   }
 
@@ -1293,8 +1319,21 @@ on_journalDeleteLayer_activate         (GtkMenuItem     *menuitem,
   // delete all the canvas items
   gtk_object_destroy(GTK_OBJECT(ui.cur_layer->group));
   ui.cur_layer->group = NULL;
-  for (list=ui.cur_layer->items; list!=NULL; list=list->next)
-    ((struct Item *)list->data)->canvas_item = NULL;
+  for (list=ui.cur_layer->items; list!=NULL; list=list->next) {
+    Item * item = list->data;
+    if (item->type == ITEM_BOOKMARK) {
+      // Free/delete the bookmark item (cannot undo this action)
+      GtkTreeIter bkmrk_iter;
+      if(!get_bookmark_list_store_entry(bookmark_liststore, item, &bkmrk_iter)) {
+        g_error("Could not find bookmark liststore entry");
+      }
+      gtk_list_store_remove(bookmark_liststore, &bkmrk_iter);
+      free_bookmark_resources(item);
+      g_free(item);
+    } else {
+      item->canvas_item = NULL;
+    }
+  }
 
   ui.cur_page->layers = g_list_remove(ui.cur_page->layers, ui.cur_layer);
 

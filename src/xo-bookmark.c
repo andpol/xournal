@@ -139,9 +139,8 @@ void delete_selected_bookmark() {
     g_free(bookmark);
   }
 
-  { // Remove the list store entry
-    gtk_list_store_remove(bookmark_liststore, &tree_iter);
-  }
+  // Remove the list store entry
+  gtk_list_store_remove(bookmark_liststore, &tree_iter);
 }
 
 /*
