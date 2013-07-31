@@ -607,6 +607,11 @@ void selection_delete(void)
   undo->erasurelist = NULL;
   for (itemlist = ui.selection->items; itemlist!=NULL; itemlist = itemlist->next) {
     item = (struct Item *)itemlist->data;
+
+    if(item->type == ITEM_BOOKMARK) {
+      // Bookmarks must be deleted from the bookmarks sidebar
+      continue;
+    }
     if (item->canvas_item!=NULL)
       gtk_object_destroy(GTK_OBJECT(item->canvas_item));
     erasure = g_new(struct UndoErasureData, 1);
@@ -617,10 +622,6 @@ void selection_delete(void)
     ui.selection->layer->items = g_list_remove(ui.selection->layer->items, item);
     ui.selection->layer->nitems--;
     undo->erasurelist = g_list_prepend(undo->erasurelist, erasure);
-    if (item->type == ITEM_BOOKMARK) {
-      // TODO: remove bookmark from the liststore
-      fprintf(stderr, "DEBUG: bookmark deleted\n");
-    }
   }
   reset_selection();
 
