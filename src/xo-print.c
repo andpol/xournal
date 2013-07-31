@@ -1278,7 +1278,7 @@ void pdf_draw_page(struct Page *pg, GString *str, gboolean *use_hiliter,
         pango_layout_iter_free(iter);
         g_object_unref(layout);
       }
-      else if  (item->type == ITEM_IMAGE) {
+      else if  (item->type == ITEM_IMAGE || item->type == ITEM_BOOKMARK) {
         cur_image = new_pdfimage(xref, pdfimages, item->image);
 	cur_image->used_in_this_page = TRUE;
         g_string_append_printf(str, "\nq 1 0 0 1 %.2f %.2f cm %.2f 0 0 %.2f 0 %.2f cm /Im%d Do Q ",
