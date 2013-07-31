@@ -24,6 +24,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "xournal.h"
+#include "xo-bookmark.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
@@ -347,6 +348,7 @@ void delete_journal(struct Journal *j)
     delete_page((struct Page *)j->pages->data);
     j->pages = g_list_delete_link(j->pages, j->pages);
   }
+  bgpdf_clear_index();
 }
 
 void delete_page(struct Page *pg)
@@ -387,6 +389,9 @@ void delete_layer(struct Layer *l)
     if (item->type == ITEM_IMAGE) {
       g_object_unref(item->image);
       g_free(item->image_png);
+    }
+    if (item->type == ITEM_BOOKMARK) {
+      free_bookmark_resources(item);
     }
     // don't need to delete the canvas_item, as it's part of the group destroyed below
     g_free(item);
@@ -1941,12 +1946,22 @@ void move_journal_items_by(GList *itemlist, double dx, double dy,
         for (pt = item->path->coords, i = 0; i < item->path->num_points; i++, pt += 2) {
           pt[1] += dy;
         }
+
+        {
+        //XXX: Hacky trigger a re-sorting of the bookmark tree in the sidebar
+          gint sort_col;
+          GtkSortType order;
+          gtk_tree_sortable_get_sort_column_id(GTK_TREE_SORTABLE(bookmark_liststore), &sort_col, &order);
+          gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(bookmark_liststore), GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID, order);
+          gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(bookmark_liststore), sort_col, order);
+        }
+
         break;
       default:
         g_warning("Cannot move journal item, unrecognized item type: %d", item->type);
         continue;
     }
-    
+
     if (l1 != l2) {
       // find out where to insert
       if (depths != NULL) {

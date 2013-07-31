@@ -4010,22 +4010,49 @@ on_add_bookmark_button_clicked         (GtkButton       *button,
   gtk_container_add(GTK_CONTAINER(content_area), label);
 
   entry = gtk_entry_new();
+  gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
   gtk_container_add(GTK_CONTAINER(content_area), entry);
+
+  // Pre-populate the entry with a default name
+  gchar buff[10];
+  g_snprintf(buff, 10, "Page %d", ui.pageno + 1);
+  gtk_entry_set_text(GTK_ENTRY(entry), buff);
+
 
   gtk_widget_show_all(dialog);
 
-  // Get non-emtpy text input from the user
-  while(!gtk_entry_get_text_length(GTK_ENTRY(entry))) {
+  // Get non-empty text input from the user
+  do {
     if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_OK) {
       // User canceled
       gtk_widget_destroy(dialog);
       return;
     }
-  }
+  } while(!gtk_entry_get_text_length(GTK_ENTRY(entry)));
 
   // Create the bookmark using the user-entered text for a title
-  create_bookmark(gtk_entry_get_text(GTK_ENTRY(entry)), 100);
+  double pos;
+  gboolean jump = FALSE;
+  if (ui.viewport_top > ui.cur_page->voffset) {
+    if (ui.viewport_top - ui.cur_page->voffset + 50 > ui.cur_page->voffset + ui.cur_page->height) {
+      // 50 points above the bottom the page
+      pos = ui.cur_page->height - 50;
+      jump = TRUE;
+    } else {
+      // 50 points below the top of the viewport
+      pos =  ui.viewport_top - ui.cur_page->voffset + 50;
+    }
+  } else {
+    // 50 points below the top of the page
+    pos = 50;
+    jump = TRUE;
+  }
+  Item * bkmrk = create_bookmark(gtk_entry_get_text(GTK_ENTRY(entry)), pos);
   gtk_widget_destroy(dialog);
+  if(jump) {
+    scroll_to_item(bkmrk);
+  }
 }
 
 
@@ -4086,10 +4113,42 @@ on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
   }
 
   gint page_num;
-  gtk_tree_model_get(tree_model, &tree_iter, 1, &page_num, -1);
+  Item * bookmark;
+  gtk_tree_model_get(tree_model, &tree_iter, BOOKMARK_COL_PAGENUM, &page_num, BOOKMARK_COL_ITEM, &bookmark, -1);
 
   // Jump to the page
   do_switch_page(page_num - 1, TRUE, TRUE);
   // Scroll to the location on the page
-  // TODO
+  scroll_to_item(bookmark);
+}
+
+void
+on_bookmark_name_cellrenderer_edited   (GtkCellRendererText  *text,
+                                        gchar                *path,
+                                        gchar                *new_text,
+                                        gpointer             userdata)
+{
+  GtkTreeIter iter;
+  if(!gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(bookmark_liststore), &iter, path)) {
+    g_error("on_bookmark_name_cellrenderer_edited() could not get a valid iterator from the bookmark liststore");
+  } else {
+    // Set the new title
+    gtk_list_store_set(bookmark_liststore, &iter, BOOKMARK_COL_TITLE, new_text, -1);
+  }
+}
+
+gboolean
+on_bookmark_tree_key_press_event    (GtkWidget       *widget,
+                                        GdkEvent        *event,
+                                        gpointer        userdata)
+{
+  // Prevent the key press event from propagating
+  return TRUE;
+}
+
+void
+on_buttonAddBookmark_clicked           (GtkToolButton   *toolbutton,
+                                        gpointer         user_data)
+{
+  on_add_bookmark_button_clicked(NULL, NULL);
 }

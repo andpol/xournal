@@ -23,6 +23,7 @@
 #include <libgnomecanvas/libgnomecanvas.h>
 
 #include "xournal.h"
+#include "xo-bookmark.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
@@ -34,6 +35,7 @@
 GtkWidget *winMain;
 GnomeCanvas *canvas;
 GtkBuilder *builder;
+GtkListStore * bookmark_liststore;
 
 struct Journal journal; // the journal
 struct BgPdf bgpdf;  // the PDF loader stuff
@@ -71,6 +73,10 @@ void init_stuff (int argc, char *argv[])
   ui.font_name = g_strdup(ui.default_font_name);
   ui.font_size = ui.default_font_size;
   ui.hiliter_alpha_mask = 0xffffff00 + (guint)(255*ui.hiliter_opacity);
+
+  // create/set the list store that will hold all the bookmark entries displayed in the sidebar
+  bookmark_liststore = create_new_bookmark_liststore();
+  gtk_tree_view_set_model(GTK_TREE_VIEW(GET_COMPONENT("bookmark_tree")), GTK_TREE_MODEL(bookmark_liststore));
 
   // we need an empty canvas prior to creating the journal structures
   canvas = GNOME_CANVAS (gnome_canvas_new_aa ());

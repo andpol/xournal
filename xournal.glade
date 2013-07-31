@@ -103,18 +103,6 @@ and other contributors
     <property name="can_focus">False</property>
     <property name="pixbuf">pixmaps/blue.png</property>
   </object>
-  <object class="GtkListStore" id="bookmark_liststore">
-    <columns>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-      <!-- column-name page_num -->
-      <column type="gint"/>
-      <!-- column-name layer -->
-      <column type="gpointer"/>
-      <!-- column-name bookmark_item -->
-      <column type="gpointer"/>
-    </columns>
-  </object>
   <object class="GtkImage" id="close_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -2884,10 +2872,24 @@ and other contributors
                 <property name="homogeneous">True</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkToolButton" id="buttonAddBookmark">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Add Bookmark</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-about</property>
+                <signal name="clicked" handler="on_buttonAddBookmark_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">False</property>
+            <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
@@ -2907,7 +2909,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -2923,7 +2924,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -2939,7 +2939,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -2955,7 +2954,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -2971,7 +2969,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -2986,7 +2983,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3001,7 +2997,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3032,7 +3027,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3048,7 +3042,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3064,7 +3057,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3080,7 +3072,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3110,7 +3101,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3125,7 +3115,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3155,7 +3144,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3171,7 +3159,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3188,7 +3175,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3200,7 +3186,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3230,7 +3215,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3246,7 +3230,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3262,7 +3245,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3278,7 +3260,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3294,7 +3275,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3310,7 +3290,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3326,7 +3305,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3342,7 +3320,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3358,7 +3335,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3374,7 +3350,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3390,7 +3365,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3402,7 +3376,6 @@ and other contributors
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -3584,16 +3557,19 @@ and other contributors
                                   <object class="GtkTreeView" id="bookmark_tree">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="model">bookmark_liststore</property>
-                                    <property name="headers_visible">False</property>
                                     <signal name="cursor-changed" handler="on_bookmark_tree_cursor_changed" swapped="no"/>
+                                    <signal name="key-press-event" handler="on_bookmark_tree_key_press_event" swapped="no"/>
                                     <child>
                                       <object class="GtkTreeViewColumn" id="bookmark_column">
                                         <property name="title" translatable="yes">Name</property>
                                         <property name="expand">True</property>
+                                        <property name="clickable">True</property>
+                                        <property name="sort_indicator">True</property>
+                                        <property name="sort_column_id">0</property>
                                         <child>
                                           <object class="GtkCellRendererText" id="bookmark_name_cellrenderer">
                                             <property name="editable">True</property>
+                                            <signal name="edited" handler="on_bookmark_name_cellrenderer_edited" swapped="no"/>
                                           </object>
                                           <attributes>
                                             <attribute name="text">0</attribute>
@@ -3604,6 +3580,9 @@ and other contributors
                                     <child>
                                       <object class="GtkTreeViewColumn" id="bookmark_page_column">
                                         <property name="title" translatable="yes">Page</property>
+                                        <property name="clickable">True</property>
+                                        <property name="sort_indicator">True</property>
+                                        <property name="sort_column_id">1</property>
                                         <child>
                                           <object class="GtkCellRendererText" id="bookmark_page_cellrenderer"/>
                                           <attributes>
