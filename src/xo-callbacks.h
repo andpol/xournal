@@ -752,3 +752,6 @@ on_bookmark_tree_key_press_event       (GtkWidget       *widget,
                                         GdkEvent        *event,
                                         gpointer        userdata);
 
+G_MODULE_EXPORT void
+on_buttonAddBookmark_clicked           (GtkToolButton   *toolbutton,
+                                        gpointer         user_data);

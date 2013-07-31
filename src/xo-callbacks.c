@@ -4017,7 +4017,7 @@ on_add_bookmark_button_clicked         (GtkButton       *button,
 
   gtk_widget_show_all(dialog);
 
-  // Get non-emtpy text input from the user
+  // Get non-empty text input from the user
   do {
     if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_OK) {
       // User canceled
@@ -4027,9 +4027,27 @@ on_add_bookmark_button_clicked         (GtkButton       *button,
   } while(!gtk_entry_get_text_length(GTK_ENTRY(entry)));
 
   // Create the bookmark using the user-entered text for a title
-  // TODO: find top of currently displayd page + 50
-  create_bookmark(gtk_entry_get_text(GTK_ENTRY(entry)), 100);
+  double pos;
+  gboolean jump = FALSE;
+  if (ui.viewport_top > ui.cur_page->voffset) {
+    if (ui.viewport_top - ui.cur_page->voffset + 50 > ui.cur_page->voffset + ui.cur_page->height) {
+      // 50 points above the bottom the page
+      pos = ui.cur_page->height - 50;
+      jump = TRUE;
+    } else {
+      // 50 points below the top of the viewport
+      pos =  ui.viewport_top - ui.cur_page->voffset + 50;
+    }
+  } else {
+    // 50 points below the top of the page
+    pos = 50;
+    jump = TRUE;
+  }
+  Item * bkmrk = create_bookmark(gtk_entry_get_text(GTK_ENTRY(entry)), pos);
   gtk_widget_destroy(dialog);
+  if(jump) {
+    scroll_to_item(bkmrk);
+  }
 }
 
 void
@@ -4125,4 +4143,11 @@ on_bookmark_tree_key_press_event    (GtkWidget       *widget,
 {
   // Prevent the key press event from propagating
   return TRUE;
+}
+
+void
+on_buttonAddBookmark_clicked           (GtkToolButton   *toolbutton,
+                                        gpointer         user_data)
+{
+  on_add_bookmark_button_clicked(NULL, NULL);
 }
