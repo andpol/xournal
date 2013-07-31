@@ -922,6 +922,7 @@ void xoj_parser_text(GMarkupParseContext *context,
       *error = xoj_invalid();
       return;
     }
+    tmpItem->image = create_pixbuf("bookmark.png");
   }
 }
 
