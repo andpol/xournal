@@ -3542,6 +3542,7 @@ and other contributors
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <signal name="cursor-changed" handler="on_bookmark_tree_cursor_changed" swapped="no"/>
+                                    <signal name="key-press-event" handler="on_bookmark_tree_key_press_event" swapped="no"/>
                                     <child>
                                       <object class="GtkTreeViewColumn" id="bookmark_column">
                                         <property name="title" translatable="yes">Name</property>
@@ -3552,6 +3553,7 @@ and other contributors
                                         <child>
                                           <object class="GtkCellRendererText" id="bookmark_name_cellrenderer">
                                             <property name="editable">True</property>
+                                            <signal name="edited" handler="on_bookmark_name_cellrenderer_edited" swapped="no"/>
                                           </object>
                                           <attributes>
                                             <attribute name="text">0</attribute>

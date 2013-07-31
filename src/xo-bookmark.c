@@ -195,4 +195,3 @@ gboolean get_bookmark_list_store_entry(GtkListStore * list_store, Item * bookmar
 
   return FALSE;
 }
-

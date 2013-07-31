@@ -734,9 +734,21 @@ on_add_bookmark_button_clicked         (GtkButton       *button,
                                         gpointer         userdata);
 
 G_MODULE_EXPORT void
-on_remove_bookmark_button_clicked         (GtkButton       *button,
+on_remove_bookmark_button_clicked      (GtkButton       *button,
                                         gpointer         userdata);
 
 G_MODULE_EXPORT void
-on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
+on_bookmark_tree_cursor_changed        (GtkTreeView     *tree,
                                         gpointer        userdata);
+
+G_MODULE_EXPORT void
+on_bookmark_name_cellrenderer_edited   (GtkCellRendererText  *text,
+                                        gchar                *path,
+                                        gchar                *new_text,
+                                        gpointer             userdata);
+
+G_MODULE_EXPORT gboolean
+on_bookmark_tree_key_press_event       (GtkWidget       *widget,
+                                        GdkEvent        *event,
+                                        gpointer        userdata);
+

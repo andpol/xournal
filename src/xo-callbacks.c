@@ -4102,3 +4102,27 @@ on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
   // Scroll to the location on the page
   scroll_to_item(bookmark);
 }
+
+void
+on_bookmark_name_cellrenderer_edited   (GtkCellRendererText  *text,
+                                        gchar                *path,
+                                        gchar                *new_text,
+                                        gpointer             userdata)
+{
+  GtkTreeIter iter;
+  if(!gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(bookmark_liststore), &iter, path)) {
+    g_error("on_bookmark_name_cellrenderer_edited() could not get a valid iterator from the bookmark liststore");
+  } else {
+    // Set the new title
+    gtk_list_store_set(bookmark_liststore, &iter, BOOKMARK_COL_TITLE, new_text, -1);
+  }
+}
+
+gboolean
+on_bookmark_tree_key_press_event    (GtkWidget       *widget,
+                                        GdkEvent        *event,
+                                        gpointer        userdata)
+{
+  // Prevent the key press event from propagating
+  return TRUE;
+}
