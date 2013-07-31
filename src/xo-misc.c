@@ -24,6 +24,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "xournal.h"
+#include "xo-bookmark.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-file.h"
@@ -1873,12 +1874,22 @@ void move_journal_items_by(GList *itemlist, double dx, double dy,
         for (pt = item->path->coords, i = 0; i < item->path->num_points; i++, pt += 2) {
           pt[1] += dy;
         }
+
+        {
+        //XXX: Hacky trigger a re-sorting of the bookmark tree in the sidebar
+          gint sort_col;
+          GtkSortType order;
+          gtk_tree_sortable_get_sort_column_id(GTK_TREE_SORTABLE(bookmark_liststore), &sort_col, &order);
+          gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(bookmark_liststore), GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID, order);
+          gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(bookmark_liststore), sort_col, order);
+        }
+
         break;
       default:
         g_warning("Cannot move journal item, unrecognized item type: %d", item->type);
         continue;
     }
-    
+
     if (l1 != l2) {
       // find out where to insert
       if (depths != NULL) {

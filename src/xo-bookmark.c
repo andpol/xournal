@@ -19,6 +19,21 @@
 
 #include "xo-bookmark.h"
 
+// Sort page num column by page num then by page position
+gint bookmark_liststore_compare_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data) {
+    gint page_num1, page_num2;
+    Item *bookmark1, *bookmark2;
+    gtk_tree_model_get(model, a, BOOKMARK_COL_PAGENUM, &page_num1, BOOKMARK_COL_ITEM, &bookmark1, -1);
+    gtk_tree_model_get(model, b, BOOKMARK_COL_PAGENUM, &page_num2, BOOKMARK_COL_ITEM, &bookmark2, -1);
+
+    if (page_num1 == page_num2) {
+      // Order by vertical order on page
+      return bookmark1->bbox.top - bookmark2->bbox.top;
+    } else {
+      // Order by page
+      return page_num1 - page_num2;
+    }
+}
 GtkListStore * create_new_bookmark_liststore() {
   // NOTE: the order of each of the column params MUST match the enum definition
   GtkListStore * store = gtk_list_store_new(BOOKMARK_COL_COUNT,
@@ -27,7 +42,8 @@ GtkListStore * create_new_bookmark_liststore() {
       G_TYPE_POINTER,
       G_TYPE_POINTER);
 
-  // Sort by page num by default
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(store), BOOKMARK_COL_PAGENUM, bookmark_liststore_compare_func, NULL, NULL);
+  // Sort by page num column by default
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), BOOKMARK_COL_PAGENUM, GTK_SORT_ASCENDING);
 
   return store;

@@ -26,11 +26,11 @@
 #include <libart_lgpl/art_svp_vpath.h>
 
 #include "xournal.h"
+#include "xo-bookmark.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-paint.h"
 #include "xo-selection.h"
-#include "xo-bookmark.h"
 
 /************ selection tools ***********/
 
