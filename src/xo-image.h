@@ -17,3 +17,8 @@ GdkPixbuf *pixbuf_from_buffer(const gchar *buf, gsize buflen);
 void create_image_from_pixbuf(GdkPixbuf *pixbuf, double *pt);
 void insert_image(GdkEvent *event);
 void rescale_images(void);
+
+/* Use this function to set the directory containing installed pixmaps. */
+void        add_pixmap_directory       (const gchar     *directory);
+/* This is used to create the pixbufs used in the interface. */
+GdkPixbuf*  create_pixbuf              (const gchar     *filename);

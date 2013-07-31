@@ -922,18 +922,6 @@ void xoj_parser_text(GMarkupParseContext *context,
       *error = xoj_invalid();
       return;
     }
-
-    {
-      // TEMPORARY! Allocate gnome_canvas_points for the graphic
-      // TODO: replace/remove this terrible code
-      tmpItem->path = gnome_canvas_points_new(2);
-      gdouble pts_array[] = {
-        tmpPage->width - 100, tmpItem->bbox.top + 5.0,
-        tmpPage->width      , tmpItem->bbox.top + 5.0,
-      };
-      memcpy(tmpItem->path->coords, pts_array, sizeof(pts_array));
-    }
-
   }
 }
 

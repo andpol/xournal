@@ -70,12 +70,12 @@ GnomeCanvasItem * create_bookmark_canvas_item(Item * bookmark, GnomeCanvasGroup 
   }
 
   return gnome_canvas_item_new(group,
-      gnome_canvas_line_get_type(),
-      "points", bookmark->path,
-      "width-units", 10.0,
-      "fill-color-rgba", 0x000000FF,
-      "cap-style", GDK_CAP_ROUND,
-      "join-style", GDK_JOIN_ROUND,
+      gnome_canvas_pixbuf_get_type(),
+      "pixbuf", bookmark->image,
+      "x", bookmark->bbox.left, "y", bookmark->bbox.top,
+      "width", bookmark->bbox.right - bookmark->bbox.left,
+      "height", bookmark->bbox.bottom - bookmark->bbox.top,
+      "width-set", TRUE, "height-set", TRUE,
       NULL);
 }
 
@@ -85,23 +85,23 @@ Item * create_bookmark(const gchar* title, double page_pos) {
 
   bmrk->type = ITEM_BOOKMARK;
 
-  bmrk->bbox.left =   page->width - 100;
+  GError *error = NULL;
+  bmrk->image = create_pixbuf("bookmark.png");
+  if (bmrk->image == NULL) {
+    g_error("%s", error->message);
+  }
+
+  int height = gdk_pixbuf_get_height(bmrk->image);
+  int width = gdk_pixbuf_get_width(bmrk->image);
+  bmrk->bbox.left =   page->width - width;
   bmrk->bbox.right =  page->width;
-  bmrk->bbox.top =    page_pos - 5.0; // 5.0 = half of line width
-  bmrk->bbox.bottom = page_pos + 5.0;
+  bmrk->bbox.top =    page_pos - height / 2;
+  bmrk->bbox.bottom = page_pos + height / 2;
 
-  bmrk->path = gnome_canvas_points_new(2);
-  gdouble pts_array[] = {
-    page->width - 100, page_pos,
-    page->width      , page_pos,
-  };
-  memcpy(bmrk->path->coords, pts_array, sizeof(pts_array));
-
+  // The canvas item (drawing of the pixbuf image)
   bmrk->canvas_item = create_bookmark_canvas_item(bmrk, ui.cur_layer->group);
-
   // Add the bookmark to the liststore for displaying in the sidebar tree
   add_bookmark_liststore_entry(bookmark_liststore, bmrk, title, g_list_index(journal.pages, page), ui.cur_layer);
-
   // Append the bookmark the the page's top layer
   ui.cur_layer->items = g_list_append(ui.cur_layer->items, bmrk);
 
@@ -153,7 +153,7 @@ void free_bookmark_resources(Item * bookmark) {
     g_error("free_bookmark_resources() passed a non-bookmark Item");
     return;
   }
-    gnome_canvas_points_free(bookmark->path);
+  g_object_unref(bookmark->image);
 }
 
 /*

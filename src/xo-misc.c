@@ -1943,10 +1943,6 @@ void move_journal_items_by(GList *itemlist, double dx, double dy,
         // Can only move up/down
         item->bbox.top += dy;
         item->bbox.bottom += dy;
-        for (pt = item->path->coords, i = 0; i < item->path->num_points; i++, pt += 2) {
-          pt[1] += dy;
-        }
-
         {
         //XXX: Hacky trigger a re-sorting of the bookmark tree in the sidebar
           gint sort_col;

@@ -348,16 +348,19 @@ main (int argc, char *argv[])
   gtk_set_locale ();
   gtk_init (&argc, &argv);
 
+  add_pixmap_directory("./pixmaps/");
+  add_pixmap_directory(PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps/");
+
   builder = gtk_builder_new();
   GError *err = NULL;
   // Search for the glade file in the CWD, then in the installed data directory
   if(!gtk_builder_add_from_file(builder, "xournal.glade", &err)) {
     g_debug("Not opening from Glade file from CWD: %s", err->message);
     err = NULL;
-	if(!gtk_builder_add_from_file(builder, PACKAGE_DATA_DIR "/" PACKAGE "/xournal.glade", &err)) {
+    if(!gtk_builder_add_from_file(builder, PACKAGE_DATA_DIR "/" PACKAGE "/xournal.glade", &err)) {
       fprintf(stderr, "ERROR: %s\n", err->message);
       return 1;
-	}
+    }
   }
   winMain = (GtkWidget *)gtk_builder_get_object (builder, "winMain");
   gtk_builder_connect_signals (builder, NULL);
