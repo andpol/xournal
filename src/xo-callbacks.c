@@ -3979,6 +3979,10 @@ on_index_tree_cursor_changed           (GtkTreeView     *tree,
   gtk_widget_destroy(dialog);
 }
 
+
+void bookmark_dialog_enter_pressed(GtkButton *button, GtkDialog * dialog) {
+  gtk_dialog_response(dialog, GTK_RESPONSE_OK);
+}
 void
 on_add_bookmark_button_clicked         (GtkButton       *button,
                                         gpointer         userdata)
@@ -4002,18 +4006,25 @@ on_add_bookmark_button_clicked         (GtkButton       *button,
   gtk_container_add(GTK_CONTAINER(content_area), label);
 
   entry = gtk_entry_new();
+  g_signal_connect (entry, "activate", G_CALLBACK(bookmark_dialog_enter_pressed), dialog);
   gtk_container_add(GTK_CONTAINER(content_area), entry);
+
+  // Pre-populate the entry with a default name
+  gchar buff[10];
+  g_snprintf(buff, 10, "Page %d", ui.pageno + 1);
+  gtk_entry_set_text(GTK_ENTRY(entry), buff);
+
 
   gtk_widget_show_all(dialog);
 
   // Get non-emtpy text input from the user
-  while(!gtk_entry_get_text_length(GTK_ENTRY(entry))) {
+  do {
     if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_OK) {
       // User canceled
       gtk_widget_destroy(dialog);
       return;
     }
-  }
+  } while(!gtk_entry_get_text_length(GTK_ENTRY(entry)));
 
   // Create the bookmark using the user-entered text for a title
   // TODO: find top of currently displayd page + 50
