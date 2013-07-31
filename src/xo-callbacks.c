@@ -3979,10 +3979,6 @@ on_index_tree_cursor_changed           (GtkTreeView     *tree,
   gtk_widget_destroy(dialog);
 }
 
-
-void bookmark_dialog_enter_pressed(GtkButton *button, GtkDialog * dialog) {
-  gtk_dialog_response(dialog, GTK_RESPONSE_OK);
-}
 void
 on_add_bookmark_button_clicked         (GtkButton       *button,
                                         gpointer         userdata)
@@ -4006,7 +4002,8 @@ on_add_bookmark_button_clicked         (GtkButton       *button,
   gtk_container_add(GTK_CONTAINER(content_area), label);
 
   entry = gtk_entry_new();
-  g_signal_connect (entry, "activate", G_CALLBACK(bookmark_dialog_enter_pressed), dialog);
+  gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
   gtk_container_add(GTK_CONTAINER(content_area), entry);
 
   // Pre-populate the entry with a default name
