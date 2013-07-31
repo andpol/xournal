@@ -163,7 +163,7 @@ void update_search_string(const gchar *text) {
 void update_search_enabled() {
 	gboolean enabled = TRUE;
 
-	if (search_data.search_string == NULL) {
+	if (search_data.search_string == NULL ) {
 		enabled = FALSE;
 	}
 	if (!search_data.search_type) {
@@ -360,40 +360,11 @@ void find_next(gboolean backwards) {
 
 gboolean match_comes_first(gboolean backwards, double x, double y, int pg1, double x1, double y1,
 		int pg2, double x2, double y2) {
-	if (!backwards) {
-		if (pg1 < ui.pageno) {
-			pg1 += journal.npages;
-		}
-		if (pg2 < ui.pageno) {
-			pg2 += journal.npages;
-		}
-
-		if (pg1 == pg2 && pg1 == ui.pageno) {
-			if (y1 < y || (y1 == y && x1 < x)) {
-				pg1 += journal.npages;
-			}
-			if (y2 < y || (y2 == y && x2 < x)) {
-				pg2 += journal.npages;
-			}
-		}
-	} else {
-		if (pg1 > ui.pageno) {
-			pg1 -= journal.npages;
-		}
-		if (pg2 > ui.pageno) {
-			pg2 -= journal.npages;
-		}
-
-		if (pg1 == ui.pageno) {
-			if (y1 > y || (y1 == y && x1 > x)) {
-				pg1 -= journal.npages;
-			}
-		}
-		if (pg2 == ui.pageno) {
-			if (y2 > y || (y2 == y && x2 > x)) {
-				pg2 -= journal.npages;
-			}
-		}
+	if (!is_farther(backwards, ui.pageno, x, y, pg1, x1, y1)) {
+		pg1 += backwards ? -journal.npages : journal.npages;
+	}
+	if (!is_farther(backwards, ui.pageno, x, y, pg2, x2, y2)) {
+		pg2 += backwards ? -journal.npages : journal.npages;
 	}
 
 	return is_farther(backwards, pg1, x1, y1, pg2, x2, y2);
@@ -440,11 +411,12 @@ struct TextMatch * find_next_text(gboolean backwards, int pageno, double x, doub
 	}
 
 // Check for a match inside the current item, after the current selection or cursor position
-	if (ui.cur_item_type == ITEM_TEXT) {
+	if (ui.cur_item != NULL && ui.cur_item_type == ITEM_TEXT) {
 		cursor = get_cursor_offset(backwards);
 		end_text();
 
-		if (cursor >= 0) {
+		// Need to do null check again because empty text items are just destroyed after end_text()
+		if (ui.cur_item != NULL && cursor >= 0) {
 			match = create_text_match(backwards, ui.cur_item, cursor, 0);
 			if (match != NULL ) {
 				return match;
@@ -707,31 +679,32 @@ gboolean is_farther(gboolean backwards, int pageno, double x, double y, int my_p
 		double my_y) {
 	gboolean result;
 
-	if (pageno == my_pageno && x == my_x && y == my_y) {
-		return FALSE;
+	if (my_pageno > pageno) {
+		result = TRUE;
+	} else if (my_pageno < pageno) {
+		result = FALSE;
 	} else {
-		if (my_pageno > pageno) {
+		// Same page
+		if (my_y > y) {
 			result = TRUE;
-		} else if (my_pageno < pageno) {
+		} else if (my_y < y) {
 			result = FALSE;
 		} else {
-			// Same page
-			if (my_y > y) {
+			// Same height
+			if (my_x > x) {
 				result = TRUE;
-			} else if (my_y < y) {
+			} else if (my_x < x) {
 				result = FALSE;
 			} else {
-				// Same height
-				if (my_x > x) {
-					result = TRUE;
-				} else {
-					result = FALSE;
-				}
+				result = backwards;
 			}
 		}
-
-		return backwards ? !result : result;
 	}
+
+	if (backwards) {
+		result = !result;
+	}
+	return result;
 }
 
 // Resets the list of matches and clears highlighting.
@@ -756,9 +729,9 @@ void show_find_dialog() {
 	find_text = (GtkEntry*) GTK_WIDGET(GET_COMPONENT("findText"));
 	gtk_entry_set_text(find_text, search_data.search_string == NULL ? "" : search_data.search_string);
 
-// Set the case sensitive checkbox
-	case_sensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
-	gtk_toggle_button_set_active(&(case_sensitive->toggle_button), search_data.search_case_sensitive);
+// Set the case sensitive checkbox - doesn't exist right now
+//	case_sensitive = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCaseCheckbox"));
+//	gtk_toggle_button_set_active(&(case_sensitive->toggle_button), search_data.search_case_sensitive);
 
 	// Set the search type checkboxes
 	current_layer = (GtkCheckButton*) GTK_WIDGET(GET_COMPONENT("searchCurrentLayerCheckbox"));
@@ -769,7 +742,7 @@ void show_find_dialog() {
 		gtk_toggle_button_set_active(&background_pdf->toggle_button, TRUE);
 	}
 
-// Restore focus to the text field since we're just reusing the same dialog instance
+	// Restore focus to the text field since we're just reusing the same dialog instance
 	gtk_widget_grab_focus(GTK_WIDGET(find_text) );
 
 	find_dialog = GTK_WIDGET(GET_COMPONENT("findDialog"));
@@ -790,6 +763,8 @@ void hide_find_dialog() {
 	gtk_window_get_position(GTK_WINDOW(find_dialog), &search_data.find_dialog_x,
 			&search_data.find_dialog_y);
 	gtk_widget_hide(find_dialog);
+
+	clear_pdf_matches();
 }
 
 // Sorts items from top to bottom (and left to right) based on their bounding boxes.

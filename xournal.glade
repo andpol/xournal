@@ -166,7 +166,6 @@ and other contributors
       <object class="GtkVBox" id="dialog-vbox5">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="spacing">2</property>
         <child>
           <object class="GtkHBox" id="hbox5">
             <property name="visible">True</property>
@@ -205,7 +204,8 @@ and other contributors
           </object>
           <packing>
             <property name="expand">True</property>
-            <property name="fill">False</property>
+            <property name="fill">True</property>
+            <property name="padding">3</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -213,29 +213,15 @@ and other contributors
           <object class="GtkHBox" id="hbox6">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="spacing">20</property>
+            <property name="homogeneous">True</property>
             <child>
-              <object class="GtkVBox" id="vbox2">
+              <object class="GtkCheckButton" id="searchCurrentLayerCheckbox">
+                <property name="label" translatable="yes">Current Layer</property>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkCheckButton" id="searchCaseCheckbox">
-                    <property name="label" translatable="yes">Case Sensitive</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="on_searchCaseCheckbox_toggled" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="on_searchCurrentLayerCheckbox_toggled" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -244,39 +230,13 @@ and other contributors
               </packing>
             </child>
             <child>
-              <object class="GtkVBox" id="vbox1">
+              <object class="GtkCheckButton" id="searchBgPdfCheckbox">
+                <property name="label" translatable="yes">Background PDF</property>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkCheckButton" id="searchCurrentLayerCheckbox">
-                    <property name="label" translatable="yes">Current Layer</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="on_searchCurrentLayerCheckbox_toggled" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="searchBgPdfCheckbox">
-                    <property name="label" translatable="yes">Background PDF</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="on_searchBgPdfCheckbox_toggled" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="on_searchBgPdfCheckbox_toggled" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -342,10 +302,10 @@ and other contributors
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="pack_type">end</property>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
         </child>
       </object>

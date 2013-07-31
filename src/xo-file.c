@@ -299,6 +299,7 @@ gboolean close_journal(void)
   clear_undo_stack();
 
   reset_pdf_search();
+  hide_find_dialog();
 
   shutdown_bgpdf();
   delete_journal(&journal);
