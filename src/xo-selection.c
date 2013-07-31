@@ -26,6 +26,7 @@
 #include <libart_lgpl/art_svp_vpath.h>
 
 #include "xournal.h"
+#include "xo-bookmark.h"
 #include "xo-callbacks.h"
 #include "xo-misc.h"
 #include "xo-paint.h"
@@ -429,8 +430,16 @@ void continue_movesel(GdkEvent *event)
     gnome_canvas_item_reparent(ui.selection->canvas_item, ui.selection->move_layer->group);
     for (list = ui.selection->items; list!=NULL; list = list->next) {
       item = (struct Item *)list->data;
-      if (item->canvas_item!=NULL)
+      if (item->canvas_item!=NULL) {
         gnome_canvas_item_reparent(item->canvas_item, ui.selection->move_layer->group);
+      }
+      if (item->type == ITEM_BOOKMARK) {
+        // Update the list store entry's page number
+        GtkTreeIter bookmark_iter;
+        if (get_bookmark_list_store_entry(bookmark_liststore, item, &bookmark_iter)) {
+          gtk_list_store_set(bookmark_liststore, &bookmark_iter, 1, tmppageno + 1, -1);
+        }
+      }
     }
     // avoid a refresh bug
     gnome_canvas_item_move(GNOME_CANVAS_ITEM(ui.selection->move_layer->group), 0., 0.);
@@ -598,6 +607,11 @@ void selection_delete(void)
   undo->erasurelist = NULL;
   for (itemlist = ui.selection->items; itemlist!=NULL; itemlist = itemlist->next) {
     item = (struct Item *)itemlist->data;
+
+    if(item->type == ITEM_BOOKMARK) {
+      // Bookmarks must be deleted from the bookmarks sidebar
+      continue;
+    }
     if (item->canvas_item!=NULL)
       gtk_object_destroy(GTK_OBJECT(item->canvas_item));
     erasure = g_new(struct UndoErasureData, 1);
@@ -608,10 +622,6 @@ void selection_delete(void)
     ui.selection->layer->items = g_list_remove(ui.selection->layer->items, item);
     ui.selection->layer->nitems--;
     undo->erasurelist = g_list_prepend(undo->erasurelist, erasure);
-    if (item->type == ITEM_BOOKMARK) {
-      // TODO: remove bookmark from the liststore
-      fprintf(stderr, "DEBUG: bookmark deleted\n");
-    }
   }
   reset_selection();
 

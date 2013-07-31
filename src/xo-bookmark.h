@@ -18,9 +18,25 @@
 
 #include "xournal.h"
 
+// The collection of bookmarks for the entire Journal
+extern GtkListStore * bookmark_liststore;
+
+typedef enum {
+  BOOKMARK_COL_TITLE = 0,   // ghar *
+  BOOKMARK_COL_PAGENUM, // gint
+  BOOKMARK_COL_LAYER,   // gpointer to a Layer struct
+  BOOKMARK_COL_ITEM,    // gpointer to a Item struct
+  BOOKMARK_COL_COUNT
+} t_bookmark_column;
+
+GtkListStore * create_new_bookmark_liststore();
+void add_bookmark_liststore_entry(GtkListStore * list_store, Item * bookmark, const gchar * title, int page_num, Layer * layer);
 Item * create_bookmark(const gchar* title, double page_pos);
 GnomeCanvasItem * create_bookmark_canvas_item(Item * bookmark, GnomeCanvasGroup * group);
 void delete_selected_bookmark();
+void free_bookmark_resources(Item * bookmark);
+void clear_bookmarks(GtkListStore * list_store);
+gboolean get_bookmark_list_store_entry(GtkListStore * list_store, Item * bookmark, GtkTreeIter * outIter);
 
 
 #endif /* BOOKMARK_H */
