@@ -1396,6 +1396,7 @@ void do_switch_page(int pg, gboolean rescroll, gboolean refresh_all)
   ui.cur_page = g_list_nth_data(journal.pages, ui.pageno);
   ui.layerno = ui.cur_page->layerno;
   ui.cur_layer = (struct Layer *)(g_list_nth_data(ui.cur_page->layers, ui.layerno));
+
   update_page_stuff();
   if (ui.progressive_bg) rescale_bg_pixmaps();
 

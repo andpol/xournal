@@ -468,6 +468,7 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
   double tmp_x, tmp_y;
   gchar *tmpstr;
   GnomeCanvasGroup *group;
+  int index;
 
   end_text();
   if (undo == NULL) return; // nothing to undo!
@@ -613,6 +614,9 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
     undo->layer->group = NULL;
     undo->page->layers = g_list_remove(undo->page->layers, undo->layer);
     undo->page->nlayers--;
+    if (undo->page->layerno > undo->page->nlayers - 1) {
+      undo->page->layerno = undo->page->nlayers - 1;
+    }
     do_switch_page(ui.pageno, FALSE, FALSE); // don't stay with bad cur_layer info
   }
   else if (undo->type == ITEM_DELETE_LAYER) {
@@ -630,8 +634,14 @@ on_editUndo_activate                   (GtkMenuItem     *menuitem,
       (undo->val >= 1) ? GNOME_CANVAS_ITEM(((struct Layer *)
             g_list_nth_data(undo->page->layers, undo->val-1))->group) :
             undo->page->bg->canvas_item);
-    undo->page->layers = g_list_insert(undo->page->layers, undo->layer,
-                                     (undo->val >= 0) ? undo->val:0);
+
+    index = (undo->val >= 0) ? undo->val : 0;
+    undo->page->layers = g_list_insert(undo->page->layers, undo->layer, index);
+    if (index <= ui.cur_page->layerno) {
+     ui.cur_page->layerno++;
+    } else {
+      gnome_canvas_item_hide(GNOME_CANVAS_ITEM(undo->layer->group));
+    }
     undo->page->nlayers++;
 
     for (itemlist = undo->layer->items; itemlist!=NULL; itemlist = itemlist->next)
@@ -843,9 +853,16 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
       (redo->val >= 1) ? GNOME_CANVAS_ITEM(((struct Layer *)
             g_list_nth_data(redo->page->layers, redo->val-1))->group) :
             redo->page->bg->canvas_item);
-    redo->page->layers = g_list_insert(redo->page->layers, redo->layer, redo->val);
-    redo->page->nlayers++;
-    do_switch_page(ui.pageno, FALSE, FALSE);
+
+		redo->page->layers = g_list_insert(redo->page->layers, redo->layer, redo->val);
+		if (redo->val <= ui.cur_page->layerno) {
+			ui.cur_page->layerno++;
+		} else {
+			gnome_canvas_item_hide(GNOME_CANVAS_ITEM(redo->layer->group) );
+		}
+		redo->page->nlayers++;
+
+		do_switch_page(ui.pageno, FALSE, FALSE);
   }
   else if (redo->type == ITEM_DELETE_LAYER) {
     gtk_object_destroy(GTK_OBJECT(redo->layer->group));
@@ -860,7 +877,10 @@ on_editRedo_activate                   (GtkMenuItem     *menuitem,
       redo->page->layers = g_list_append(redo->page->layers, redo->layer2);
       redo->page->nlayers++;
     }
-    do_switch_page(ui.pageno, FALSE, FALSE);
+		if (redo->page->layerno > redo->page->nlayers - 1) {
+			redo->page->layerno = redo->page->nlayers - 1;
+		}
+		do_switch_page(ui.pageno, FALSE, FALSE);
   }
   else if (redo->type == ITEM_REPAINTSEL) {
     for (itemlist = redo->itemlist, list = redo->auxlist; itemlist!=NULL;
@@ -1340,7 +1360,7 @@ on_journalDeleteLayer_activate         (GtkMenuItem     *menuitem,
   if (ui.cur_page->nlayers>=2) {
     ui.cur_page->nlayers--;
     ui.layerno--;
-    ui.cur_page->layerno++;
+    ui.cur_page->layerno--;
     if (ui.layerno<0) ui.cur_layer = NULL;
     else ui.cur_layer = (struct Layer *)g_list_nth_data(ui.cur_page->layers, ui.layerno);
   }
