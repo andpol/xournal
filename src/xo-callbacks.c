@@ -2400,33 +2400,21 @@ on_canvas_button_press_event           (GtkWidget       *widget,
   struct Item *item;
   GdkEvent scroll_event;
 
-  GnomeCanvasPoints path = ui.cur_path;
-  //int type;
-  //struct Selection *sel;
-
-  //type = ui.cur_item_type;
-  //sel = ui.selection;
-
-  if(canvas == canvasList[0]) uiMain = ui;
-  else uiSplit = ui;
+  if(canvas == canvasList[0])
+  {
+     uiMain = ui;
+     journalList[0] = journal;
+  }
+  else
+  {
+     uiSplit = ui;
+     journalList[1] = journal;
+  }
 
   canvas = canvasList[0];
   journal = journalList[0];
   ui = uiMain;
-  ui.cur_path = path;
-  ui.cur_item_type = ITEM_NONE;
-  ui.selection = NULL;
-  /*
-  ui.cur_mapping = 0;
-  end_text();
-  reset_selection();
-  ui.toolno[ui.cur_mapping] = TOOL_HAND;
-  update_mapping_linkings(-1);
-  update_tool_buttons();
-  update_tool_menu();
-  update_color_menu();
-  update_cursor();
-  */
+  do_switch_page(ui.pageno, TRUE, TRUE);
   gtk_widget_grab_focus(GTK_WIDGET(canvas));
 
 #ifdef INPUT_DEBUG
@@ -2597,36 +2585,23 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
   struct Item *item;
   GdkEvent scroll_event;
 
-  GnomeCanvasPoints path = ui.cur_path;
-  //int type;
-  //struct Selection *sel;
-
-  //type = ui.cur_item_type;
-  //sel = ui.selection;
-
-  if(canvas == canvasList[1]) uiSplit = ui;
-  else uiMain = ui;
+  if(canvas == canvasList[1])
+  {
+     uiSplit = ui;
+     journalList[1] = journal;
+  }
+  else
+  {
+    uiMain = ui;
+    journalList[0] = journal;
+  }
 
   canvas = canvasList[1];
   journal = journalList[1];
   ui = uiSplit;
-  ui.cur_path = path;
-  ui.cur_item_type = ITEM_NONE;
-  ui.selection = NULL;
+  do_switch_page(ui.pageno, TRUE, TRUE);
 
-  /*
-  ui.cur_mapping = 0;
-  end_text();
-  reset_selection();
-  ui.toolno[ui.cur_mapping] = TOOL_HAND;
-  update_mapping_linkings(-1);
-  update_tool_buttons();
-  update_tool_menu();
-  update_color_menu();
-  update_cursor();
-  */
   gtk_widget_grab_focus(GTK_WIDGET(canvas));
-
 #ifdef INPUT_DEBUG
   printf("DEBUG: ButtonPress (%s) (x,y)=(%.2f,%.2f), button %d, modifier %x\n", 
     event->device->name, event->x, event->y, event->button, event->state);
@@ -2683,7 +2658,6 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
       // Xorg 7.3+ sent core event before XInput event: fix initial point 
     ui.is_corestroke = FALSE;
     ui.stroke_device = event->device;
-    printf("1\n");
     get_pointer_coords((GdkEvent *)event, ui.cur_path.coords);
   }
   if (ui.cur_item_type != ITEM_NONE) return FALSE; // we're already doing something
@@ -2706,12 +2680,9 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
     if (!mapping && (event->state & GDK_BUTTON3_MASK)) mapping = 2;
   }
   else mapping = event->button-1;
-  printf("2\n");
-  printf("PT: %d  %d\n",pt[0],pt[1]);
   // check whether we're in a page
   get_pointer_coords((GdkEvent *)event, pt);
   set_current_page(pt);
-  printf("FINISHED\n");
   // can't paint on the background...
 
   if (ui.cur_layer == NULL) {

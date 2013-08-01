@@ -56,27 +56,39 @@ void init_stuff (int argc, char *argv[])
   GList *dev_list;
   GdkDevice *device;
   GdkScreen *screen;
-  int i, j;
+  int i, j, k;
   struct Brush *b;
   gboolean can_xinput, success;
   gchar *tmppath, *tmpfn;
 
   // create some data structures needed to populate the preferences
-  ui.default_page.bg = g_new(struct Background, 1);
-
+  uiMain.default_page.bg = g_new(struct Background, 1);
+  uiSplit.default_page.bg = g_new(struct Background, 1);
   // initialize config file names
   tmppath = g_build_filename(g_get_home_dir(), CONFIG_DIR, NULL);
   mkdir(tmppath, 0700); // safer (MRU data may be confidential)
-  ui.mrufile = g_build_filename(tmppath, MRU_FILE, NULL);
-  ui.configfile = g_build_filename(tmppath, CONFIG_FILE, NULL);
+  uiMain.mrufile = g_build_filename(tmppath, MRU_FILE, NULL);
+  uiMain.configfile = g_build_filename(tmppath, CONFIG_FILE, NULL);
+  uiSplit.mrufile = g_build_filename(tmppath, MRU_FILE, NULL);
+  uiSplit.configfile = g_build_filename(tmppath, CONFIG_FILE, NULL);
   g_free(tmppath);
 
   // initialize preferences
+  ui = uiMain;
   init_config_default();
   load_config_from_file();
   ui.font_name = g_strdup(ui.default_font_name);
   ui.font_size = ui.default_font_size;
   ui.hiliter_alpha_mask = 0xffffff00 + (guint)(255*ui.hiliter_opacity);
+  uiMain = ui;
+
+  ui = uiSplit;
+  init_config_default();
+  load_config_from_file();
+  ui.font_name = g_strdup(ui.default_font_name);
+  ui.font_size = ui.default_font_size;
+  ui.hiliter_alpha_mask = 0xffffff00 + (guint)(255*ui.hiliter_opacity);
+  uiSplit = ui;
 
   // we need an empty canvas prior to creating the journal structures
   canvasMain = GNOME_CANVAS (gnome_canvas_new_aa ());
@@ -87,8 +99,10 @@ void init_stuff (int argc, char *argv[])
   canvasList[1] = canvasSplit;
 
   // initialize data
-  ui.default_page.bg->canvas_item = NULL;
-  ui.layerbox_length = 0;
+  uiMain.default_page.bg->canvas_item = NULL;
+  uiMain.layerbox_length = 0;
+  uiSplit.default_page.bg->canvas_item = NULL;
+  uiSplit.layerbox_length = 0;
 
   if (argc > 2 || (argc == 2 && argv[1][0] == '-')) {
     printf(_("Invalid command line parameters.\n"
@@ -98,57 +112,66 @@ void init_stuff (int argc, char *argv[])
 
   canvas = canvasSplit;
   journal = journalSplit;
+  ui = uiSplit;
 
-  undo = NULL; redo = NULL;
-  journal.pages = NULL;
-  bgpdf.status = STATUS_NOT_INIT;
+  for(k=0;k<2;k++)
+  {
+    undo = NULL; redo = NULL;
+    journal.pages = NULL;
+    bgpdf.status = STATUS_NOT_INIT;
 
-  new_journal();
-  journalList[1] = journalSplit;
+    new_journal();
+    journalList[0] = journalMain;
 
-  canvas = canvasMain;
-  journal = journalMain;
+    ui.cur_item_type = ITEM_NONE;
+    ui.cur_item = NULL;
+    ui.cur_path.coords = NULL;
+    ui.cur_path_storage_alloc = 0;
+    ui.cur_path.ref_count = 1;
+    ui.cur_widths = NULL;
+    ui.cur_widths_storage_alloc = 0;
 
-  undo = NULL; redo = NULL;
-  journal.pages = NULL;
-  bgpdf.status = STATUS_NOT_INIT;
+    ui.selection = NULL;
+    ui.cursor = NULL;
+    ui.pen_cursor_pix = ui.hiliter_cursor_pix = NULL;
 
-  new_journal();
-  journalList[0] = journalMain;
-
-  ui.cur_item_type = ITEM_NONE;
-  ui.cur_item = NULL;
-  ui.cur_path.coords = NULL;
-  ui.cur_path_storage_alloc = 0;
-  ui.cur_path.ref_count = 1;
-  ui.cur_widths = NULL;
-  ui.cur_widths_storage_alloc = 0;
-
-  ui.selection = NULL;
-  ui.cursor = NULL;
-  ui.pen_cursor_pix = ui.hiliter_cursor_pix = NULL;
-
-  ui.cur_brush = &(ui.brushes[0][ui.toolno[0]]);
-  for (j=0; j<=NUM_BUTTONS; j++)
-    for (i=0; i < NUM_STROKE_TOOLS; i++) {
-      b = &(ui.brushes[j][i]);
-      b->tool_type = i;
-      if (b->color_no>=0) {
-        b->color_rgba = predef_colors_rgba[b->color_no];
-        if (i == TOOL_HIGHLIGHTER) {
-          b->color_rgba &= ui.hiliter_alpha_mask;
+    ui.cur_brush = &(ui.brushes[0][ui.toolno[0]]);
+    for (j=0; j<=NUM_BUTTONS; j++)
+      for (i=0; i < NUM_STROKE_TOOLS; i++) {
+        b = &(ui.brushes[j][i]);
+        b->tool_type = i;
+        if (b->color_no>=0) {
+          b->color_rgba = predef_colors_rgba[b->color_no];
+          if (i == TOOL_HIGHLIGHTER) {
+            b->color_rgba &= ui.hiliter_alpha_mask;
+          }
         }
+        b->thickness = predef_thickness[i][b->thickness_no];
       }
-      b->thickness = predef_thickness[i][b->thickness_no];
-    }
-  for (i=0; i<NUM_STROKE_TOOLS; i++)
-    g_memmove(ui.default_brushes+i, &(ui.brushes[0][i]), sizeof(struct Brush));
+    for (i=0; i<NUM_STROKE_TOOLS; i++)
+      g_memmove(ui.default_brushes+i, &(ui.brushes[0][i]), sizeof(struct Brush));
 
-  ui.cur_mapping = 0;
-  ui.which_unswitch_button = 0;
+    ui.cur_mapping = 0;
+    ui.which_unswitch_button = 0;
   
-  reset_recognizer();
+    reset_recognizer();
 
+    if(k == 0)
+    {
+      uiSplit = ui;
+      journalList[1] = journal;
+      canvas = canvasMain;
+      journal = journalMain;
+      ui = uiMain;
+    }
+    else
+    {
+      uiMain = ui;
+      journalList[0] = journal;
+    }
+  }
+
+  ui = uiMain;
   // initialize various interface elements
   
   gtk_window_set_default_size(GTK_WINDOW (winMain), ui.window_default_width, ui.window_default_height);
@@ -276,9 +299,13 @@ void init_stuff (int argc, char *argv[])
   canvas = canvasMain;
 
   screen = gtk_widget_get_screen(winMain);
-  ui.screen_width = gdk_screen_get_width(screen);
-  ui.screen_height = gdk_screen_get_height(screen);
-  
+  uiMain.screen_width = gdk_screen_get_width(screen);
+  uiMain.screen_height = gdk_screen_get_height(screen);
+  uiSplit.screen_width = gdk_screen_get_width(screen);
+  uiSplit.screen_height = gdk_screen_get_height(screen);
+
+  ui = uiMain;
+
   can_xinput = FALSE;
   dev_list = gdk_devices_list();
   while (dev_list != NULL) {
