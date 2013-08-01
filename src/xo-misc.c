@@ -910,18 +910,12 @@ guint32 rgba_saturation(guint32 colorin, guint value)
   guint32 blue = ((colorin & 0x0000ff00) >> 8);
   guint32 alpha = (colorin & 0x000000ff);
 
-  
-  red+=(value-1);
-  blue+=(value-1);
-  green+=(value-1);
-  if(red > 255)
-    red = 255;  
-  if(green > 255)
-    green = 255;
-  if(blue > 255)
-    blue = 255;
+  red = (255-red)*value/255 + red;
+  green = (255-green)*value/255 + green;
+  blue = (255-blue)*value/255 + blue;
 
   guint output = (red << 24) +(green <<16) + (blue << 8) + alpha;
+
   return output;
 }
 

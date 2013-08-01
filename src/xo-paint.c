@@ -275,9 +275,9 @@ void continue_stroke(GdkEvent *event)
     int n, pieces;
     double *p;
     for (n=0, p=ui.cur_path.coords; n<ui.cur_path.num_points-1; n++, p+=2){} //Obtain most recent segment
-    guint length = floor(5*sqrt((p[2]-p[0])*(p[2]-p[0]) + ((p[3]-p[1])*(p[3]-p[1]))));
-    if (length > 64)
-      length = 64;
+    guint length = floor(20*sqrt((p[2]-p[0])*(p[2]-p[0]) + ((p[3]-p[1])*(p[3]-p[1]))));
+    if (length > 192)
+      length = 192;
     current_color = rgba_saturation(ui.cur_item->brush.color_rgba, length);
     ui.cur_colors[ui.cur_path.num_points-1] = current_color;
   }
