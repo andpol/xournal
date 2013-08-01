@@ -413,6 +413,8 @@ extern GtkBuilder *builder;
 extern struct Journal journal;
 extern Journal journalList[2];
 extern struct UIData ui;
+extern struct UIData uiMain;
+extern struct UIData uiSplit;
 extern struct BgPdf bgpdf;
 extern struct UndoItem *undo, *redo;
 

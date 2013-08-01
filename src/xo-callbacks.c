@@ -2400,8 +2400,33 @@ on_canvas_button_press_event           (GtkWidget       *widget,
   struct Item *item;
   GdkEvent scroll_event;
 
+  GnomeCanvasPoints path = ui.cur_path;
+  //int type;
+  //struct Selection *sel;
+
+  //type = ui.cur_item_type;
+  //sel = ui.selection;
+
+  if(canvas == canvasList[0]) uiMain = ui;
+  else uiSplit = ui;
+
   canvas = canvasList[0];
   journal = journalList[0];
+  ui = uiMain;
+  ui.cur_path = path;
+  ui.cur_item_type = ITEM_NONE;
+  ui.selection = NULL;
+  /*
+  ui.cur_mapping = 0;
+  end_text();
+  reset_selection();
+  ui.toolno[ui.cur_mapping] = TOOL_HAND;
+  update_mapping_linkings(-1);
+  update_tool_buttons();
+  update_tool_menu();
+  update_color_menu();
+  update_cursor();
+  */
   gtk_widget_grab_focus(GTK_WIDGET(canvas));
 
 #ifdef INPUT_DEBUG
@@ -2412,7 +2437,6 @@ on_canvas_button_press_event           (GtkWidget       *widget,
   // abort any page changes pending in the spin button, and take the focus
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(GET_COMPONENT("spinPageNo")), ui.pageno+1);
   reset_focus();
-    
   is_core = (event->device == gdk_device_get_core_pointer());
   if (!ui.use_xinput && !is_core) return FALSE;
   if (ui.use_xinput && is_core && ui.discard_corepointer) return FALSE;
@@ -2573,8 +2597,34 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
   struct Item *item;
   GdkEvent scroll_event;
 
+  GnomeCanvasPoints path = ui.cur_path;
+  //int type;
+  //struct Selection *sel;
+
+  //type = ui.cur_item_type;
+  //sel = ui.selection;
+
+  if(canvas == canvasList[1]) uiSplit = ui;
+  else uiMain = ui;
+
   canvas = canvasList[1];
   journal = journalList[1];
+  ui = uiSplit;
+  ui.cur_path = path;
+  ui.cur_item_type = ITEM_NONE;
+  ui.selection = NULL;
+
+  /*
+  ui.cur_mapping = 0;
+  end_text();
+  reset_selection();
+  ui.toolno[ui.cur_mapping] = TOOL_HAND;
+  update_mapping_linkings(-1);
+  update_tool_buttons();
+  update_tool_menu();
+  update_color_menu();
+  update_cursor();
+  */
   gtk_widget_grab_focus(GTK_WIDGET(canvas));
 
 #ifdef INPUT_DEBUG
@@ -2585,7 +2635,6 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
   // abort any page changes pending in the spin button, and take the focus
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(GET_COMPONENT("spinPageNo")), ui.pageno+1);
   reset_focus();
-    
   is_core = (event->device == gdk_device_get_core_pointer());
   if (!ui.use_xinput && !is_core) return FALSE;
   if (ui.use_xinput && is_core && ui.discard_corepointer) return FALSE;
@@ -2634,6 +2683,7 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
       // Xorg 7.3+ sent core event before XInput event: fix initial point 
     ui.is_corestroke = FALSE;
     ui.stroke_device = event->device;
+    printf("1\n");
     get_pointer_coords((GdkEvent *)event, ui.cur_path.coords);
   }
   if (ui.cur_item_type != ITEM_NONE) return FALSE; // we're already doing something
@@ -2656,11 +2706,12 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
     if (!mapping && (event->state & GDK_BUTTON3_MASK)) mapping = 2;
   }
   else mapping = event->button-1;
-
+  printf("2\n");
+  printf("PT: %d  %d\n",pt[0],pt[1]);
   // check whether we're in a page
   get_pointer_coords((GdkEvent *)event, pt);
   set_current_page(pt);
-  
+  printf("FINISHED\n");
   // can't paint on the background...
 
   if (ui.cur_layer == NULL) {
@@ -2702,6 +2753,7 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
   // process the event
   
   if (ui.toolno[mapping] == TOOL_HAND) {
+    printf("3\n");
     ui.cur_item_type = ITEM_HAND;
     get_pointer_coords((GdkEvent *)event, ui.hand_refpt);
     ui.hand_refpt[0] += ui.cur_page->hoffset;
@@ -2920,30 +2972,27 @@ on_canvas_motion_notify_event          (GtkWidget       *widget,
   double pt[2];
   GdkModifierType mask;
 
+
   /* we don't care about this event unless some operation is in progress;
      or if there's a selection (then we might want to change the mouse
      cursor to indicate the possibility of resizing) */  
   if (ui.cur_item_type == ITEM_NONE && ui.selection==NULL) return FALSE;
   if (ui.cur_item_type == ITEM_TEXT || ui.cur_item_type == ITEM_IMAGE) return FALSE;
-
   is_core = (event->device == gdk_device_get_core_pointer());
   if (!ui.use_xinput && !is_core) return FALSE;
   if (!is_core) fix_xinput_coords((GdkEvent *)event);
   if (!finite_sized(event->x) || !finite_sized(event->y)) return FALSE; // Xorg 7.3 bug
-
   if (ui.selection!=NULL && ui.cur_item_type == ITEM_NONE) {
     get_pointer_coords((GdkEvent *)event, pt);
     update_cursor_for_resize(pt);
     return FALSE;
   }
-
   if (ui.use_xinput && is_core && !ui.is_corestroke) return FALSE;
   if (!is_core && ui.is_corestroke) {
     ui.is_corestroke = FALSE;
     ui.stroke_device = event->device;
   }
   if (ui.ignore_other_devices && ui.stroke_device!=event->device) return FALSE;
-
 #ifdef INPUT_DEBUG
   printf("DEBUG: MotionNotify (%s) (x,y)=(%.2f,%.2f), modifier %x\n", 
     event->device->name, event->x, event->y, event->state);
@@ -2954,8 +3003,8 @@ on_canvas_motion_notify_event          (GtkWidget       *widget,
     gdk_device_get_state(ui.stroke_device, event->window, NULL, &mask);
     looks_wrong = !(mask & (1<<(7+ui.which_mouse_button)));
   }
-  
   if (looks_wrong) { /* mouse button shouldn't be up... give up */
+    printf("LOOKS WRONG?\n");
     if (ui.cur_item_type == ITEM_STROKE) {
       finalize_stroke();
       if (ui.cur_brush->recognizer) recognize_patterns();
@@ -2981,7 +3030,7 @@ on_canvas_motion_notify_event          (GtkWidget       *widget,
     switch_mapping(0);
     return FALSE;
   }
-  
+
   if (ui.cur_item_type == ITEM_STROKE) {
     continue_stroke((GdkEvent *)event);
   }
@@ -3008,7 +3057,7 @@ on_canvas_motion_notify_event          (GtkWidget       *widget,
   else if (ui.cur_item_type == ITEM_HAND) {
     do_hand((GdkEvent *)event);
   }
-  
+
   return FALSE;
 }
 

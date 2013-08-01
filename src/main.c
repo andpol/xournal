@@ -43,6 +43,8 @@ struct Journal journalSplit;
 Journal journalList[2];
 struct BgPdf bgpdf;  // the PDF loader stuff
 struct UIData ui;   // the user interface data
+struct UIData uiMain;
+struct UIData uiSplit;
 struct UndoItem *undo, *redo; // the undo and redo stacks
 
 double DEFAULT_ZOOM;
