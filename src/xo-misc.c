@@ -123,10 +123,15 @@ void set_page_border() {
 		gtk_object_destroy(GTK_OBJECT(ui.page_border) );
 	}
 
-	ui.page_border = gnome_canvas_item_new(gnome_canvas_root(canvas), gnome_canvas_rect_get_type(), "width-pixels", 2,
-			"outline-color-rgba", PAGE_BORDER_COLOUR, "x1", 0., "x2", ui.cur_page->width, "y1", ui.cur_page->voffset + 1, "y2",
+	ui.page_border = gnome_canvas_item_new(gnome_canvas_root(canvas), gnome_canvas_group_get_type(), NULL);
+	gnome_canvas_item_new(GNOME_CANVAS_GROUP(ui.page_border), gnome_canvas_rect_get_type(),
+			"width-pixels", 2, "outline-color-rgba", PAGE_BORDER_COLOUR, "x1", 0., "x2",
+			ui.cur_page->width, "y1", ui.cur_page->voffset + 1, "y2",
 			ui.cur_page->voffset + ui.cur_page->height - 1, NULL );
-	gnome_canvas_set_pixels_per_unit(canvas, ui.zoom);
+	gnome_canvas_item_new(GNOME_CANVAS_GROUP(ui.page_border),  gnome_canvas_rect_get_type(),
+			"width-pixels", 1, "outline-color-rgba", PAGE_BORDER_COLOUR, "x1", 0., "x2",
+			ui.cur_page->width, "y1", ui.cur_page->voffset + ui.cur_page->height, "y2",
+			ui.cur_page->voffset + ui.cur_page->height - 1, NULL );
 }
 
 // change the current page if necessary for pointer at pt
