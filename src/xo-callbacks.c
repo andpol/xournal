@@ -2415,6 +2415,7 @@ on_canvas_button_press_event           (GtkWidget       *widget,
   journal = journalList[0];
   ui = uiMain;
   do_switch_page(ui.pageno, TRUE, TRUE);
+  update_toolbar_and_menu();
   gtk_widget_grab_focus(GTK_WIDGET(canvas));
 
 #ifdef INPUT_DEBUG
@@ -2600,7 +2601,7 @@ on_canvas_button_press_event2          (GtkWidget       *widget,
   journal = journalList[1];
   ui = uiSplit;
   do_switch_page(ui.pageno, TRUE, TRUE);
-
+  update_toolbar_and_menu();
   gtk_widget_grab_focus(GTK_WIDGET(canvas));
 #ifdef INPUT_DEBUG
   printf("DEBUG: ButtonPress (%s) (x,y)=(%.2f,%.2f), button %d, modifier %x\n", 
