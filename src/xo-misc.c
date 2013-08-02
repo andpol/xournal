@@ -2656,6 +2656,8 @@ gboolean update_thumbnails_task(gpointer data) {
 		return TRUE;
 	}
 
+	set_cursor_busy(TRUE);
+
 	// Figure out where we're going to put the exported PDF to grab thumbnails from
 	tmp_folder = g_get_tmp_dir();
 	tmp_pdf_filename = "xournal-thumbnails-tmp.pdf";
@@ -2703,6 +2705,8 @@ gboolean update_thumbnails_task(gpointer data) {
 	gtk_label_set_text(updating_message, NULL);
 
 	update_thumbnails_request = FALSE;
+
+	set_cursor_busy(FALSE);
 
 	return TRUE;
 }
