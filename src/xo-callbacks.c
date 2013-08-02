@@ -4139,7 +4139,7 @@ on_thumbnail_clicked                   (GtkEventBox     *event_box,
 		clear_thumbnail_highlighting();
 		highlight_thumbnail(GTK_WIDGET(event_box) );
 
-		do_switch_page(page_index, TRUE, TRUE);
+		do_switch_page(page_index, TRUE, FALSE);
 	}
 }
 
