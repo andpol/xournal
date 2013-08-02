@@ -4175,6 +4175,10 @@ on_bookmark_tree_cursor_changed           (GtkTreeView     *tree,
   Item * bookmark;
   gtk_tree_model_get(tree_model, &tree_iter, BOOKMARK_COL_PAGENUM, &page_num, BOOKMARK_COL_ITEM, &bookmark, -1);
 
+  if(page_num > journal.npages) {
+    // NOP - bookmark past last page
+    return;
+  }
   // Jump to the page
   do_switch_page(page_num - 1, TRUE, TRUE);
   // Scroll to the location on the page
