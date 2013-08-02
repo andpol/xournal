@@ -80,16 +80,18 @@ GnomeCanvasItem * create_bookmark_canvas_item(Item * bookmark, GnomeCanvasGroup 
 }
 
 Item * create_bookmark(const gchar* title, double page_pos) {
+  static GdkPixbuf * bookmark_pixbuf = NULL;
+  if(bookmark_pixbuf == NULL) {
+    bookmark_pixbuf = create_pixbuf("bookmark.png");
+  }
+
   Page * page = ui.cur_page;
   Item * bmrk = g_new(struct Item, 1);
 
   bmrk->type = ITEM_BOOKMARK;
 
-  GError *error = NULL;
-  bmrk->image = create_pixbuf("bookmark.png");
-  if (bmrk->image == NULL) {
-    g_error("%s", error->message);
-  }
+
+  bmrk->image = bookmark_pixbuf;
 
   int height = gdk_pixbuf_get_height(bmrk->image);
   int width = gdk_pixbuf_get_width(bmrk->image);
