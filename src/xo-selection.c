@@ -633,12 +633,13 @@ void recolor_selection(int color_no, guint color_rgba)
     item->brush.color_no = color_no;
     item->brush.color_rgba = color_rgba | 0xff; // no alpha
     if (item->canvas_item!=NULL) {
-      if (!item->brush.variable_width)
+      if (!item->brush.variable_width && !item->brush.variable_color)
         gnome_canvas_item_set(item->canvas_item, 
            "fill-color-rgba", item->brush.color_rgba, NULL);
       else {
         group = (GnomeCanvasGroup *) item->canvas_item->parent;
         gtk_object_destroy(GTK_OBJECT(item->canvas_item));
+        item->brush.variable_color = FALSE;
         make_canvas_item_one(group, item);
       }
     }
@@ -669,7 +670,7 @@ void rethicken_selection(int val)
     item->brush.thickness_no = val;
     item->brush.thickness = predef_thickness[TOOL_PEN][val];
     if (item->canvas_item!=NULL) {
-      if (!item->brush.variable_width)
+      if (!item->brush.variable_width && !item->brush.variable_color)
         gnome_canvas_item_set(item->canvas_item, 
            "width-units", item->brush.thickness, NULL);
       else {
