@@ -495,18 +495,8 @@ void continue_resizesel(GdkEvent *event)
 void finalize_movesel(void)
 {
   GList *list, *link;
-  GList *auxlist = NULL;
-
-  int num_bookmarks_items = 0;
-  for (list = ui.selection->items; list!=NULL; list = list->next) {
-      Item * item = list->data;
-      if (item->type == ITEM_BOOKMARK) {
-        num_bookmarks_items++;
-      }
-  }
-
   
-  if (g_list_length(ui.selection->items) - num_bookmarks_items > 0) {
+  if (ui.selection->items != NULL) {
     prepare_new_undo();
     undo->type = ITEM_MOVESEL;
     undo->itemlist = g_list_copy(ui.selection->items);
@@ -517,25 +507,15 @@ void finalize_movesel(void)
     undo->auxlist = NULL;
     // build auxlist = pointers to Item's just before ours (for depths)
     for (list = ui.selection->items; list!=NULL; list = list->next) {
-      Item * item = list->data;
-      if (item->type == ITEM_BOOKMARK) {
-        // Bookmarks are excempt from undo/redo
-        undo->itemlist = g_list_remove(undo->itemlist, item);
-        continue;
-      }
       link = g_list_find(ui.selection->layer->items, list->data);
       if (link!=NULL) link = link->prev;
       undo->auxlist = g_list_append(undo->auxlist, ((link!=NULL) ? link->data : NULL));
     }
-    auxlist = undo->auxlist;
     ui.selection->layer = ui.selection->move_layer;
+    move_journal_items_by(undo->itemlist, undo->val_x, undo->val_y,
+                          undo->layer, undo->layer2, 
+                          (undo->layer == undo->layer2)?undo->auxlist:NULL);
   }
-  move_journal_items_by(ui.selection->items,
-      ui.selection->last_x - ui.selection->anchor_x,
-      ui.selection->last_y - ui.selection->anchor_y,
-      ui.selection->layer,
-      ui.selection->move_layer,
-      ui.selection->layer == ui.selection->move_layer ? auxlist : NULL);
 
   if (ui.selection->move_pageno!=ui.selection->orig_pageno) 
     do_switch_page(ui.selection->move_pageno, FALSE, FALSE);
