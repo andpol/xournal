@@ -1,0 +1,399 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+
+Name       : Breakeven 
+Description: A two-column, fixed-width design with dark color scheme.
+Version    : 1.0
+Released   : 20130509
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>CSC460 - Summer 2013 - Project 1</title>
+        <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600" rel="stylesheet" type="text/css" />
+        <link href='http://fonts.googleapis.com/css?family=Abel|Satisfy' rel='stylesheet' type='text/css'>
+        <link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+        
+        <link href="blackboard.css" media="screen" rel="stylesheet" type="text/css"/>
+    </head>
+    
+    <body>
+        <div id="wrapper">
+            <div id="header-wrapper">
+                <div id="header" class="container">
+                    <div id="logo">
+                        <h1><a href="index.html">CSC460 - Summer 2013</a></h1>
+                    </div>
+                    <div id="menu">
+                        <ul>
+                            <li><a href="index.html">Homepage</a></li>
+                            <li class="current_page_item"><a href="#">Project 1</a></li>
+                            <li><a href="project2.html">Project 2</a></li>
+                            <li><a href="project3.html">Project 3</a></li>
+                            <!--<li><a href="project4.html">Project 4</a></li>-->
+                            <!--<li><a href="project5.html">Project 5</a></li>-->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- end #header -->
+            <div id="page">
+                <div id="sidebar">
+                    <ul>
+                        <li>
+                        <h2>Table Of Contents</h2>
+                        <ul>
+                            <li><a href="#objective">1.0 Objective</a></li>
+                            <li><a href="#hardware">2.0 Hardware</a></li>
+                            <li><a href="#deployment">3.0 Deployment</a></li>
+                            <li><a href="#solution">4.0 Solution</a></li>
+                            <li><a href="#demo">5.0 Demonstration</a></li>
+                            <li><a href="#appendix">6.0 Appendix</a></li>
+                        </ul>
+                        </li>
+                    </ul>
+                </div>
+                <!-- end #sidebar -->
+                <div id="content">
+			<h1 class="title">Project 1 - Sentry Roomba</h1>
+			<div class="entry">
+				<h1 id="objective">1.0 Objective</h1>
+				<p>
+				The goal of project 1 is to create a sentry robot that will detect and follow intruders within a restricted area. Accomplishing this requires becoming familiar with the Seeduino Mega board and development toolchain. The complete sentry robot will make use of a variety of devices and sensors.
+				</p>
+			</div>
+			<div class="entry">
+				<h1 id="hardware">2.0 Hardware</h1>
+				<p>There are four main hardware parts used in the sentry robot: the board, a PIR sensor, a sonar, and an iRobot Roomba.</p>
+				<h2>2.1 Board</h2>
+				<p>
+				The board used to program the sentry robot is the Seeeduino Mega, based off of the Arduino Mega. This board sports the following major features:
+				</p>
+				<ul>
+					<li>ATMEGA1280 chip @ 16Mhz</li>
+					<li>4 serial ports</li>
+					<li>70 digital I/O pins</li>
+					<li>5V or 3.3V operation</li>
+				</ul>
+				<img src="images/board_empty.jpg"/>
+				<p class="caption">Seeeduino Mega board</p>
+				<h2>2.2 Sonar</h2>
+				<p>
+				A sonar measures distances by emitting pulses of sound that reflect off nearby objects and recording the time for the pulses to return. The sonar used in this project is the LV-MaxSonar-EZ0. The MaxSonar is capable of ranging objects from 6 to 254 inches away with 1 inch resolution.
+				</p>
+				<img src="images/sonar.jpg" style="width: 150px"/>
+				<p class="caption">LV-MaxSonar-EZ0</p>
+				<p>
+				The MaxSonar has 7 pins, including Vcc (2.5V - 5.5V DC) and GND. The remaining 5 pins are described below. <a href="http://www.maxbotix.com/documents/MB1000_Datasheet.pdf">Datasheet available here.</a>
+				</p>
+				<table>
+					<th>MaxSonar Pin Out</th>
+					<th>Function</th>
+					<tr>
+						<td>TX</td>
+						<td>
+							BW high: single sonar pulse for chaining<br>
+							BW low: serial output in RS232 format
+						</td>
+					</tr>
+					<tr>
+						<td>RX</td>
+						<td>
+							Hold high for 20us: start ranging<br>
+							Hold high: continue ranging<br>
+							Hold low: stop ranging<br>
+						</td>
+					</tr>
+					<tr>
+						<td>AN</td>
+						<td>Analog voltage output (Vcc / 512 volts per inch of distance)</td>
+					</tr>
+					<tr>
+						<td>PW</td>
+						<td>Pulse width, scaled at 147us per inch of distance</td>
+					</tr>
+					<tr>
+						<td>BW</td>
+						<td>
+							Hold high: chaining<br>
+							Hold low: serial output on TX<br>
+						</td>
+					</tr>
+				</table>
+				<h2>2.3 PIR</h2>
+				<p>
+				A passive infrared (PIR) sensor detects movement by measuring changes in infrared radiation levels. The PIR sensor used is the Parallax PIR Sensor (#555-28027, revision B). This sensor uses a lens that focuses incoming IR radiation onto a pyroelectric material, which generates electricity when exposed to heat.
+				</p>
+				<p>
+				The PIR sensor can detect a person at about 30 feet in normal operation or 15 feet in reduced sensitivity mode. The sensor mode can be changed by repositioning a jumper on the front of the sensor. The sensor also has a red LED that lights up to show when it detects movement. Besides Vcc (3V - 6V DC) and GND, this sensor has one pin, called OUT. The sensor sets OUT high when it detects movement, and leaves it low otherwise. <a href="http://www.parallax.com/Portals/0/Downloads/docs/prod/sens/555-28027-PIRSensor-v2.2.pdf">Datasheet available here.</a>
+				</p>
+				<img src="images/pir.jpg" style="width: 150px"/>
+				<p class="caption">Parallax PIR Sensor (rev. B)</p>
+
+				<h2>2.4 Roomba</h2>
+				<p>
+				An iRobot Roomba is used as the mobile platform for the sentry robot. The Roomba is a small, circular robot, about 13.5 inches in diameter, used for automated cleaning. It has three wheels (two drive wheels on the sides and one center wheel for balance), a vacuum and brush, LEDs that indicate its current status, and a number of sensors that help the Roomba navigate as it cleans.
+				</p>
+				<p>
+				The board communicates with the Roomba through its serial command interface (SCI), which allows UART communication at TTL levels. The Roomba has a mini-DIN port, with pin assignment shown below.
+				</p>
+				<img src="images/roomba_minidin.png" style="width:500px" />
+				<p class="caption">Roomba Mini-Din Connector</p>
+				<p>
+				The other end of the mini-DIN cable is connected to the breadboard. The cable end, split into pins, is shown below.
+				</p>
+				<img src="images/roomba_pins.png" style="width:500px" />
+				<p class="caption">Labelled Roomba Pins</p>
+			</div>
+			<div class="entry">
+				<h1 id="deployment">3.0 Deployment</h1>
+				<p>
+				Development of the Sentry Roomba was done in a Linux environment with Eclipse and AVRDude.
+				</p>
+				<h2>3.1 AVR Toolchain Installation</h2>
+				<p>
+				First the AVR toolchain was installed. This includes:
+				</p>
+				<ul>
+					<li>gcc-avr</li>
+					<li>binutils-avr</li>
+					<li>avr-gdb</li>
+					<li>avr-libc</li>
+					<li>avrdude</li>
+				</ul>
+				<p>
+				These can be installed using your distribution's package manager. In Arch Linux, the following command installs the packages.
+				</p>
+				<pre><code data-language>pacman -S gcc-avr binutils-avr avr-gdb avr-libc avrdude</code></pre>
+
+				<h2>3.2 Connecting to the Device</h2>
+				<p>
+				To connect to the Seeeduino board via USB, a udev rule was created to grant device permissions and also to automatically create a constant-name symlink for the board.
+				</p>
+				<p>
+				To create a new udev rule for a usb device, we need to find it's attributes to be able to uniquely identify the device. After plugging in the Seeeduino, run the <code>lsusb -v</code> command outputs information about all the connected usb devices. The Seeeduino entry should look something similar to the following:<br>
+				</p>
+				<pre><code data-language>Bus 005 Device 004: ID 0403:6001 Future Technology Devices International,
+    Ltd FT232 USB-Serial (UART) IC</code></pre>
+				
+				<p>
+				Below the device title, make note of the <code>idVendor</code> and <code>idProduct</code> values. From this information we can create the following udev rule and append it to the <code>/etc/udev/rules.d/50-user-defined.rules</code> file (or similar).</p>
+				<pre><code data-language>SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", SYMLINK+="seeeduino", 
+    MODE="0666"</code></pre>
+				
+				<p>
+				This rule will create the /dev/seeeduino symlink whenever the Seeeduino board is plugged in and can be used to point AVRdude to the correct device.
+				</p>
+
+				<h2>3.3 Eclipse Integration</h2>
+				<p>
+				The firmware upload process is integrated into the Eclipse IDE (Juno) with the “AVR Eclipse Plugin”. This is installed by opening Eclipse, selecting Help -> Install New Software and using the following update site: <a href="http://avr-eclipse.sourceforge.net/updatesite">http://avr-eclipse.sourceforge.net/updatesite</a>
+				</p>
+				<p>
+				Once the plugin is installed, instructions from the <a href="http://avr-eclipse.sourceforge.net/user%20manual/home.html">plugin site documentation</a> were followed to create and setup a new Eclipse project.
+				</p>
+			</div>
+			<div class="entry">
+				<h1 id="solution">4.0 Solution</h1>
+				<p>
+				The final wiring configuration of the board is shown below. The specific components are described in more detail in the following sections.
+				</p>
+				<img src="images/board_labelled.png"/>
+				<p class="caption">Wired Board With Labels</p>
+
+				<h2>4.1 Sonar</h2>
+				<p>
+				Sonar pins were connected to the board as shown in the table.
+				<table>
+					<th>MaxSonar Pin Out</th>
+					<th>Board</th>
+					<tr>
+						<td>TX</td>
+						<td>(unused)</td>
+					</tr>
+					<tr>
+						<td>RX</td>
+						<td>Unconnected; held open for ranging</td>
+					</tr>
+					<tr>
+						<td>AN</td>
+						<td>(unused)</td>
+					</tr>
+					<tr>
+						<td>PW</td>
+						<td>PD4</td>
+					</tr>
+					<tr>
+						<td>BW</td>
+						<td>wired to Vcc to enable chaining</td>
+					</tr>
+				</table>
+				</p>
+				<p>
+				Rx is held open to enable ranging, so measurements are taken continuously. The init_sonar() function configures timer 1 for input capture. The corresponding interrupt saves the start time on rising edge and calculates the time difference on falling edge.
+				</p>
+				<p>
+				Translating the input capture timer value into a meaningful distance requires taking a variety of factors into account:
+				<ul>
+					<li>The CPU frequency of the board is 16 MHz</li>
+					<li>The speed of sound in air is 340.29 m/s</li>
+					<li>The time measured is actually the time for the sound to go out and come back.</li>
+				</ul>
+				</p>
+				<p>
+				Given the range of expected measurements (up to approximately the sonar's maximum range of 254 inches), a conservative timer prescaler of 64 was chosen to prevent timer overflows while maintaining accurate resolution. This yields the following equation to derive distance from the timer value:<br>
+				<pre><code data-language>timer_value * 64  * 34'029 cm/s / (16'000'000 ticks/s * 2) = distance
+timer_value * 0.068058 = distance</code></pre>
+				</p>
+				<h2>4.2 PIR</h2>
+				<p>
+				The PIR sensor's OUT pin was connected to PD2 on the board. An interrupt was configured to set a boolean flag whenever the PIR sensor's output went from high to low (no more movement) or low to high (movement detected).
+				</p>
+				<p>
+				Since the PIR sensor has a very large field of view, a tube of cardboard and electrical tape was created and affixed to the sensor. This restricts the sensor's field of view to only a few degrees on either side of straight ahead.
+				</p>
+				<h2>4.3 Roomba</h2>
+				<h3>4.3.1 Initialization</h3>
+				<p>
+				On initialization, the board wakes the Roomba by holding DD low for 500ms. Once the Roomba is awake, sending the Start command (opcode 128) readies it for further commands by putting the SCI in passive mode. Next, sending the Control command (opcode 130) puts the SCI in safe mode, allowing control of the Roomba's motors and sensors. In safe mode, the Roomba is fully controllable by users, but halts and reverts to passive mode if it detects a dropoff or the charger is plugged in. Both the Start and Control commands are followed by 20ms pauses, as recommended by the SCI manual, because the commands change the SCI mode. All this logic is encapsulated in the <code>init_roomba()</code> function.
+				</p>
+				<p>
+				The following figure shows a logic analyzer capture of the <code>roomba_init()</code> function. The bottom track shows DD being held low to wake the Roomba. The top track shows a small blip when the Roomba SCI mode is changed to passive and then to safe mode. The remaining activity is driving commands and sensor packet communication.
+				<img src="images/logic_screenshot.png" style="width:100%"/>
+				<p class="caption">roomba_init() Function Captured Using Logic Analyzer</p>
+				</p>
+				<p>
+				The Baud command (opcode 129) can be used to change the baud rate of the SCI communications. This command was not used; instead, the code simply uses the SCI's default baud rate of 57600 bps.
+				</p>
+				<h3>4.3.2 Driving</h3>
+				<p>
+				The only motors required for operation of the sentry are the drive motors. The Roomba's drive motors can be activated using the Drive command (opcode 137) with 4 data bytes specifying velocity, in mm/s, and turn radius, in mm. Both velocity and radius are 16-bit integers, and the full Drive command of 5 bytes follows the format below. The <code>roomba_drive(int16_t velocity, int16_t radius)</code> function takes the two 16-bit integers, breaks them into data bytes, and sends the drive command to the Roomba.
+				<table>
+					<th>Opcode</th>
+					<th>Data Byte 1</th>
+					<th>Data Byte 2</th>
+					<th>Data Byte 3</th>
+					<th>Data Byte 4</th>
+					<tr>
+						<td>137</td>
+						<td>Velocity (high byte)</td>
+						<td>Velocity (low byte)</td>
+						<td>Radius (high byte)</td>
+						<td>Radius (low byte)</td>
+					</tr>
+				</table>
+				</p>
+				<p>
+				The drive command also accepts specific constants for radius with special meanings. Sending -1 or 1 as radius means turn in place clockwise or counterclockwise, respectively, and using a radius of 32768 means drive straight.
+				</p>
+				<h3>4.3.3 Bump Sensors</h3>
+				<p>
+				The Roomba has a plastic bumper on its front that depresses towards the robot when the Roomba runs into a wall. The state of the bumper sensors can be retrieved using the Sensors command (opcode 142), which takes one data byte representing the sensor information to retrieve (1-3 for specific packets, or 0 for all). The data for bump sensors is the first byte in the first sensor packet, formatted as shown below. A 1 in bit 0 or 1 indicates the Roomba has hit a wall. The roomba_sense_1() function returns a special struct containing data from the first sensor packet, as this is the only sensor packet used in this project.
+				<table style="text-align:center">
+					<th>Bit</th>
+					<th>7</th>
+					<th>6</th>
+					<th>5</th>
+					<th>4</th>
+					<th>3</th>
+					<th>2</th>
+					<th>1</th>
+					<th>0</th>
+					<tr>
+						<td>Sensor</td>
+						<td>n/a</td>
+						<td>n/a</td>
+						<td>n/a</td>
+						<td colspan="3">Wheeldrop</td>
+						<td colspan="2">Bump</td>
+					</tr>
+					<tr>
+						<td colspan="4" />
+						<td>Caster</td>
+						<td>Left</td>
+						<td>Right</td>
+						<td>Left</td>
+						<td>Right</td>
+					</tr>
+				</table>
+				</p>
+				<h3>4.3.4 Virtual Walls</h3>
+				<p>
+				In addition to physical walls, the sentry robot must account for virtual walls, created with special infrared emitters. These infrared beams mark the boundaries of the restricted zone that the robot should patrol. When the robot encounters a virtual wall, then, it must turn back into the patrol zone.
+				</p>
+				<p>
+				The PIR sensor on board on the Roomba detects virtual walls. Sensor data about virtual walls is also located in sensor packet 1, so it can be retrieved as described in the section above. The virtual walls data is bit 7 in the packet, which is either set to 1 to indicate the Roomba senses a virtual wall or 0 otherwise.
+				<img src="images/virtual_wall.jpg" />
+				<p class="caption">Virtual Wall Projector</p>
+				</p>
+				<h2>4.4 Logic</h2>
+				<p>
+				The behaviour of the sentry robot can be represented by a finite state machine with two distinct states. In the first state, the robot searches within the restricted area, turning when it encounters physical or virtual walls. Since the Roomba can tell if it hit a physical wall on the left or right, it turns in the appropriate direction to move away from the wall (left turn when wall is on right and vice versa). The Roomba cannot detect the orientation of virtual walls, however, but instead of always turning in the same direction, it picks left or right depending on the current parity of the value of a continually-running second-resolution timer. When the robot's PIR detects an intruder, the robot switches to the second state, tracking.
+				<img src="images/sentrystates.png" />
+				<p class="caption">Sentry Behaviour Finite State Machine</p>
+				</p>
+				<p>
+				While tracking the intruder, the robot uses its sonar to maintain a constant distance of 100cm from the intruder, driving forward or backward along a straight path. Sonar distance is averaged over several samples to get a more accurate distance from the intruder. The sentry also does not try to keep at exactly 100cm, as this would cause the robot to continually jerk back and forth making small adjustments. Instead, the robot tries to keep the distance between a lower bound, 100cm minus epsilon (a small padding value), and an upper bound, 100cm plus epsilon. If the robot loses the intruder or the intruder leaves the restricted area, the robot reverts to the first searching state.
+				</p>
+				<p>
+				State transitions are governed mainly by a combination of the last PIR sensor output and a timer. As mentioned earlier, the PIR sensor interrupt sets a boolean flag when the PIR sensor output goes from high to low or low to high. While searching, the sentry robot polls this flag, and transitions to tracking if the flag indicates movement was detected. The sentry stays in tracking mode, moving back and forth to keep a constant 100cm distance, until movement is no longer detected, as indicated by the same flag. Since the PIR sensor has a large gap between measurement cycles, the sentry remains in tracking mode for another 5 seconds. If there is still no movement detected, the sentry exits tracking and returns to searching. The sentry also exits tracking mode if it encounters a virtual wall to prevent leaving the restricted area.
+				</p>
+				<p>
+				The searching state logic is described by the following steps:
+				<pre><code data-language>    drive forward
+    loop:
+	    if hit virtual wall: 
+		    turn, drive forward
+	    else if hit physical wall:
+		    if wall on right: 
+			    turn left, drive forward
+		    else:
+			    turn right, drive forward
+	    if movement detected: 
+		    enter tracking mode</code></pre>
+				</p>
+				
+				<p>
+				Likewise, tracking mode follows the logic below:
+				<pre><code data-language>    loop:
+	    if no movement and timeout expired:
+		    exit tracking mode
+	    get sonar distance
+	    if distance < 100cm - epsilon:
+		    drive backward
+	    else if distance > 100cm + epsilon:
+		    drive forward
+	    else:
+		    stay still
+	    if hit virtual wall:
+		    exit tracking mode</code></pre>
+				
+				</p>
+				<h1 id="demo">5.0 Demonstration</h1>
+				<iframe width="420" height="315" style="margin: 10px 10px 20px 10px" src="http://www.youtube.com/embed/Dn0-40mYrFk" frameborder="0" allowfullscreen></iframe>
+				<h1 id="appendix">6.0 Appendix</h1>
+                <p><a href="code/project1.tar.gz">Source code</a> (project1.tar.gz)</p>
+
+			</div>
+		</div>
+		
+		<!-- end #content -->
+		<div style="clear: both;">&nbsp;</div>
+            </div>
+            <!-- end #page --> 
+        </div>
+        
+        <div id="footer">
+            <p>Andrey Polyakov, Jared Griffis - University of Victoria - 2013</p>
+            <p>Design by <a href="http://www.freecsstemplates.org/" rel="nofollow">FreeCSSTemplates.org</a>.</p>
+        </div>
+        <!-- end #footer -->
+        
+        <script src="js/rainbow.min.js"></script>
+        <script src="js/generic.js"></script>
+        <script src="js/c.js"></script>
+    </body>
+</html>
