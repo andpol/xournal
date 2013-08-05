@@ -116,6 +116,7 @@ on_fileNewBackground_activate          (GtkMenuItem     *menuitem,
   set_cursor_busy(FALSE);
   if (success) {
     g_free(filename);
+    update_thumbnails();
     return;
   }
 

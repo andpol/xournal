@@ -52,8 +52,10 @@ double predef_thickness[NUM_STROKE_TOOLS][THICKNESS_MAX] =
   };
 
 GtkWidget *highlighted_thumbnail = NULL;
-gboolean update_thumbnails_request = FALSE;
 gint thumbnail_size = 0;
+PopplerDocument *thumbnails_pdf;
+gchar *thumbnails_pdf_path;
+gint current_updating_thumbnail = -1;
 
 // some manipulation functions
 
@@ -2636,92 +2638,83 @@ GtkWidget * new_thumbnail_from_pixmap(GdkPixmap *pixmap, int index) {
 	return event_box;
 }
 
-// Update the thumbnails displayed in the sidebar.
-// Exports the journal to a PDF, then grabs scaled-down images from each page.
-gboolean update_thumbnails_task(gpointer data) {
-	const gchar *tmp_folder;
-	gchar *tmp_pdf_filename, *tmp_pdf_path, *tmp_pdf_uri;
-	PopplerDocument *tmp_pdf;
-	PopplerPage *page;
+gboolean update_thumbnails_actual_task(gpointer data) {
 	int npages;
-	GtkWidget *thumbnails_vbox, *thumbnail;
+	PopplerPage *page;
+	GdkPixmap *pixmap;
+	GtkWidget *thumbnails_vbox, *thumbnail, *update_button;
 	GtkLabel *updating_message;
-	GdkPixmap **thumbnail_pixmaps;
 
-	if (!update_thumbnails_request) {
-		return TRUE;
+	npages = poppler_document_get_n_pages(thumbnails_pdf);
+
+	if (current_updating_thumbnail >= npages) {
+		change_current_thumbnail(ui.pageno);
+
+		updating_message = GTK_LABEL(GET_COMPONENT("updating_thumbnails_message"));
+		gtk_label_set_text(updating_message, NULL );
+
+		update_button = GTK_WIDGET(GET_COMPONENT("thumbnails_refresh_button"));
+		gtk_widget_set_sensitive(update_button, TRUE);
+
+		// Delete the temp PDF
+		remove(thumbnails_pdf_path);
+		free(thumbnails_pdf_path);
+
+		current_updating_thumbnail = -1;
+		return FALSE;
 	}
 
-	if (winMain->window == NULL ) {
-		return TRUE;
-	}
-
-	set_cursor_busy(TRUE);
-
-	// Figure out where we're going to put the exported PDF to grab thumbnails from
-	tmp_folder = g_get_tmp_dir();
-	tmp_pdf_filename = "xournal-thumbnails-tmp.pdf";
-	tmp_pdf_path = g_build_path(G_DIR_SEPARATOR_S, tmp_folder, tmp_pdf_filename, NULL );
-
-	if (!print_to_pdf(tmp_pdf_path)) {
-		g_warning("Could not print PDF to grab thumbnails");
-		free(tmp_pdf_path);
-		return TRUE;
-	}
-
-	// Poppler needs a URI, so prepend "file://"
-	// TODO: does this work on Windows?
-	tmp_pdf_uri = (gchar*) malloc(sizeof(gchar) * (strlen(tmp_pdf_path) + 7 + 1));
-	sprintf(tmp_pdf_uri, "file://%s", tmp_pdf_path);
-	tmp_pdf = poppler_document_new_from_file(tmp_pdf_uri, NULL, NULL );
-	free(tmp_pdf_uri);
-
-	npages = poppler_document_get_n_pages(tmp_pdf);
-	thumbnail_pixmaps = (GdkPixmap**) g_malloc(sizeof(GdkPixmap*) * npages);
-
-	int i;
-	for (i = 0; i < npages; i++) {
-		page = poppler_document_get_page(tmp_pdf, i);
-		thumbnail_pixmaps[i] = new_pixmap_from_page(page);
-	}
-
-	// Delete the temp PDF
-	remove(tmp_pdf_path);
-	free(tmp_pdf_path);
+	page = poppler_document_get_page(thumbnails_pdf, current_updating_thumbnail);
+	pixmap = new_pixmap_from_page(page);
+	thumbnail = new_thumbnail_from_pixmap(pixmap, current_updating_thumbnail);
 
 	thumbnails_vbox = GTK_WIDGET(GET_COMPONENT("thumbnails_vbox"));
+	gtk_box_pack_start(GTK_BOX(thumbnails_vbox), thumbnail, FALSE, FALSE, 0);
 
-	empty_thumbnails_vbox();
-	for (i = 0; i < npages; i++) {
-		thumbnail = new_thumbnail_from_pixmap(thumbnail_pixmaps[i], i);
-		gtk_box_pack_start(GTK_BOX(thumbnails_vbox), thumbnail, FALSE, FALSE, 0);
-//		g_free(thumbnail_pixmaps[i]);
-	}
-	free(thumbnail_pixmaps);
-
-	change_current_thumbnail(ui.pageno);
-
-	updating_message = GTK_LABEL(GET_COMPONENT("updating_thumbnails_message"));
-	gtk_label_set_text(updating_message, NULL);
-
-	update_thumbnails_request = FALSE;
-
-	set_cursor_busy(FALSE);
+	current_updating_thumbnail++;
 
 	return TRUE;
 }
 
 void update_thumbnails() {
 	GtkLabel *updating_message;
-
-	update_thumbnails_request = TRUE;
+	GtkWidget *update_button;
 
 	updating_message = GTK_LABEL(GET_COMPONENT("updating_thumbnails_message"));
 	gtk_label_set_text(updating_message, "Updating thumbnails...");
-}
 
-void start_thumbnails_task() {
-	g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, 1000, update_thumbnails_task, NULL, NULL);
+	update_button = GTK_WIDGET(GET_COMPONENT("thumbnails_refresh_button"));
+	gtk_widget_set_sensitive(update_button, FALSE);
+
+	const gchar *tmp_folder;
+	gchar *tmp_pdf_filename, *tmp_pdf_uri;
+
+	// Figure out where we're going to put the exported PDF to grab thumbnails from
+	tmp_folder = g_get_tmp_dir();
+	tmp_pdf_filename = "xournal-thumbnails-tmp.pdf";
+	thumbnails_pdf_path = g_build_path(G_DIR_SEPARATOR_S, tmp_folder, tmp_pdf_filename, NULL );
+
+	if (!print_to_pdf(thumbnails_pdf_path)) {
+		g_warning("Could not print PDF to grab thumbnails");
+		free(thumbnails_pdf_path);
+		return;
+	}
+
+	// Poppler needs a URI, so prepend "file://"
+	// TODO: does this work on Windows?
+	tmp_pdf_uri = (gchar*) malloc(sizeof(gchar) * (strlen(thumbnails_pdf_path) + 7 + 1));
+	sprintf(tmp_pdf_uri, "file://%s", thumbnails_pdf_path);
+	thumbnails_pdf = poppler_document_new_from_file(tmp_pdf_uri, NULL, NULL );
+	free(tmp_pdf_uri);
+
+	empty_thumbnails_vbox();
+
+	if (current_updating_thumbnail == -1) {
+		g_idle_add(update_thumbnails_actual_task, NULL);
+	}
+	current_updating_thumbnail = 0;
+
+	return;
 }
 
 void clear_thumbnail_highlighting() {
