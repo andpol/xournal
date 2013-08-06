@@ -11,57 +11,65 @@ Released   : 20130509
 
 -->
 <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <title>SENG 499 - Xournal - Framework Updates</title>
-        <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600" rel="stylesheet" type="text/css" />
-        <link href='http://fonts.googleapis.com/css?family=Abel|Satisfy' rel='stylesheet' type='text/css'>
-        <link href="style.css" rel="stylesheet" type="text/css" media="screen" />
-    </head>
-    <body>
-        <div id="wrapper">
-            <div id="header-wrapper">
-                <div id="header" class="container">
-                    <div id="logo">
-                        <h1><a href="index.html">SENG 499 - Xournal</a></h1>
-                    </div>
-                    <div id="menu">
-                        <ul>
-                            <li><a href="index.html">Home</a></li>
-                            <li class="current_page_item"><a href="#">Framework Updates</a></li>
-                            <li><a href="interface.html">Interface Changes</a></li>
-                            <li><a href="function.html">New Features</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <!-- end #header -->
-            
-            <div id="page">
-                <div id="content" style="width: 100%">
-                    <div class="post">
-                        <h2 class="title">Framework Updates</h2>
-                        <div class="entry">
-                            <p style="font-size: 18px">Xournal was badly in need of a major upgrade; many dependencies were deprecated, and some were more than 10 years old.</p>
-                            
-                            <img src="images/xournal.svg" style="width: 250px; float: right; margin: 0px 0px 0px 40px; border: 0px solid white;"></img>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis pellentesque posuere posuere. Maecenas porta, dolor a consequat porta, arcu mauris sodales dolor, ut elementum nunc lacus non leo. Cras vitae cursus nulla, ac mattis ligula. In metus nunc, aliquet in adipiscing et, pulvinar in ligula. Suspendisse ut sapien adipiscing, placerat eros quis, fringilla eros. Aenean diam eros, pellentesque vitae turpis id, dictum tincidunt dolor. Proin id fermentum augue.</p>
-                            
-                            <div style="clear: both" />
-                            
-                            <img src="images/xournal.svg" style="width: 250px; float: left; margin: 0px 40px 0px 0px; border: 0px solid white;"></img>
-                            <p>Morbi suscipit posuere orci eu cursus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit quis orci sit amet sagittis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vivamus blandit, nisl eu porta venenatis, purus turpis tempor metus, et dignissim lorem turpis et lacus. Etiam at leo porta nunc sagittis adipiscing. Interdum et malesuada fames ac ante ipsum primis in faucibus. Integer laoreet nulla a nulla lacinia posuere. Vestibulum blandit tellus bibendum, rutrum orci a, semper leo. Integer accumsan tincidunt mattis.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- end #content -->
-                <div style="clear: both;">&nbsp;</div>
-            </div>
-            <!-- end #page --> 
-        </div>
-        <div id="footer">
-            <p>Andrey Polyakov, Jared Griffis, Derek Binnersley, Jordan Smythe - University of Victoria - August 2013</p>
-            <p>Design based on template from <a href="http://www.freecsstemplates.org/" rel="nofollow">FreeCSSTemplates.org</a>.</p>
-        </div>
-        <!-- end #footer -->
-    </body>
+<head>
+<title>SENG 499 - Xournal - Framework Updates</title>
+<link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600" rel="stylesheet" type="text/css" />
+<link href='http://fonts.googleapis.com/css?family=Abel|Satisfy' rel='stylesheet' type='text/css'>
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+</head>
+<body>
+<div id="wrapper">
+	<div id="header-wrapper">
+		<div id="header" class="container">
+			<div id="logo">
+				<h1><a href="index.html">SENG 499 - Xournal</a></h1>
+			</div>
+			<div id="menu">
+				<ul>
+					<li><a href="index.html">Home</a></li>
+					<li class="current_page_item"><a href="#">Framework Updates</a></li>
+					<li><a href="interface.html">Interface Changes</a></li>
+					<li><a href="function.html">New Features</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<!-- end #header -->
+
+	<div id="page">
+		<div id="content" style="width: 100%">
+			<div class="post">
+				<h2 class="title">Framework Updates</h2>
+				<div class="entry">
+					<p style="font-size: 18px">
+					Since the initial release of Xournal in 2006, many changes, updates, and upgrades have happened to the underlying framework and libraries that Xournal relies on. The decision to upgrade the framework of a piece of software is a balance between software stability, active library support, effort, and functionality; for Xournal, upgrading was necessary to pave the way for future development.
+					</p>
+					<h1>GTK+3</h1>
+					<p>
+					The graphics framework used for Xournal is the GIMP Toolkit (or GTK+). It provides an API for creating graphical user interfaces with Windows, Dialogs, Widgets, and much more. Currently there are two major versions that are in use: GTK2 and GTK3. Although GTK2 is in use by a number of applications including Xournal, it is officially deprecated and its final release was in January 2011. The new version provides improved performance, new features (such as multi-touch functionality), reliability, and active developer support. Significant time was spent attempting converting Xournal to the latest version, however it was concluded that the amount of work required would be too costly at this point in time. This is because Xournal depends on a library known as libgnomecanvas, which is only available when using GTK+2 and has no official replacement in GTK+3. There exist some non-official replacements, however using them would be risky due to the current volatility of the GTK library.
+					</p>
+					<div style="clear: both"></div>
+					<h1>GtkBuilder</h1>
+					<p>
+					Applications developed with the GTK+ graphics framework can be implemented in a several programming languages, including C and Python. For the C toolkit API bindings, UI elements can be created programmatically, or through a graphical GTK WYSIWYG designer, known as Glade. This designer allows for developers to quickly create a user interface with a drag-and-drop style interface, allowing for a reduced amount of code to write and a short time to release. The UI specification is saved in a Glade XML format. To create the user interface from this specification, Xournal was using C files generated from an old version of Glade. This was so old in fact, that we were not able to compile a version of Glade old enough to support this functionality. Instead, we upgraded Xournal to use the latest method of loading the XML file: GtkBuilder. This GTK class loads the XML specifications at runtime and hence allows for faster UI development time, since recompilation is not necessary.
+					</p>
+					<div style="clear: both"></div>
+					<h1>Windows Installer</h1>
+					<p>
+					Derek - TODO
+					</p>
+				</div>
+			</div>
+		</div>
+		<!-- end #content -->
+		<div style="clear: both;">&nbsp;</div>
+	</div>
+	<!-- end #page --> 
+</div>
+<div id="footer">
+	<p>Andrey Polyakov, Jared Griffis, Derek Binnersley, Jordan Smythe - University of Victoria - August 2013</p>
+	<p>Design based on template from <a href="http://www.freecsstemplates.org/" rel="nofollow">FreeCSSTemplates.org</a>.</p>
+</div>
+<!-- end #footer -->
+</body>
 </html>
