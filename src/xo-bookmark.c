@@ -83,6 +83,8 @@ Item * create_bookmark(const gchar* title, double page_pos) {
   static GdkPixbuf * bookmark_pixbuf = NULL;
   if(bookmark_pixbuf == NULL) {
     bookmark_pixbuf = create_pixbuf("bookmark.png");
+    // Reference the pixbuf so it doesn't get freed when we delete pages/bookmarks
+    g_object_ref(bookmark_pixbuf);
   }
 
   Page * page = ui.cur_page;
@@ -90,9 +92,7 @@ Item * create_bookmark(const gchar* title, double page_pos) {
 
   bmrk->type = ITEM_BOOKMARK;
 
-
   bmrk->image = bookmark_pixbuf;
-
   int height = gdk_pixbuf_get_height(bmrk->image);
   int width = gdk_pixbuf_get_width(bmrk->image);
   bmrk->bbox.left =   page->width - width;
