@@ -42,11 +42,10 @@ Released   : 20130509
 				<h2 class="title">Interface Changes</h2>
 				<div class="entry">
 					<p style="font-size: 18px">While mostly aesthetic, user interface improvements make Xournal easier to use.</p>
-					<img src="images/xournal.svg" style="width: 250px; float: right; margin: 0px 0px 0px 40px; border: 0px solid white;"></img>
-					<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis pellentesque posuere posuere. Maecenas porta, dolor a consequat porta, arcu mauris sodales dolor, ut elementum nunc lacus non leo. Cras vitae cursus nulla, ac mattis ligula. In metus nunc, aliquet in adipiscing et, pulvinar in ligula. Suspendisse ut sapien adipiscing, placerat eros quis, fringilla eros. Aenean diam eros, pellentesque vitae turpis id, dictum tincidunt dolor. Proin id fermentum augue.</p>
-					<div style="clear: both"></div>
-					<img src="images/xournal.svg" style="width: 250px; float: left; margin: 0px 40px 0px 0px; border: 0px solid white;"></img>
-					<p>Morbi suscipit posuere orci eu cursus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit quis orci sit amet sagittis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vivamus blandit, nisl eu porta venenatis, purus turpis tempor metus, et dignissim lorem turpis et lacus. Etiam at leo porta nunc sagittis adipiscing. Interdum et malesuada fames ac ante ipsum primis in faucibus. Integer laoreet nulla a nulla lacinia posuere. Vestibulum blandit tellus bibendum, rutrum orci a, semper leo. Integer accumsan tincidunt mattis.</p>
+
+					<h1>Ink Gradient</h1>
+					<img src="images/screenshot_gradient.png" style="width: 400px; float: right; margin: 0px 0px 0px 40px; border: 0px solid white;"></img>
+					<p>One of the very essential functions that Xournal does is draw text on top of documents, whether the document is a blank file or a pdf file. Xournal does this by creating lines of a specified size and color and adding them to the current active layer on the current page. Xournal however; does not offer much customizability with regards to how these line appear. To give Xournal users more customizability with the ink, another feature was added to change the color intensity of the ink based on the speed that the user is drawing to make the ink appear more like pen ink.</p>
 				</div>
 			</div>
 		</div>
@@ -60,5 +59,12 @@ Released   : 20130509
 	<p>Design based on template from <a href="http://www.freecsstemplates.org/" rel="nofollow">FreeCSSTemplates.org</a>.</p>
 </div>
 <!-- end #footer -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.1/jquery.min.js" type="text/javascript"></script>
+<script src="js/imgpreview.js"></script>
+<script type="text/javascript">
+$("img").imgPreview({
+		imgCSS: { width: 600 }
+});
+</script>
 </body>
 </html>
